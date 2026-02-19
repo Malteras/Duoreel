@@ -23,6 +23,7 @@ export interface AppLayoutContext {
     filterType: 'genre' | 'director' | 'actor' | 'year',
     value: string | number
   ) => void;
+  onSignOut: () => Promise<void>;
 }
 
 export function useAppLayoutContext() {
@@ -111,6 +112,7 @@ export function AppLayout() {
     globalImdbCache,
     setGlobalImdbCache,
     navigateToDiscoverWithFilter,
+    onSignOut: handleSignOut,
   };
 
   const tabCls = ({ isActive }: { isActive: boolean }) =>

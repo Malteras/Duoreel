@@ -6,6 +6,7 @@ import { AuthPage } from './components/AuthPage';
 import { DiscoverPage } from './components/DiscoverPage';
 import { SavedPage } from './components/SavedPage';
 import { MatchesPage } from './components/MatchesPage';
+import { ProfilePage } from './components/ProfilePage';
 import { LandingPage } from './components/LandingPage';
 
 export const router = createBrowserRouter([
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
               { path: 'discover', Component: DiscoverPage },
               { path: 'saved', Component: SavedPage },
               { path: 'matches', Component: MatchesPage },
+              { path: 'profile', Component: ProfilePage },
               // Unknown paths under protected → discover
               { path: '*', element: <Navigate to="/discover" replace /> },
             ],
