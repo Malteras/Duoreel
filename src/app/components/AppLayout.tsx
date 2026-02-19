@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { UserInteractionsProvider } from './UserInteractionsContext';
 import { TooltipProvider } from './ui/tooltip';
 import { ProfileDropdown } from './ProfileDropdown';
+import { NotificationBell } from './NotificationBell';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import duoReelLogo from 'figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
 
@@ -144,12 +145,15 @@ export function AppLayout() {
                     <p className="text-sm text-slate-400">Find movies you both love</p>
                   </div>
                 </div>
-                <ProfileDropdown
-                  accessToken={accessToken!}
-                  userEmail={userEmail}
-                  projectId={projectId}
-                  onSignOut={handleSignOut}
-                />
+                <div className="flex items-center gap-3">
+                  <NotificationBell accessToken={accessToken!} />
+                  <ProfileDropdown
+                    accessToken={accessToken!}
+                    userEmail={userEmail}
+                    projectId={projectId}
+                    onSignOut={handleSignOut}
+                  />
+                </div>
               </div>
 
               {/* Tab nav */}

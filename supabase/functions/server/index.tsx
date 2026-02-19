@@ -12,6 +12,37 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
+// Helper function to create notifications
+async function createNotification(
+  userId: string,
+  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone',
+  data: {
+    fromUserId?: string;
+    fromName?: string;
+    movieId?: number;
+    movieTitle?: string;
+    posterPath?: string;
+    milestoneCount?: number;
+  }
+) {
+  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const notification = {
+    id,
+    type,
+    read: false,
+    createdAt: Date.now(),
+    data
+  };
+  
+  await kv.set(`notification:${userId}:${id}`, notification);
+  
+  // Increment unread count
+  const current = await kv.get(`notifications:unread:${userId}`) || 0;
+  await kv.set(`notifications:unread:${userId}`, (typeof current === 'number' ? current : 0) + 1);
+  
+  console.log(`Created ${type} notification for user ${userId}`);
+}
+
 // Enable logger
 app.use('*', logger(console.log));
 
@@ -231,6 +262,12 @@ app.post("/make-server-5623fde1/partner/connect", async (c) => {
       timestamp: Date.now(),
     });
 
+    // Create notification for the recipient
+    await createNotification(partner.id, 'partnership_request', {
+      fromUserId: user.id,
+      fromName: senderProfile.name || user.email,
+    });
+
     return c.json({ success: true, message: 'Partner request sent' });
   } catch (error) {
     console.error('Error sending partner request:', error);
@@ -313,6 +350,12 @@ app.post("/make-server-5623fde1/partner/accept", async (c) => {
 
     // Delete the request
     await kv.del(`partner_request:${user.id}:${fromUserId}`);
+
+    // Create notification for the requester
+    await createNotification(fromUserId, 'partnership_accepted', {
+      fromUserId: user.id,
+      fromName: userProfile.name || user.email || 'Someone',
+    });
 
     return c.json({ success: true, message: 'Partner request accepted' });
   } catch (error) {
@@ -452,6 +495,143 @@ app.post("/make-server-5623fde1/notifications/matches/seen", async (c) => {
   }
 });
 
+// Get notifications for user (with pagination for infinite scroll)
+app.get("/make-server-5623fde1/notifications", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const limit = parseInt(c.req.query('limit') || '50');
+    const offset = parseInt(c.req.query('offset') || '0');
+
+    // Get all notifications for the user
+    const notifications = await kv.getByPrefix(`notification:${user.id}:`);
+    
+    // Sort by createdAt descending (newest first)
+    const sorted = notifications.sort((a: any, b: any) => b.createdAt - a.createdAt);
+    
+    // Apply pagination
+    const paginated = sorted.slice(offset, offset + limit);
+    
+    // Clean up old read notifications (delete read notifications older than 10 days)
+    const TEN_DAYS = 10 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    for (const notif of notifications) {
+      if (notif.read && (now - notif.createdAt > TEN_DAYS)) {
+        await kv.del(`notification:${user.id}:${notif.id}`);
+      }
+    }
+
+    return c.json({ 
+      notifications: paginated,
+      hasMore: offset + limit < sorted.length,
+      total: sorted.length
+    });
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    return c.json({ error: `Failed to fetch notifications: ${error}` }, 500);
+  }
+});
+
+// Get unread notification count (fast - single KV read)
+app.get("/make-server-5623fde1/notifications/unread-count", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const count = await kv.get(`notifications:unread:${user.id}`) || 0;
+    return c.json({ count: typeof count === 'number' ? count : 0 });
+  } catch (error) {
+    console.error('Error fetching unread count:', error);
+    return c.json({ error: `Failed to fetch unread count: ${error}` }, 500);
+  }
+});
+
+// Mark single notification as read
+app.post("/make-server-5623fde1/notifications/mark-read", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { notificationId } = await c.req.json();
+    
+    const notification = await kv.get(`notification:${user.id}:${notificationId}`);
+    if (!notification) {
+      return c.json({ error: 'Notification not found' }, 404);
+    }
+
+    // Mark as read
+    if (!notification.read) {
+      notification.read = true;
+      await kv.set(`notification:${user.id}:${notificationId}`, notification);
+
+      // Decrement unread count
+      const current = await kv.get(`notifications:unread:${user.id}`) || 0;
+      const newCount = Math.max(0, (typeof current === 'number' ? current : 0) - 1);
+      await kv.set(`notifications:unread:${user.id}`, newCount);
+    }
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return c.json({ error: `Failed to mark as read: ${error}` }, 500);
+  }
+});
+
+// Mark all notifications as read
+app.post("/make-server-5623fde1/notifications/mark-all-read", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Get all notifications and mark them as read
+    const notifications = await kv.getByPrefix(`notification:${user.id}:`);
+    
+    for (const notification of notifications) {
+      if (!notification.read) {
+        notification.read = true;
+        await kv.set(`notification:${user.id}:${notification.id}`, notification);
+      }
+    }
+
+    // Reset unread count to 0
+    await kv.set(`notifications:unread:${user.id}`, 0);
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return c.json({ error: `Failed to mark all as read: ${error}` }, 500);
+  }
+});
+
 // Get partner info
 app.get("/make-server-5623fde1/partner", async (c) => {
   try {
@@ -553,6 +733,50 @@ app.post("/make-server-5623fde1/movies/like", async (c) => {
         isMatch = true;
         await kv.set(`match:${user.id}:${movie.id}`, { ...movie, timestamp });
         await kv.set(`match:${profile.partnerId}:${movie.id}`, { ...movie, timestamp });
+
+        // Create match notifications for both users
+        const partnerProfile = await kv.get(`user:${profile.partnerId}`) || {};
+        const currentUserProfile = await kv.get(`user:${user.id}`) || {};
+
+        // Notification for current user
+        await createNotification(user.id, 'movie_match', {
+          fromUserId: profile.partnerId,
+          fromName: partnerProfile.name || 'Your partner',
+          movieId: movie.id,
+          movieTitle: movie.title || movie.name || 'Unknown Movie',
+          posterPath: movie.poster_path || null,
+        });
+
+        // Notification for partner
+        await createNotification(profile.partnerId, 'movie_match', {
+          fromUserId: user.id,
+          fromName: currentUserProfile.name || 'Your partner',
+          movieId: movie.id,
+          movieTitle: movie.title || movie.name || 'Unknown Movie',
+          posterPath: movie.poster_path || null,
+        });
+
+        // Check for milestone (5, 10, 25 matches)
+        const allMatches = await kv.getByPrefix(`match:${user.id}:`);
+        const matchCount = allMatches.length;
+        const milestones = [5, 10, 25];
+
+        if (milestones.includes(matchCount)) {
+          console.log(`🎉 Milestone reached: ${matchCount} matches for user ${user.id}!`);
+
+          // Create milestone notifications for both users
+          await createNotification(user.id, 'match_milestone', {
+            fromUserId: profile.partnerId,
+            fromName: partnerProfile.name || 'Your partner',
+            milestoneCount: matchCount,
+          });
+
+          await createNotification(profile.partnerId, 'match_milestone', {
+            fromUserId: user.id,
+            fromName: currentUserProfile.name || 'Your partner',
+            milestoneCount: matchCount,
+          });
+        }
       }
     }
 
