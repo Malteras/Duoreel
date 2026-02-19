@@ -438,7 +438,8 @@ app.post("/make-server-5623fde1/partner/remove", async (c) => {
 // Get or generate user's invite code
 app.get("/make-server-5623fde1/partner/invite-code", async (c) => {
   try {
-    const accessToken = c.req.header('Authorization')?.split(' ')[1];\n    if (!accessToken) {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
