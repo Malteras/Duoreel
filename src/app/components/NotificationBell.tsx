@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Bell, Check, Heart, Users, Loader2, ExternalLink, PartyPopper } from 'lucide-react';
+import { Bell, Check, Heart, Users, Loader2, ExternalLink, PartyPopper, CheckCircle, XCircle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +8,7 @@ import {
 import { Button } from './ui/button';
 import { projectId } from '/utils/supabase/info';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 
 interface NotificationBellProps {
   accessToken: string;
@@ -152,6 +153,82 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
     }
   };
 
+  // Accept partner request
+  const [acceptingRequest, setAcceptingRequest] = useState<string | null>(null);
+  const [rejectingRequest, setRejectingRequest] = useState<string | null>(null);
+
+  const handleAcceptRequest = async (e: React.MouseEvent, fromUserId: string, notificationId: string) => {
+    e.stopPropagation(); // Prevent notification click
+    setAcceptingRequest(fromUserId);
+
+    try {
+      const response = await fetch(`${baseUrl}/partner/accept`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ fromUserId }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast.success('🎉 Partner request accepted!');
+        
+        // Remove notification from list
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+        fetchUnreadCount(); // Refresh unread count
+        
+        // Navigate to matches page to show connection
+        setTimeout(() => {
+          setIsOpen(false);
+          navigate('/matches');
+        }, 500);
+      } else {
+        toast.error(data.error || 'Failed to accept request');
+      }
+    } catch (error) {
+      console.error('Error accepting request:', error);
+      toast.error('Failed to accept request');
+    } finally {
+      setAcceptingRequest(null);
+    }
+  };
+
+  const handleRejectRequest = async (e: React.MouseEvent, fromUserId: string, notificationId: string) => {
+    e.stopPropagation(); // Prevent notification click
+    setRejectingRequest(fromUserId);
+
+    try {
+      const response = await fetch(`${baseUrl}/partner/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ fromUserId }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast.success('Partner request rejected');
+        
+        // Remove notification from list
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+        fetchUnreadCount(); // Refresh unread count
+      } else {
+        toast.error(data.error || 'Failed to reject request');
+      }
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      toast.error('Failed to reject request');
+    } finally {
+      setRejectingRequest(null);
+    }
+  };
+
   // Handle notification click
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
@@ -259,6 +336,55 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
 
       default:
         return null;
+    }
+
+    // Special rendering for partnership_request with action buttons
+    if (type === 'partnership_request' && data.fromUserId) {
+      return (
+        <div
+          key={notification.id}
+          className={`flex gap-3 p-3 rounded-lg transition-colors ${
+            !read
+              ? 'bg-blue-500/10 border-l-2 border-blue-500'
+              : 'bg-slate-800/50'
+          }`}
+        >
+          {icon}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-slate-300 leading-relaxed">{message}</p>
+            <p className="text-xs text-slate-500 mt-1 mb-2">{formatTime(notification.createdAt)}</p>
+            
+            {/* Action buttons */}
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                onClick={(e) => handleAcceptRequest(e, data.fromUserId!, notification.id)}
+                disabled={acceptingRequest === data.fromUserId || rejectingRequest === data.fromUserId}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white h-8 text-xs"
+              >
+                {acceptingRequest === data.fromUserId ? (
+                  <><Loader2 className="size-3 mr-1 animate-spin" /> Accepting...</>
+                ) : (
+                  <><CheckCircle className="size-3 mr-1" /> Accept</>
+                )}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => handleRejectRequest(e, data.fromUserId!, notification.id)}
+                disabled={acceptingRequest === data.fromUserId || rejectingRequest === data.fromUserId}
+                className="flex-1 bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-300 h-8 text-xs"
+              >
+                {rejectingRequest === data.fromUserId ? (
+                  <><Loader2 className="size-3 mr-1 animate-spin" /> Rejecting...</>
+                ) : (
+                  <><XCircle className="size-3 mr-1" /> Reject</>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
     }
 
     return (
