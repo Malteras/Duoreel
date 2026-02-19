@@ -11,34 +11,18 @@ export const supabase = createClient(
       storageKey: 'supabase.auth.token',
       autoRefreshToken: true,
       persistSession: true,
-      // We handle OAuth hash manually, so keep this false to avoid conflicts
       detectSessionInUrl: false,
+      // Use PKCE flow instead of implicit flow.
+      // PKCE puts the auth code in the query string (?code=...)
+      // instead of the hash fragment (#access_token=...).
+      // Figma Make's SitesRuntime strips hash fragments before React hydrates,
+      // but query strings survive — so PKCE works where implicit flow doesn't.
+      flowType: 'pkce',
     }
   }
 );
 
 const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
-
-/**
- * Manually parse OAuth tokens from URL hash fragment.
- * Figma Make's SitesRuntime may strip the hash before Supabase can read it,
- * so we capture it as early as possible.
- */
-function extractOAuthTokensFromHash(): { access_token: string; refresh_token: string } | null {
-  const hash = window.location.hash;
-  if (!hash || !hash.includes('access_token=')) return null;
-
-  const params = new URLSearchParams(hash.substring(1)); // remove the '#'
-  const access_token = params.get('access_token');
-  const refresh_token = params.get('refresh_token');
-
-  if (access_token && refresh_token) {
-    // Clean the hash from the URL immediately
-    window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    return { access_token, refresh_token };
-  }
-  return null;
-}
 
 interface AuthContextType {
   accessToken: string | null;
@@ -60,22 +44,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function initAuth() {
       try {
-        // Step 1: Check if we're returning from an OAuth redirect with tokens in the hash
-        const oauthTokens = extractOAuthTokensFromHash();
+        // Step 1: Check if we're returning from an OAuth redirect with ?code= in the URL
+        // (PKCE flow puts the auth code in the query string, not the hash fragment)
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get('code');
 
-        if (oauthTokens) {
-          console.log('OAuth tokens found in URL hash, setting session manually...');
+        if (code) {
+          console.log('PKCE auth code found in URL, exchanging for session...');
           
-          // Manually set the session using the tokens from the hash
-          const { data, error } = await supabase.auth.setSession({
-            access_token: oauthTokens.access_token,
-            refresh_token: oauthTokens.refresh_token,
-          });
+          // Exchange the auth code for a session
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+          // Clean the code from the URL
+          url.searchParams.delete('code');
+          window.history.replaceState(null, '', url.pathname + url.search);
 
           if (error) {
-            console.error('Failed to set OAuth session:', error);
+            console.error('Failed to exchange code for session:', error);
           } else if (data.session) {
-            console.log('OAuth session set successfully:', data.session.user?.email);
+            console.log('PKCE session established:', data.session.user?.email);
             setAccessToken(data.session.access_token);
             setUserEmail(data.session.user?.email ?? null);
             setUserId(data.session.user?.id ?? null);
@@ -100,11 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             setLoading(false);
-            return; // Done — OAuth session established
+            return; // Done — session established via PKCE
           }
         }
 
-        // Step 2: No OAuth hash — check for existing session in localStorage
+        // Step 2: No auth code — check for existing session in localStorage
         const { data: { session }, error } = await supabase.auth.getSession();
 
         if (error) {
