@@ -3,6 +3,7 @@ import { Film } from 'lucide-react';
 import { AuthScreen } from './AuthScreen';
 import { useAuth } from '../context/AuthContext';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { toast } from 'sonner';
 
 /**
  * Route-aware wrapper around AuthScreen.
@@ -11,7 +12,7 @@ import { projectId, publicAnonKey } from '/utils/supabase/info';
  * - Supports ?tab=signup to open the Sign Up tab directly.
  */
 export function AuthPage() {
-  const { accessToken, loading } = useAuth();
+  const { accessToken, loading, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -30,6 +31,15 @@ export function AuthPage() {
     return <Navigate to={redirect} replace />;
   }
 
+  const handleGoogleSignIn = async () => {
+    try {
+      await signInWithGoogle();
+      // Browser redirects to Google — no navigation needed here
+    } catch (error) {
+      toast.error('Failed to start Google sign-in. Please try again.');
+    }
+  };
+
   return (
     <AuthScreen
       projectId={projectId}
@@ -37,6 +47,7 @@ export function AuthPage() {
       defaultTab={defaultTab as 'signin' | 'signup'}
       onAuthSuccess={() => navigate(redirect)}
       onBack={() => navigate('/')}
+      onGoogleSignIn={handleGoogleSignIn}
     />
   );
 }

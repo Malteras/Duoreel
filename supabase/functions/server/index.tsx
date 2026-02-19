@@ -168,6 +168,54 @@ app.post("/make-server-5623fde1/auth/signout", async (c) => {
   }
 });
 
+// Ensure user profile exists — idempotent, handles first-time Google OAuth users
+app.post("/make-server-5623fde1/api/ensure-profile", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized - No token provided' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: `Unauthorized - Invalid token: ${authError?.message}` }, 401);
+    }
+
+    // Check if profile already exists — if so, nothing to do (idempotent)
+    const existing = await kv.get(`user:${user.id}`);
+    if (existing) {
+      return c.json({ exists: true, profile: existing });
+    }
+
+    // Profile doesn't exist — create it (first-time OAuth / Google user)
+    const body = await c.req.json().catch(() => ({}));
+    const email = user.email ?? '';
+    const displayName =
+      body.name ||
+      user.user_metadata?.full_name ||
+      user.user_metadata?.name ||
+      email.split('@')[0] ||
+      'User';
+
+    const profile = {
+      id: user.id,
+      email,
+      name: displayName,
+      photoUrl: user.user_metadata?.avatar_url ?? null,
+      createdAt: Date.now(),
+    };
+
+    await kv.set(`user:${user.id}`, profile);
+    await kv.set(`user:search:${email}`, { userId: user.id, name: displayName, email });
+
+    console.log(`ensure-profile: created new profile for ${email} (${user.id})`);
+    return c.json({ exists: false, profile, created: true });
+  } catch (error) {
+    console.error('ensure-profile error:', error);
+    return c.json({ error: `Failed to ensure profile: ${error}` }, 500);
+  }
+});
+
 // User profile routes
 app.get("/make-server-5623fde1/profile", async (c) => {
   try {
