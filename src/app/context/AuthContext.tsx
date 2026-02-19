@@ -7,7 +7,6 @@ export const supabase = createClient(
   publicAnonKey,
   {
     auth: {
-      // Ensure sessions are persisted to localStorage
       storage: window.localStorage,
       storageKey: 'supabase.auth.token',
       autoRefreshToken: true,
@@ -38,31 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on mount
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      if (error) {
-        console.error('Error getting session:', error);
-        setLoading(false);
-        return;
-      }
+    // Track whether onAuthStateChange has fired so we don't prematurely set loading=false
+    let authEventFired = false;
 
-      if (session?.access_token) {
-        console.log('Session restored from storage:', {
-          email: session.user?.email,
-          expiresAt: new Date(session.expires_at! * 1000).toISOString()
-        });
-        setAccessToken(session.access_token);
-        setUserEmail(session.user?.email ?? null);
-        setUserId(session.user?.id ?? null);
-      } else {
-        console.log('No active session found');
-      }
-      setLoading(false);
-    });
-
-    // Keep auth state in sync (fires on setSession, signOut, token refresh, OAuth redirect, etc.)
+    // Listen for auth state changes FIRST (before getSession)
+    // This ensures we catch the SIGNED_IN event from OAuth URL fragment parsing
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
+      authEventFired = true;
       
       if (session?.access_token) {
         setAccessToken(session.access_token);
@@ -98,9 +80,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUserEmail(null);
         setUserId(null);
       }
+
+      // Always mark loading done when auth state is resolved
+      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Also call getSession as a fallback — if no auth event fires within a timeout,
+    // use getSession result. This handles the case where there's no hash fragment
+    // AND no stored session (user is simply not logged in).
+    const fallbackTimer = setTimeout(async () => {
+      if (!authEventFired) {
+        console.log('No auth event fired yet, checking session directly...');
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          setAccessToken(session.access_token);
+          setUserEmail(session.user?.email ?? null);
+          setUserId(session.user?.id ?? null);
+        }
+        setLoading(false);
+      }
+    }, 1000); // 1 second fallback — onAuthStateChange should fire well before this
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
