@@ -7,6 +7,7 @@ import { DiscoverPage } from './components/DiscoverPage';
 import { SavedPage } from './components/SavedPage';
 import { MatchesPage } from './components/MatchesPage';
 import { ProfilePage } from './components/ProfilePage';
+import { InvitePage } from './components/InvitePage';
 import { LandingPage } from './components/LandingPage';
 
 export const router = createBrowserRouter([
@@ -17,6 +18,7 @@ export const router = createBrowserRouter([
       // Public routes
       { index: true, Component: LandingPage },
       { path: 'login', Component: AuthPage },
+      { path: 'invite/:code', Component: InvitePage }, // Public invite route (handles auth internally)
 
       // Protected routes — unauthed visitors are redirected to /login?redirect=…
       {

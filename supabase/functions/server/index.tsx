@@ -43,6 +43,17 @@ async function createNotification(
   console.log(`Created ${type} notification for user ${userId}`);
 }
 
+// Helper function to generate invite codes
+function generateInviteCode(): string {
+  // Excludes O/0/I/l/1 to avoid visual ambiguity
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
 // Enable logger
 app.use('*', logger(console.log));
 
@@ -421,6 +432,186 @@ app.post("/make-server-5623fde1/partner/remove", async (c) => {
   } catch (error) {
     console.error('Error removing partner:', error);
     return c.json({ error: `Failed to remove partner: ${error}` }, 500);
+  }
+});
+
+// Get or generate user's invite code
+app.get("/make-server-5623fde1/partner/invite-code", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];\n    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Check if user already has an invite code
+    const existing = await kv.get(`user-invite:${user.id}`);
+    if (existing?.code) {
+      return c.json({ code: existing.code });
+    }
+
+    // Generate new code, ensure uniqueness
+    let code: string;
+    let attempts = 0;
+    do {
+      code = generateInviteCode();
+      const collision = await kv.get(`invite:${code}`);
+      if (!collision) break;
+      attempts++;
+    } while (attempts < 10);
+
+    if (attempts >= 10) {
+      return c.json({ error: 'Failed to generate unique invite code' }, 500);
+    }
+
+    // Get user profile for name
+    const profile = await kv.get(`user:${user.id}`) || {};
+
+    // Store both lookup directions
+    await kv.set(`invite:${code}`, {
+      userId: user.id,
+      name: profile.name || 'User',
+      createdAt: new Date().toISOString(),
+    });
+    await kv.set(`user-invite:${user.id}`, {
+      code,
+      createdAt: new Date().toISOString(),
+    });
+
+    return c.json({ code });
+  } catch (error) {
+    console.error('Error getting invite code:', error);
+    return c.json({ error: `Failed to get invite code: ${error}` }, 500);
+  }
+});
+
+// Accept partner invite via link (creates request, not instant connection)
+app.post("/make-server-5623fde1/partner/accept-invite", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { code } = await c.req.json();
+
+    // 1. Lookup invite code
+    const invite = await kv.get(`invite:${code}`);
+    if (!invite) {
+      return c.json({ error: 'Invalid invite code' }, 404);
+    }
+
+    const inviterId = invite.userId;
+
+    // 2. Edge case: clicking own link
+    if (inviterId === user.id) {
+      return c.json({ error: 'self_invite' }, 400);
+    }
+
+    // 3. Check if either user already has a partner
+    const myProfile = await kv.get(`user:${user.id}`) || {};
+    const inviterProfile = await kv.get(`user:${inviterId}`) || {};
+
+    if (myProfile.partnerId) {
+      return c.json({ error: 'already_connected' }, 400);
+    }
+    if (inviterProfile.partnerId) {
+      return c.json({ error: 'inviter_connected', inviterName: invite.name }, 400);
+    }
+
+    // 4. Check for duplicate request (idempotent)
+    const existingRequest = await kv.get(`partner_request:${user.id}:${inviterId}`);
+    if (existingRequest) {
+      return c.json({ success: true, alreadySent: true, inviterName: invite.name });
+    }
+
+    // 5. Create partner REQUEST (not instant connection)
+    await kv.set(`partner_request:${user.id}:${inviterId}`, {
+      fromUserId: user.id,
+      toUserId: inviterId,
+      source: 'invite_link',
+      createdAt: new Date().toISOString(),
+    });
+
+    // 6. Notify the inviter — they decide whether to accept
+    await createNotification(inviterId, 'partnership_request', {
+      fromUserId: user.id,
+      fromName: myProfile.name || user.email || 'Someone',
+    });
+
+    console.log(`Partner request sent from ${user.id} to ${inviterId} via invite link`);
+
+    return c.json({
+      success: true,
+      inviterName: invite.name,
+    });
+  } catch (error) {
+    console.error('Error accepting invite:', error);
+    return c.json({ error: `Failed to accept invite: ${error}` }, 500);
+  }
+});
+
+// Regenerate invite code (invalidate old, generate new)
+app.post("/make-server-5623fde1/partner/regenerate-invite", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Get old code and delete it
+    const oldInvite = await kv.get(`user-invite:${user.id}`);
+    if (oldInvite?.code) {
+      await kv.del(`invite:${oldInvite.code}`);
+    }
+
+    // Generate new code
+    let code: string;
+    let attempts = 0;
+    do {
+      code = generateInviteCode();
+      const collision = await kv.get(`invite:${code}`);
+      if (!collision) break;
+      attempts++;
+    } while (attempts < 10);
+
+    if (attempts >= 10) {
+      return c.json({ error: 'Failed to generate unique invite code' }, 500);
+    }
+
+    // Get user profile for name
+    const profile = await kv.get(`user:${user.id}`) || {};
+
+    // Store new code
+    await kv.set(`invite:${code}`, {
+      userId: user.id,
+      name: profile.name || 'User',
+      createdAt: new Date().toISOString(),
+    });
+    await kv.set(`user-invite:${user.id}`, {
+      code,
+      createdAt: new Date().toISOString(),
+    });
+
+    console.log(`Regenerated invite code for user ${user.id}: ${code}`);
+
+    return c.json({ code });
+  } catch (error) {
+    console.error('Error regenerating invite code:', error);
+    return c.json({ error: `Failed to regenerate invite code: ${error}` }, 500);
   }
 });
 
