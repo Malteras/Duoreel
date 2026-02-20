@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -45,6 +45,12 @@ export function SavedMoviesTab({
   const [filterBy, setFilterBy] = useState<'all' | 'unwatched' | 'watched'>('unwatched');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
+
+  // Infinite scroll state
+  const PAGE_SIZE = 40;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
@@ -361,11 +367,59 @@ export function SavedMoviesTab({
     }
   };
 
-  const sortedLikedMovies = getSortedMovies(likedMovies);
-  const sortedPartnerMovies = getSortedMovies(partnerLikedMovies);
+  const sortedLikedMovies = useMemo(
+    () => getSortedMovies(likedMovies),
+    [likedMovies, sortBy]
+  );
+  const filteredLikedMovies = useMemo(
+    () => getFilteredMovies(sortedLikedMovies),
+    [sortedLikedMovies, filterBy, watchedMovieIds]
+  );
+  const sortedPartnerMovies = useMemo(
+    () => getSortedMovies(partnerLikedMovies),
+    [partnerLikedMovies, sortBy]
+  );
 
-  // Apply filter to the sorted movies
-  const filteredLikedMovies = getFilteredMovies(sortedLikedMovies);
+  // Paginated slices for rendering
+  const visibleLikedMovies = useMemo(
+    () => filteredLikedMovies.slice(0, visibleCount),
+    [filteredLikedMovies, visibleCount]
+  );
+  const visiblePartnerMovies = useMemo(
+    () => sortedPartnerMovies.slice(0, visibleCount),
+    [sortedPartnerMovies, visibleCount]
+  );
+
+  const hasMoreMovies = viewMode === 'mine'
+    ? visibleCount < filteredLikedMovies.length
+    : visibleCount < sortedPartnerMovies.length;
+
+  // Reset pagination when filter, sort, or view mode changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [filterBy, sortBy, viewMode]);
+
+  // Infinite scroll — load more movies when sentinel enters viewport
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreMovies && !loadingMore) {
+          setLoadingMore(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + PAGE_SIZE);
+            setLoadingMore(false);
+          }, 150);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMoreMovies, loadingMore]);
 
   if (!accessToken) {
     return (
@@ -463,6 +517,13 @@ export function SavedMoviesTab({
               </div>
             </div>
           )}
+
+          {/* Movie count */}
+          {viewMode === 'mine' && filteredLikedMovies.length > 0 && (
+            <p className="text-sm text-slate-500 text-center">
+              Showing {Math.min(visibleCount, filteredLikedMovies.length)} of {filteredLikedMovies.length} movies
+            </p>
+          )}
         </div>
 
         {/* Loading indicator */}
@@ -530,8 +591,9 @@ export function SavedMoviesTab({
                 </div>
               )
             ) : (
+              <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredLikedMovies.map((movie) => (
+                {visibleLikedMovies.map((movie) => (
                   <MovieCard
                     key={movie.id}
                     movie={movie}
@@ -549,6 +611,17 @@ export function SavedMoviesTab({
                   />
                 ))}
               </div>
+
+              {/* Infinite scroll sentinel */}
+              <div
+                ref={sentinelRef}
+                className="flex justify-center mt-8 h-12 items-center"
+              >
+                {loadingMore && (
+                  <Loader2 className="size-6 animate-spin text-slate-400" />
+                )}
+              </div>
+              </>
             )
           ) : (
             sortedPartnerMovies.length === 0 ? (
@@ -558,8 +631,9 @@ export function SavedMoviesTab({
                 <p className="text-slate-400 text-lg">{partnerName ? "They can start liking movies in the Discover tab" : "Connect with a partner in the Profile tab"}</p>
               </div>
             ) : (
+              <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedPartnerMovies.map((movie) => (
+                {visiblePartnerMovies.map((movie) => (
                   <MovieCard
                     key={movie.id}
                     movie={movie}
@@ -576,6 +650,17 @@ export function SavedMoviesTab({
                   />
                 ))}
               </div>
+
+              {/* Infinite scroll sentinel */}
+              <div
+                ref={sentinelRef}
+                className="flex justify-center mt-8 h-12 items-center"
+              >
+                {loadingMore && (
+                  <Loader2 className="size-6 animate-spin text-slate-400" />
+                )}
+              </div>
+              </>
             )
           )
         )}
