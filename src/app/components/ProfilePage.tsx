@@ -546,6 +546,29 @@ export function ProfilePage() {
                   Import Watched Movies
                 </Button>
                 <Button
+                  variant="outline"
+                  className="bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900 hover:text-red-300"
+                  onClick={async () => {
+                    if (!confirm('Delete ALL saved movies? This cannot be undone.')) return;
+                    const res = await fetch(`${baseUrl}/movies/liked`, {
+                      headers: { Authorization: `Bearer ${accessToken}` },
+                    });
+                    const data = await res.json();
+                    let count = 0;
+                    for (const movie of data.movies || []) {
+                      await fetch(`${baseUrl}/movies/like/${movie.id}`, {
+                        method: 'DELETE',
+                        headers: { Authorization: `Bearer ${accessToken}` },
+                      });
+                      count++;
+                    }
+                    toast.success(`Cleared ${count} saved movies`);
+                    window.location.reload();
+                  }}
+                >
+                  🗑️ Clear All Saved (DEV)
+                </Button>
+                <Button
                   onClick={handleUpdateImdbRatings}
                   disabled={updatingImdb}
                   variant="outline"
