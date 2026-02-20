@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -49,7 +49,7 @@ export function SavedMoviesTab({
   // Infinite scroll state
   const PAGE_SIZE = 40;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [sentinelEl, setSentinelEl] = useState<HTMLDivElement | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
   const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
@@ -401,12 +401,11 @@ export function SavedMoviesTab({
 
   // Infinite scroll — load more movies when sentinel enters viewport
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    if (!sentinel) return;
+    if (!sentinelEl || !hasMoreMovies) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasMoreMovies && !loadingMore) {
+        if (entries[0].isIntersecting && !loadingMore) {
           setLoadingMore(true);
           setTimeout(() => {
             setVisibleCount((prev) => prev + PAGE_SIZE);
@@ -417,9 +416,9 @@ export function SavedMoviesTab({
       { threshold: 0.1 }
     );
 
-    observer.observe(sentinel);
+    observer.observe(sentinelEl);
     return () => observer.disconnect();
-  }, [hasMoreMovies, loadingMore]);
+  }, [sentinelEl, hasMoreMovies, loadingMore]);
 
   if (!accessToken) {
     return (
@@ -524,6 +523,11 @@ export function SavedMoviesTab({
               Showing {Math.min(visibleCount, filteredLikedMovies.length)} of {filteredLikedMovies.length} movies
             </p>
           )}
+          {viewMode === 'partner' && sortedPartnerMovies.length > 0 && (
+            <p className="text-sm text-slate-500 text-center">
+              Showing {Math.min(visibleCount, sortedPartnerMovies.length)} of {sortedPartnerMovies.length} movies
+            </p>
+          )}
         </div>
 
         {/* Loading indicator */}
@@ -614,7 +618,7 @@ export function SavedMoviesTab({
 
               {/* Infinite scroll sentinel */}
               <div
-                ref={sentinelRef}
+                ref={setSentinelEl}
                 className="flex justify-center mt-8 h-12 items-center"
               >
                 {loadingMore && (
@@ -653,7 +657,7 @@ export function SavedMoviesTab({
 
               {/* Infinite scroll sentinel */}
               <div
-                ref={sentinelRef}
+                ref={setSentinelEl}
                 className="flex justify-center mt-8 h-12 items-center"
               >
                 {loadingMore && (
