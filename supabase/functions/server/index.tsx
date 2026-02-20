@@ -1117,6 +1117,39 @@ app.delete("/make-server-5623fde1/movies/like/:movieId", async (c) => {
   }
 });
 
+// DEV ONLY — Clear all liked movies for the current user (bulk delete)
+app.delete("/make-server-5623fde1/movies/liked-all", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) return c.json({ error: 'Unauthorized' }, 401);
+
+    // Get all liked keys, then bulk delete
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    const { data, error } = await supabaseClient
+      .from('kv_store_5623fde1')
+      .select('key')
+      .like('key', `liked:${user.id}:%`);
+
+    if (error) throw error;
+
+    const keys = data?.map(d => d.key) || [];
+    if (keys.length > 0) {
+      await kv.mdel(keys);
+    }
+
+    return c.json({ success: true, deleted: keys.length });
+  } catch (error) {
+    console.error('Error clearing all liked movies:', error);
+    return c.json({ error: `Failed: ${error}` }, 500);
+  }
+});
+
 // Dislike a movie
 app.post("/make-server-5623fde1/movies/dislike", async (c) => {
   try {

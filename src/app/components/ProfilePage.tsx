@@ -550,19 +550,12 @@ export function ProfilePage() {
                   className="bg-red-900/30 border-red-800 text-red-400 hover:bg-red-900 hover:text-red-300"
                   onClick={async () => {
                     if (!confirm('Delete ALL saved movies? This cannot be undone.')) return;
-                    const res = await fetch(`${baseUrl}/movies/liked`, {
+                    const res = await fetch(`${baseUrl}/movies/liked-all`, {
+                      method: 'DELETE',
                       headers: { Authorization: `Bearer ${accessToken}` },
                     });
                     const data = await res.json();
-                    let count = 0;
-                    for (const movie of data.movies || []) {
-                      await fetch(`${baseUrl}/movies/like/${movie.id}`, {
-                        method: 'DELETE',
-                        headers: { Authorization: `Bearer ${accessToken}` },
-                      });
-                      count++;
-                    }
-                    toast.success(`Cleared ${count} saved movies`);
+                    toast.success(`Cleared ${data.deleted} saved movies`);
                     window.location.reload();
                   }}
                 >
