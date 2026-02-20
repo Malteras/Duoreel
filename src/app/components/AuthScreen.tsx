@@ -20,6 +20,7 @@ interface AuthScreenProps {
 
 export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, defaultTab = 'signin', onGoogleSignIn }: AuthScreenProps) {
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [signupData, setSignupData] = useState({ name: '', email: '', password: '' });
   const [signinData, setSigninData] = useState({ email: '', password: '' });
 
@@ -154,19 +155,28 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
           type="button"
           onClick={async () => {
             if (!onGoogleSignIn) return;
-            setLoading(true);
+            setGoogleLoading(true);
             try {
               await onGoogleSignIn();
               // Page will redirect to Google — loading stays true
             } catch {
-              setLoading(false);
+              setGoogleLoading(false);
             }
           }}
-          disabled={loading}
+          disabled={loading || googleLoading}
           className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-medium flex items-center justify-center gap-2 h-10"
         >
-          <GoogleIcon className="size-5 flex-shrink-0" />
-          Continue with Google
+          {googleLoading ? (
+            <>
+              <Loader2 className="size-5 flex-shrink-0 animate-spin" />
+              Continue with Google
+            </>
+          ) : (
+            <>
+              <GoogleIcon className="size-5 flex-shrink-0" />
+              Continue with Google
+            </>
+          )}
         </Button>
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
@@ -227,7 +237,7 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
                       value={signinData.email}
                       onChange={(e) => setSigninData({ ...signinData, email: e.target.value })}
                       className="bg-slate-900 border-slate-700 text-white"
-                      disabled={loading}
+                      disabled={loading || googleLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -239,13 +249,13 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
                       value={signinData.password}
                       onChange={(e) => setSigninData({ ...signinData, password: e.target.value })}
                       className="bg-slate-900 border-slate-700 text-white"
-                      disabled={loading}
+                      disabled={loading || googleLoading}
                     />
                   </div>
                   <Button
                     type="submit"
                     className="w-full bg-blue-600 hover:bg-blue-700"
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                   >
                     {loading ? (
                       <>
@@ -282,7 +292,7 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
                       value={signupData.name}
                       onChange={(e) => setSignupData({ ...signupData, name: e.target.value })}
                       className="bg-slate-900 border-slate-700 text-white"
-                      disabled={loading}
+                      disabled={loading || googleLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -294,7 +304,7 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
                       value={signupData.email}
                       onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
                       className="bg-slate-900 border-slate-700 text-white"
-                      disabled={loading}
+                      disabled={loading || googleLoading}
                     />
                   </div>
                   <div className="space-y-2">
@@ -306,14 +316,14 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
                       value={signupData.password}
                       onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
                       className="bg-slate-900 border-slate-700 text-white"
-                      disabled={loading}
+                      disabled={loading || googleLoading}
                     />
                     <p className="text-xs text-slate-500">At least 6 characters</p>
                   </div>
                   <Button
                     type="submit"
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={loading}
+                    disabled={loading || googleLoading}
                   >
                     {loading ? (
                       <>
