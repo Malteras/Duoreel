@@ -15,7 +15,7 @@ const supabase = createClient(
 // Helper function to create notifications
 async function createNotification(
   userId: string,
-  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone',
+  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete',
   data: {
     fromUserId?: string;
     fromName?: string;
@@ -23,6 +23,10 @@ async function createNotification(
     movieTitle?: string;
     posterPath?: string;
     milestoneCount?: number;
+    importType?: string;
+    importedCount?: number;
+    failedCount?: number;
+    totalCount?: number;
   }
 ) {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -52,6 +56,34 @@ function generateInviteCode(): string {
     code += chars[Math.floor(Math.random() * chars.length)];
   }
   return code;
+}
+
+// ── Concurrency-limited parallel map ─────────────────────────────
+// Like p-limit but zero-dependency. Runs `fn` on each item with at
+// most `concurrency` in-flight promises at once.
+async function pMap<T, R>(
+  items: T[],
+  fn: (item: T) => Promise<R>,
+  concurrency: number
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < items.length) {
+      const i = nextIndex++;
+      try {
+        const value = await fn(items[i]);
+        results[i] = { status: 'fulfilled', value };
+      } catch (reason) {
+        results[i] = { status: 'rejected', reason };
+      }
+    }
+  }
+
+  // Spawn `concurrency` workers
+  await Promise.all(Array.from({ length: Math.min(concurrency, items.length) }, () => worker()));
+  return results;
 }
 
 // Enable logger
@@ -872,6 +904,35 @@ app.post("/make-server-5623fde1/notifications/mark-all-read", async (c) => {
   }
 });
 
+// Create import completion notification
+app.post("/make-server-5623fde1/notifications/import-complete", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { type, imported, failed, total } = await c.req.json();
+
+    await createNotification(user.id, 'import_complete', {
+      importType: type,          // 'watchlist' or 'watched'
+      importedCount: imported,
+      failedCount: failed,
+      totalCount: total,
+    });
+
+    return c.json({ success: true });
+  } catch (error) {
+    console.error('Error creating import notification:', error);
+    return c.json({ error: `Failed to create notification: ${error}` }, 500);
+  }
+});
+
 // Get partner info
 app.get("/make-server-5623fde1/partner", async (c) => {
   try {
@@ -1221,45 +1282,56 @@ app.post("/make-server-5623fde1/movies/import", async (c) => {
       return c.json({ error: 'TMDb API key not configured' }, 500);
     }
 
+    // Pre-fetch user profile once (for partner match checking)
+    const userProfile = await kv.get(`user:${user.id}`);
+    const partnerId = userProfile?.partnerId;
+
     const results = {
       total: movies.length,
       imported: 0,
-      failed: [],
+      failed: [] as string[],
     };
 
-    for (const movie of movies) {
-      try {
-        // Search TMDb for the movie
-        const searchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movie.name)}&year=${movie.year}&api_key=${tmdbApiKey}`;
-        const searchResponse = await fetch(searchUrl);
-        const searchData = await searchResponse.json();
+    // Process movies with concurrency limit (5 parallel requests)
+    const settled = await pMap(movies, async (movie: any) => {
+      const searchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(movie.name)}&year=${movie.year}&api_key=${tmdbApiKey}`;
+      const searchResponse = await fetch(searchUrl);
+      const searchData = await searchResponse.json();
 
-        if (searchData.results && searchData.results.length > 0) {
-          const tmdbMovie = searchData.results[0];
-          
-          // Store liked movie
-          await kv.set(`liked:${user.id}:${tmdbMovie.id}`, tmdbMovie);
+      if (!searchData.results || searchData.results.length === 0) {
+        throw new Error(`NOT_FOUND:${movie.name}`);
+      }
 
-          // Check for partner match
-          const userProfile = await kv.get(`user:${user.id}`);
-          if (userProfile?.partnerId) {
-            const partnerId = userProfile.partnerId;
-            const partnerLiked = await kv.get(`liked:${partnerId}:${tmdbMovie.id}`);
-            
-            if (partnerLiked) {
-              // Create match for both users
-              await kv.set(`match:${user.id}:${tmdbMovie.id}`, tmdbMovie);
-              await kv.set(`match:${partnerId}:${tmdbMovie.id}`, tmdbMovie);
-            }
-          }
+      const tmdbMovie = searchData.results[0];
 
-          results.imported++;
-        } else {
-          results.failed.push(movie.name);
+      // Store liked movie
+      await kv.set(`liked:${user.id}:${tmdbMovie.id}`, tmdbMovie);
+
+      // Check for partner match
+      if (partnerId) {
+        const partnerLiked = await kv.get(`liked:${partnerId}:${tmdbMovie.id}`);
+        if (partnerLiked) {
+          await kv.set(`match:${user.id}:${tmdbMovie.id}`, tmdbMovie);
+          await kv.set(`match:${partnerId}:${tmdbMovie.id}`, tmdbMovie);
         }
-      } catch (error) {
-        console.error(`Error importing ${movie.name}:`, error);
-        results.failed.push(movie.name);
+      }
+
+      return tmdbMovie.id;
+    }, 5);
+
+    // Tally results
+    for (let i = 0; i < settled.length; i++) {
+      const result = settled[i];
+      if (result.status === 'fulfilled') {
+        results.imported++;
+      } else {
+        const msg = result.reason?.message || '';
+        if (msg.startsWith('NOT_FOUND:')) {
+          results.failed.push(msg.replace('NOT_FOUND:', ''));
+        } else {
+          console.error(`Error importing ${movies[i].name}:`, result.reason);
+          results.failed.push(movies[i].name);
+        }
       }
     }
 
@@ -1387,32 +1459,42 @@ app.post("/make-server-5623fde1/movies/import-watched", async (c) => {
     const { movies } = await c.req.json();
     const results = { imported: 0, failed: 0, errors: [] as string[] };
 
-    for (const movieData of movies) {
-      try {
-        const { title, year } = movieData;
-        
-        // Search for the movie on TMDb
-        const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&year=${year}`;
-        const searchResponse = await fetch(searchUrl);
-        const searchData = await searchResponse.json();
+    // Process movies with concurrency limit (5 parallel requests)
+    const settled = await pMap(movies, async (movieData: any) => {
+      const { title, year } = movieData;
 
-        if (searchData.results && searchData.results.length > 0) {
-          const movie = searchData.results[0];
-          
-          // Mark as watched
-          await kv.set(`watched:${user.id}:${movie.id}`, {
-            ...movie,
-            timestamp: Date.now()
-          });
-          
-          results.imported++;
-        } else {
-          results.failed++;
-          results.errors.push(`Movie not found: ${title} (${year})`);
-        }
-      } catch (err) {
+      const searchUrl = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(title)}&year=${year}`;
+      const searchResponse = await fetch(searchUrl);
+      const searchData = await searchResponse.json();
+
+      if (!searchData.results || searchData.results.length === 0) {
+        throw new Error(`NOT_FOUND:${title} (${year})`);
+      }
+
+      const movie = searchData.results[0];
+
+      // Mark as watched
+      await kv.set(`watched:${user.id}:${movie.id}`, {
+        ...movie,
+        timestamp: Date.now()
+      });
+
+      return movie.id;
+    }, 5);
+
+    // Tally results
+    for (let i = 0; i < settled.length; i++) {
+      const result = settled[i];
+      if (result.status === 'fulfilled') {
+        results.imported++;
+      } else {
         results.failed++;
-        results.errors.push(`Error importing ${movieData.title}: ${err}`);
+        const msg = result.reason?.message || '';
+        if (msg.startsWith('NOT_FOUND:')) {
+          results.errors.push(`Movie not found: ${msg.replace('NOT_FOUND:', '')}`);
+        } else {
+          results.errors.push(`Error importing ${movies[i].title}: ${result.reason}`);
+        }
       }
     }
 

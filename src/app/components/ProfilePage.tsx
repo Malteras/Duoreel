@@ -12,9 +12,12 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
+import { useImportContext } from './ImportContext';
+import { ImportDialog } from './ImportDialog';
 
 export function ProfilePage() {
   const { accessToken, userEmail, projectId, onSignOut } = useAppLayoutContext();
+  const { watchlist, watched } = useImportContext();
 
   // Profile state
   const [profile, setProfile] = useState<any>(null);
@@ -32,20 +35,6 @@ export function ProfilePage() {
   const [inviteCode, setInviteCode] = useState('');
   const [loadingInviteCode, setLoadingInviteCode] = useState(false);
   const [regeneratingCode, setRegeneratingCode] = useState(false);
-
-  // Import Watchlist state
-  const [importDialogOpen, setImportDialogOpen] = useState(false);
-  const [importData, setImportData] = useState('');
-  const [importing, setImporting] = useState(false);
-  const [importMinimized, setImportMinimized] = useState(false);
-  const [importProgress, setImportProgress] = useState({ current: 0, total: 0, batch: 0, totalBatches: 0 });
-
-  // Import Watched state
-  const [watchedImportDialogOpen, setWatchedImportDialogOpen] = useState(false);
-  const [watchedImportData, setWatchedImportData] = useState('');
-  const [watchedImporting, setWatchedImporting] = useState(false);
-  const [watchedImportMinimized, setWatchedImportMinimized] = useState(false);
-  const [watchedImportProgress, setWatchedImportProgress] = useState({ current: 0, total: 0, batch: 0, totalBatches: 0 });
 
   // IMDb update state
   const [updatingImdb, setUpdatingImdb] = useState(false);
@@ -226,168 +215,6 @@ export function ProfilePage() {
       }
       return null;
     }).filter(Boolean);
-  };
-
-  // ─── Import watchlist ───────────────────────────────────────────
-  const handleImportMovies = async () => {
-    if (!accessToken || !importData) return;
-
-    setImporting(true);
-    setImportProgress({ current: 0, total: 0, batch: 0, totalBatches: 0 });
-
-    try {
-      const movies = parseCSV(importData);
-
-      if (movies.length === 0) {
-        toast.error('No valid movies found in the data');
-        setImporting(false);
-        return;
-      }
-
-      const BATCH_SIZE = 200;
-      const batches: any[][] = [];
-      for (let i = 0; i < movies.length; i += BATCH_SIZE) {
-        batches.push(movies.slice(i, i + BATCH_SIZE));
-      }
-
-      setImportProgress({ current: 0, total: movies.length, batch: 0, totalBatches: batches.length });
-      toast.success(`Found ${movies.length} movies. Starting import in ${batches.length} batch${batches.length > 1 ? 'es' : ''}...`);
-
-      let totalImported = 0;
-      let totalFailed = 0;
-      let failedMovies: any[] = [];
-
-      for (let i = 0; i < batches.length; i++) {
-        setImportProgress({
-          current: i * BATCH_SIZE,
-          total: movies.length,
-          batch: i + 1,
-          totalBatches: batches.length,
-        });
-
-        const response = await fetch(`${baseUrl}/movies/import`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ movies: batches[i] }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to import movies');
-
-        totalImported += data.results.imported || 0;
-        totalFailed += data.results.failed?.length || 0;
-        failedMovies = failedMovies.concat(data.results.failed || []);
-      }
-
-      setImportProgress({ current: movies.length, total: movies.length, batch: batches.length, totalBatches: batches.length });
-      setImportDialogOpen(false);
-      setImportMinimized(false);
-      setImportData('');
-
-      if (totalImported > 0) toast.success(`🎉 Successfully imported ${totalImported} of ${movies.length} movies!`);
-      if (totalFailed > 0) {
-        toast.error(`Could not find ${totalFailed} movies on TMDb`);
-        console.log('Failed movies:', failedMovies);
-      }
-    } catch (error) {
-      console.error('Error importing movies:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to import movies');
-    } finally {
-      setImporting(false);
-      setImportProgress({ current: 0, total: 0, batch: 0, totalBatches: 0 });
-    }
-  };
-
-  // ─── Import watched ─────────────────────────────────────────────
-  const handleImportWatchedMovies = async () => {
-    if (!accessToken || !watchedImportData) return;
-
-    setWatchedImporting(true);
-    setWatchedImportProgress({ current: 0, total: 0, batch: 0, totalBatches: 0 });
-
-    try {
-      const movies = parseCSV(watchedImportData);
-
-      if (movies.length === 0) {
-        toast.error('No valid movies found in the data');
-        setWatchedImporting(false);
-        return;
-      }
-
-      const BATCH_SIZE = 200;
-      const batches: any[][] = [];
-      for (let i = 0; i < movies.length; i += BATCH_SIZE) {
-        batches.push(movies.slice(i, i + BATCH_SIZE));
-      }
-
-      setWatchedImportProgress({ current: 0, total: movies.length, batch: 0, totalBatches: batches.length });
-      toast.success(`Found ${movies.length} movies. Starting import in ${batches.length} batch${batches.length > 1 ? 'es' : ''}...`);
-
-      let totalImported = 0;
-      let totalFailed = 0;
-
-      for (let i = 0; i < batches.length; i++) {
-        setWatchedImportProgress({
-          current: i * BATCH_SIZE,
-          total: movies.length,
-          batch: i + 1,
-          totalBatches: batches.length,
-        });
-
-        const response = await fetch(`${baseUrl}/movies/import-watched`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ movies: batches[i] }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || 'Failed to import watched movies');
-
-        totalImported += data.results.imported || 0;
-        totalFailed += data.results.failed || 0;
-      }
-
-      setWatchedImportProgress({ current: movies.length, total: movies.length, batch: batches.length, totalBatches: batches.length });
-      setWatchedImportDialogOpen(false);
-      setWatchedImportMinimized(false);
-      setWatchedImportData('');
-
-      if (totalImported > 0) toast.success(`🎉 Successfully marked ${totalImported} movies as watched!`);
-      if (totalFailed > 0) toast.error(`Could not find ${totalFailed} movies on TMDb`);
-    } catch (error) {
-      console.error('Error importing watched movies:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to import watched movies');
-    } finally {
-      setWatchedImporting(false);
-      setWatchedImportProgress({ current: 0, total: 0, batch: 0, totalBatches: 0 });
-    }
-  };
-
-  // ─── File upload handler ────────────────────────────────────────
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, isWatched: boolean = false) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (isWatched) {
-        setWatchedImportData(content);
-      } else {
-        setImportData(content);
-      }
-      toast.success('CSV file loaded successfully');
-    };
-    reader.onerror = () => {
-      toast.error('Failed to read file');
-    };
-    reader.readAsText(file);
   };
 
   // ─── Update IMDb ratings ────────────────────────────────────────
@@ -705,7 +532,7 @@ export function ProfilePage() {
                 <Button
                   variant="outline"
                   className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                  onClick={() => setImportDialogOpen(true)}
+                  onClick={() => watchlist.setDialogOpen(true)}
                 >
                   <Upload className="size-4 mr-2" />
                   Import Watchlist
@@ -713,7 +540,7 @@ export function ProfilePage() {
                 <Button
                   variant="outline"
                   className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                  onClick={() => setWatchedImportDialogOpen(true)}
+                  onClick={() => watched.setDialogOpen(true)}
                 >
                   <Upload className="size-4 mr-2" />
                   Import Watched Movies
@@ -754,191 +581,22 @@ export function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Import Watchlist Dialog ───────────────────────────── */}
-      <Dialog open={importDialogOpen && !importMinimized} onOpenChange={(open) => {
-        if (!importing) setImportDialogOpen(open);
-      }}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>Import Movies from Letterboxd</DialogTitle>
-              {importing && (
-                <Button variant="ghost" size="sm" onClick={() => setImportMinimized(true)} className="hover:bg-slate-700">
-                  <Minimize2 className="size-4" />
-                </Button>
-              )}
-            </div>
-            <DialogDescription className="text-slate-400">
-              {importing
-                ? "Import in progress. You can minimize this and continue browsing."
-                : "Export your Letterboxd watchlist as CSV and paste it below. Format: Date, Name, Year, Letterboxd URI"
-              }
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {importing && importProgress.total > 0 ? (
-              <ImportProgressBar progress={importProgress} color="bg-blue-600" />
-            ) : (
-              <>
-                <div>
-                  <Label className="text-slate-300 text-sm mb-2 block">Choose CSV File</Label>
-                  <Input
-                    type="file"
-                    accept=".csv"
-                    onChange={(e) => handleFileUpload(e, false)}
-                    className="bg-slate-900 border-slate-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer"
-                  />
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-700" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-slate-800 px-2 text-slate-500">Or paste CSV data</span>
-                  </div>
-                </div>
-                <Textarea
-                  value={importData}
-                  onChange={(e) => setImportData(e.target.value)}
-                  placeholder={"Date,Name,Year,Letterboxd URI\n9/9/2016,Birth of the Dragon,2016,https://boxd.it/a1f8\n..."}
-                  className="h-[200px] max-h-[200px] overflow-y-auto bg-slate-900 border-slate-700 text-white font-mono text-xs resize-none"
-                />
-                <Button
-                  onClick={handleImportMovies}
-                  disabled={importing || !importData}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  {importing ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
-                  {importing ? 'Importing...' : 'Import to Saved Movies'}
-                </Button>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Import Dialogs — state lives in ImportContext, persists across navigation */}
+      <ImportDialog
+        importState={watchlist}
+        title="Import Movies from Letterboxd"
+        description="Export your Letterboxd watchlist as CSV and paste it below. Format: Date, Name, Year, Letterboxd URI"
+        buttonLabel="Import to Saved Movies"
+        progressBarColor="bg-blue-600"
+      />
 
-      {/* ── Import Watched Dialog ────────────────────────────── */}
-      <Dialog open={watchedImportDialogOpen && !watchedImportMinimized} onOpenChange={(open) => {
-        if (!watchedImporting) setWatchedImportDialogOpen(open);
-      }}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>Import Watched Movies from Letterboxd</DialogTitle>
-              {watchedImporting && (
-                <Button variant="ghost" size="sm" onClick={() => setWatchedImportMinimized(true)} className="hover:bg-slate-700">
-                  <Minimize2 className="size-4" />
-                </Button>
-              )}
-            </div>
-            <DialogDescription className="text-slate-400">
-              {watchedImporting
-                ? "Import in progress. You can minimize this and continue browsing."
-                : "Export your watched films from Letterboxd as CSV and paste it below. These movies will be filtered out from Discover."
-              }
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {watchedImporting && watchedImportProgress.total > 0 ? (
-              <ImportProgressBar progress={watchedImportProgress} color="bg-green-600" />
-            ) : (
-              <>
-                <div>
-                  <Label className="text-slate-300 text-sm mb-2 block">Choose CSV File</Label>
-                  <Input
-                    type="file"
-                    accept=".csv"
-                    onChange={(e) => handleFileUpload(e, true)}
-                    className="bg-slate-900 border-slate-700 text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer"
-                  />
-                </div>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-slate-700" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-slate-800 px-2 text-slate-500">Or paste CSV data</span>
-                  </div>
-                </div>
-                <Textarea
-                  value={watchedImportData}
-                  onChange={(e) => setWatchedImportData(e.target.value)}
-                  placeholder={"Date,Name,Year,Letterboxd URI\n9/9/2016,Birth of the Dragon,2016,https://boxd.it/a1f8\n..."}
-                  className="h-[200px] max-h-[200px] overflow-y-auto bg-slate-900 border-slate-700 text-white font-mono text-xs resize-none"
-                />
-                <Button
-                  onClick={handleImportWatchedMovies}
-                  disabled={watchedImporting || !watchedImportData}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                >
-                  {watchedImporting ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
-                  {watchedImporting ? 'Importing...' : 'Import as Watched'}
-                </Button>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* ── Minimized Import Widgets ─────────────────────────── */}
-      {importing && importMinimized && (
-        <div className="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl p-4 w-80 z-50">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Loader2 className="size-4 text-blue-500 animate-spin" />
-              <span className="text-white font-semibold text-sm">Importing Watchlist</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setImportMinimized(false)} className="hover:bg-slate-700 size-8 p-0">
-              <Maximize2 className="size-4 text-slate-400" />
-            </Button>
-          </div>
-          {importProgress.total > 0 && (
-            <>
-              <div className="flex justify-between text-xs text-slate-400 mb-2">
-                <span>Batch {importProgress.batch}/{importProgress.totalBatches}</span>
-                <span>{Math.min(importProgress.current + 200, importProgress.total)}/{importProgress.total}</span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-blue-600 h-full transition-all duration-300"
-                  style={{ width: `${(Math.min(importProgress.current + 200, importProgress.total) / importProgress.total) * 100}%` }}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {watchedImporting && watchedImportMinimized && (
-        <div
-          className="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl p-4 w-80 z-50"
-          style={{ bottom: importing && importMinimized ? '8rem' : '1.5rem' }}
-        >
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <Loader2 className="size-4 text-green-500 animate-spin" />
-              <span className="text-white font-semibold text-sm">Importing Watched</span>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setWatchedImportMinimized(false)} className="hover:bg-slate-700 size-8 p-0">
-              <Maximize2 className="size-4 text-slate-400" />
-            </Button>
-          </div>
-          {watchedImportProgress.total > 0 && (
-            <>
-              <div className="flex justify-between text-xs text-slate-400 mb-2">
-                <span>Batch {watchedImportProgress.batch}/{watchedImportProgress.totalBatches}</span>
-                <span>{Math.min(watchedImportProgress.current + 200, watchedImportProgress.total)}/{watchedImportProgress.total}</span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
-                <div
-                  className="bg-green-600 h-full transition-all duration-300"
-                  style={{ width: `${(Math.min(watchedImportProgress.current + 200, watchedImportProgress.total) / watchedImportProgress.total) * 100}%` }}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      )}
+      <ImportDialog
+        importState={watched}
+        title="Import Watched Movies from Letterboxd"
+        description="Export your watched films from Letterboxd as CSV and paste it below. These movies will be filtered out from Discover."
+        buttonLabel="Import as Watched"
+        progressBarColor="bg-green-600"
+      />
     </>
   );
 }

@@ -4,6 +4,8 @@ import { Film, Heart, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { UserInteractionsProvider } from './UserInteractionsContext';
+import { ImportProvider, useImportContext } from './ImportContext';
+import { MinimizedImportWidget } from './MinimizedImportWidget';
 import { TooltipProvider } from './ui/tooltip';
 import { ProfileDropdown } from './ProfileDropdown';
 import { NotificationBell } from './NotificationBell';
@@ -28,6 +30,29 @@ export interface AppLayoutContext {
 
 export function useAppLayoutContext() {
   return useOutletContext<AppLayoutContext>();
+}
+
+function GlobalImportWidgets() {
+  const { watchlist, watched } = useImportContext();
+
+  const watchlistOffset = 24;
+  const watchedOffset =
+    watchlist.importing && watchlist.minimized ? 128 : 24;
+
+  return (
+    <>
+      <MinimizedImportWidget
+        importState={watchlist}
+        color="blue"
+        bottomOffset={watchlistOffset}
+      />
+      <MinimizedImportWidget
+        importState={watched}
+        color="green"
+        bottomOffset={watchedOffset}
+      />
+    </>
+  );
 }
 
 export function AppLayout() {
@@ -132,64 +157,109 @@ export function AppLayout() {
   return (
     <TooltipProvider>
       <UserInteractionsProvider accessToken={accessToken}>
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-          {/* Sticky header */}
-          <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
-            <div className="max-w-7xl mx-auto px-4 py-4">
-              {/* Logo row */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <img src={duoReelLogo} alt="DuoReel" className="h-10 w-auto" />
-                  <div>
-                    <h1 className="text-2xl font-bold text-white">
-                      <span className="text-pink-500">Duo</span>Reel
-                    </h1>
-                    <p className="text-sm text-slate-400">Find movies you both love</p>
+        <ImportProvider
+          accessToken={accessToken}
+          onWatchlistImported={(imported, failed, total) => {
+            // Re-fetch liked movies to reflect the import
+            fetch(`${baseUrl}/movies/liked`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            })
+              .then(r => r.ok ? r.json() : Promise.reject(r.status))
+              .then(data => { if (data.movies) setLikedMovies(data.movies); })
+              .catch(err => console.error('Error refreshing liked movies:', err));
+
+            // Create bell notification for import completion
+            fetch(`${baseUrl}/notifications/import-complete`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                type: 'watchlist',
+                imported,
+                failed,
+                total,
+              }),
+            }).catch(err => console.error('Error creating import notification:', err));
+          }}
+          onWatchedImported={(imported, failed, total) => {
+            // Create bell notification for watched import completion
+            fetch(`${baseUrl}/notifications/import-complete`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({
+                type: 'watched',
+                imported,
+                failed,
+                total,
+              }),
+            }).catch(err => console.error('Error creating import notification:', err));
+          }}
+        >
+          <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+            {/* Sticky header */}
+            <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
+              <div className="max-w-7xl mx-auto px-4 py-4">
+                {/* Logo row */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <img src={duoReelLogo} alt="DuoReel" className="h-10 w-auto" />
+                    <div>
+                      <h1 className="text-2xl font-bold text-white">
+                        <span className="text-pink-500">Duo</span>Reel
+                      </h1>
+                      <p className="text-sm text-slate-400">Find movies you both love</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <NotificationBell accessToken={accessToken!} />
+                    <ProfileDropdown
+                      accessToken={accessToken!}
+                      userEmail={userEmail}
+                      projectId={projectId}
+                      onSignOut={handleSignOut}
+                    />
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <NotificationBell accessToken={accessToken!} />
-                  <ProfileDropdown
-                    accessToken={accessToken!}
-                    userEmail={userEmail}
-                    projectId={projectId}
-                    onSignOut={handleSignOut}
-                  />
-                </div>
+
+                {/* Tab nav */}
+                <nav className="grid w-full max-w-md mx-auto grid-cols-3 bg-slate-800/80 border border-slate-600 rounded-lg p-1 gap-1">
+                  <NavLink to="/discover" className={tabCls}>
+                    <Film className="size-4" />
+                    Discover
+                  </NavLink>
+
+                  <NavLink to="/saved" className={tabCls}>
+                    <Heart className="size-4" />
+                    Saved
+                  </NavLink>
+
+                  <NavLink
+                    to="/matches"
+                    onClick={handleMatchesClick}
+                    className={matchTabCls}
+                  >
+                    <Users className="size-4" />
+                    Matches
+                    {matchNotificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center animate-pulse">
+                        {matchNotificationCount}
+                      </span>
+                    )}
+                  </NavLink>
+                </nav>
               </div>
-
-              {/* Tab nav */}
-              <nav className="grid w-full max-w-md mx-auto grid-cols-3 bg-slate-800/80 border border-slate-600 rounded-lg p-1 gap-1">
-                <NavLink to="/discover" className={tabCls}>
-                  <Film className="size-4" />
-                  Discover
-                </NavLink>
-
-                <NavLink to="/saved" className={tabCls}>
-                  <Heart className="size-4" />
-                  Saved
-                </NavLink>
-
-                <NavLink
-                  to="/matches"
-                  onClick={handleMatchesClick}
-                  className={matchTabCls}
-                >
-                  <Users className="size-4" />
-                  Matches
-                  {matchNotificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center animate-pulse">
-                      {matchNotificationCount}
-                    </span>
-                  )}
-                </NavLink>
-              </nav>
             </div>
-          </div>
 
-          {/* Page content */}
-          <Outlet context={context} />
-        </div>
+            {/* Page content */}
+            <Outlet context={context} />
+            <GlobalImportWidgets />
+          </div>
+        </ImportProvider>
       </UserInteractionsProvider>
     </TooltipProvider>
   );

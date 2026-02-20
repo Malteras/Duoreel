@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Bell, Check, Heart, Users, Loader2, ExternalLink, PartyPopper, CheckCircle, XCircle } from 'lucide-react';
+import { Bell, Check, Heart, Users, Loader2, ExternalLink, PartyPopper, CheckCircle, XCircle, Upload } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +16,7 @@ interface NotificationBellProps {
 
 interface Notification {
   id: string;
-  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone';
+  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete';
   read: boolean;
   createdAt: number;
   data: {
@@ -26,6 +26,10 @@ interface Notification {
     movieTitle?: string;
     posterPath?: string;
     milestoneCount?: number;
+    importType?: string;
+    importedCount?: number;
+    failedCount?: number;
+    totalCount?: number;
   };
 }
 
@@ -244,6 +248,9 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
     ) {
       setIsOpen(false);
       navigate('/matches'); // Partnership requests and milestones are shown in the Matches tab
+    } else if (notification.type === 'import_complete') {
+      setIsOpen(false);
+      navigate(notification.data.importType === 'watched' ? '/discover' : '/saved');
     }
   };
 
@@ -330,6 +337,27 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           <>
             <strong className="text-purple-400">🎉 {data.milestoneCount} matches</strong> with{' '}
             <strong className="text-white">{data.fromName}</strong>!
+          </>
+        );
+        break;
+
+      case 'import_complete':
+        icon = (
+          <div className="size-10 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+            <Upload className="size-5 text-blue-400" />
+          </div>
+        );
+        const importLabel = data.importType === 'watched' ? 'watched movies' : 'watchlist';
+        message = data.failedCount && data.failedCount > 0 ? (
+          <>
+            <strong className="text-emerald-400">Import complete!</strong>{' '}
+            {data.importedCount} of {data.totalCount} {importLabel} imported
+            successfully. We couldn't find {data.failedCount} movies on TMDb.
+          </>
+        ) : (
+          <>
+            <strong className="text-emerald-400">Import complete!</strong>{' '}
+            All {data.importedCount} {importLabel} imported successfully!
           </>
         );
         break;
