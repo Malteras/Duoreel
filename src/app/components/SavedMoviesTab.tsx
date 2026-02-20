@@ -4,10 +4,13 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
-import { Heart, Loader2, Users, Filter, ArrowUpDown } from 'lucide-react';
+import { Heart, Loader2, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { useImportContext } from './ImportContext';
+import { ImportDialog } from './ImportDialog';
 
 interface SavedMoviesTabProps {
   accessToken: string | null;
@@ -40,6 +43,8 @@ export function SavedMoviesTab({
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
   const [filterBy, setFilterBy] = useState<'all' | 'unwatched' | 'watched'>('unwatched');
+  const { watchlist } = useImportContext();
+  const [helpModalOpen, setHelpModalOpen] = useState(false);
 
   const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
@@ -467,11 +472,63 @@ export function SavedMoviesTab({
           /* Display movies based on view mode */
           viewMode === 'mine' ? (
             filteredLikedMovies.length === 0 ? (
-              <div className="text-center py-20">
-                <Heart className="size-20 mx-auto mb-6 text-slate-700" />
-                <h3 className="text-2xl font-semibold text-white mb-3">No movies yet</h3>
-                <p className="text-slate-400 text-lg">Start liking movies in the Discover tab to build your watchlist</p>
-              </div>
+              likedMovies.length === 0 ? (
+                /* ── True empty state: no movies at all ── */
+                <div className="text-center py-16">
+                  <div className="relative inline-block mb-6">
+                    <Upload className="size-20 mx-auto text-slate-600" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white mb-3">
+                    Your watchlist is empty
+                  </h3>
+                  <p className="text-slate-400 text-lg mb-8 max-w-md mx-auto">
+                    Already have a Letterboxd account? Import your watchlist
+                    instantly — or start discovering movies.
+                  </p>
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <Button
+                      onClick={() => watchlist.setDialogOpen(true)}
+                      className="bg-green-600 hover:bg-green-700 text-white px-6"
+                    >
+                      <Upload className="size-4 mr-2" />
+                      Import from Letterboxd
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setHelpModalOpen(true)}
+                      className="text-slate-400 hover:text-white hover:bg-slate-700 rounded-full"
+                      title="How to export from Letterboxd"
+                    >
+                      <HelpCircle className="size-5" />
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+                    <Film className="size-4" />
+                    <span>Or browse the Discover tab to find movies you'll love</span>
+                  </div>
+                </div>
+              ) : (
+                /* ── Filter empty state: has movies but filter hides them ── */
+                <div className="text-center py-20">
+                  <Filter className="size-16 mx-auto mb-6 text-slate-700" />
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    No {filterBy === 'watched' ? 'watched' : 'unwatched'} movies
+                  </h3>
+                  <p className="text-slate-400">
+                    {filterBy === 'watched'
+                      ? "You haven't marked any saved movies as watched yet."
+                      : "All your saved movies have been watched! Nice work."}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setFilterBy('all')}
+                    className="mt-4 text-blue-400 hover:text-blue-300"
+                  >
+                    Show all movies
+                  </Button>
+                </div>
+              )
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredLikedMovies.map((movie) => (
@@ -523,6 +580,75 @@ export function SavedMoviesTab({
           )
         )}
       </div>
+
+      {/* ── Letterboxd Help Modal ── */}
+      <Dialog open={helpModalOpen} onOpenChange={setHelpModalOpen}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl">How to Export from Letterboxd</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">1</div>
+              <div>
+                <p className="text-white font-medium">Go to letterboxd.com</p>
+                <p className="text-slate-400 text-sm">Sign in to your account</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">2</div>
+              <div>
+                <p className="text-white font-medium">Open Settings</p>
+                <p className="text-slate-400 text-sm">Click your profile picture → Settings → Import & Export</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">3</div>
+              <div>
+                <p className="text-white font-medium">Export Your Data</p>
+                <p className="text-slate-400 text-sm">Click "Export Your Data" — this downloads a .zip file</p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">4</div>
+              <div>
+                <p className="text-white font-medium">Unzip and find your files</p>
+                <p className="text-slate-400 text-sm">
+                  Look for <span className="text-cyan-400 font-mono text-xs">watchlist.csv</span> (your
+                  want-to-watch list) or <span className="text-cyan-400 font-mono text-xs">watched.csv</span> (movies
+                  you've already seen)
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-shrink-0 size-7 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center">5</div>
+              <div>
+                <p className="text-white font-medium">Upload it here</p>
+                <p className="text-slate-400 text-sm">Click "Import from Letterboxd" and upload the CSV file</p>
+              </div>
+            </div>
+          </div>
+          <Button
+            onClick={() => {
+              setHelpModalOpen(false);
+              watchlist.setDialogOpen(true);
+            }}
+            className="w-full bg-green-600 hover:bg-green-700 mt-4"
+          >
+            <Upload className="size-4 mr-2" />
+            Got it — Import now
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Import Watchlist Dialog (shared via ImportContext) ── */}
+      <ImportDialog
+        importState={watchlist}
+        title="Import Movies from Letterboxd"
+        description="Export your Letterboxd watchlist as CSV and paste it below. Format: Date, Name, Year, Letterboxd URI"
+        buttonLabel="Import to Saved Movies"
+        progressBarColor="bg-blue-600"
+      />
 
       <MovieDetailModal
         movie={selectedMovie}
