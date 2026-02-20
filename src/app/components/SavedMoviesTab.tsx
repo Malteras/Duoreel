@@ -617,6 +617,10 @@ export function SavedMoviesTab({
               </div>
 
               {/* Infinite scroll sentinel */}
+              {/* ⚠️ DESIGN NOTE: All infinite scroll loading indicators across the app
+                  should use a film-reel spinner, NOT the generic <Loader2> spinner.
+                  Replace the Loader2 below with a reel/film icon animation when
+                  the custom reel spinner component is built. */}
               <div
                 ref={setSentinelEl}
                 className="flex justify-center mt-8 h-12 items-center"
@@ -656,6 +660,10 @@ export function SavedMoviesTab({
               </div>
 
               {/* Infinite scroll sentinel */}
+              {/* ⚠️ DESIGN NOTE: All infinite scroll loading indicators across the app
+                  should use a film-reel spinner, NOT the generic <Loader2> spinner.
+                  Replace the Loader2 below with a reel/film icon animation when
+                  the custom reel spinner component is built. */}
               <div
                 ref={setSentinelEl}
                 className="flex justify-center mt-8 h-12 items-center"
