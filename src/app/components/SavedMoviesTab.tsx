@@ -4,7 +4,7 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
-import { Heart, Loader2, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film } from 'lucide-react';
+import { Heart, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -617,16 +617,12 @@ export function SavedMoviesTab({
               </div>
 
               {/* Infinite scroll sentinel */}
-              {/* ⚠️ DESIGN NOTE: All infinite scroll loading indicators across the app
-                  should use a film-reel spinner, NOT the generic <Loader2> spinner.
-                  Replace the Loader2 below with a reel/film icon animation when
-                  the custom reel spinner component is built. */}
               <div
                 ref={setSentinelEl}
                 className="flex justify-center mt-8 h-12 items-center"
               >
                 {loadingMore && (
-                  <Loader2 className="size-6 animate-spin text-slate-400" />
+                  <Film className="size-8 animate-spin text-slate-400" />
                 )}
               </div>
               </>
@@ -660,16 +656,12 @@ export function SavedMoviesTab({
               </div>
 
               {/* Infinite scroll sentinel */}
-              {/* ⚠️ DESIGN NOTE: All infinite scroll loading indicators across the app
-                  should use a film-reel spinner, NOT the generic <Loader2> spinner.
-                  Replace the Loader2 below with a reel/film icon animation when
-                  the custom reel spinner component is built. */}
               <div
                 ref={setSentinelEl}
                 className="flex justify-center mt-8 h-12 items-center"
               >
                 {loadingMore && (
-                  <Loader2 className="size-6 animate-spin text-slate-400" />
+                  <Film className="size-8 animate-spin text-slate-400" />
                 )}
               </div>
               </>
