@@ -2,6 +2,7 @@ import { Hono } from "npm:hono";
 import { cors } from "npm:hono/cors";
 import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
+import { getByPrefixPaginated, getKeysByPrefixPaginated } from "./kv_paginated.tsx";
 import { createClient } from "npm:@supabase/supabase-js";
 
 const app = new Hono();
@@ -712,13 +713,13 @@ app.get("/make-server-5623fde1/notifications/matches", async (c) => {
     const profile = await kv.get(`user:${user.id}`) || {};
     const lastSeen = profile.lastMatchesSeen || 0;
 
-    // Get all matches
-    const userLikes = await kv.getByPrefix(`like:${user.id}:`);
+    // Get all matches — paginated (liked movies can exceed 1000)
+    const userLikes = await getByPrefixPaginated(`like:${user.id}:`);
     if (!profile?.partnerId || userLikes.length === 0) {
       return c.json({ count: 0, hasNew: false });
     }
 
-    const partnerLikes = await kv.getByPrefix(`like:${profile.partnerId}:`);
+    const partnerLikes = await getByPrefixPaginated(`like:${profile.partnerId}:`);
     const partnerLikeIds = new Set(partnerLikes.map((like: any) => like.movieId));
     
     // Count new matches (liked after lastSeen timestamp)
@@ -1057,8 +1058,8 @@ app.post("/make-server-5623fde1/movies/like", async (c) => {
           posterPath: movie.poster_path || null,
         });
 
-        // Check for milestone (5, 10, 25 matches)
-        const allMatches = await kv.getByPrefix(`match:${user.id}:`);
+        // Check for milestone (5, 10, 25 matches) — paginated for future scale
+        const allMatches = await getByPrefixPaginated(`match:${user.id}:`);
         const matchCount = allMatches.length;
         const milestones = [5, 10, 25];
 
@@ -1175,7 +1176,8 @@ app.get("/make-server-5623fde1/movies/liked", async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const liked = await kv.getByPrefix(`liked:${user.id}:`);
+    // Paginated — users can have 1000+ liked movies
+    const liked = await getByPrefixPaginated(`liked:${user.id}:`);
     
     // Attach IMDb ratings to movies
     const moviesWithImdb = await Promise.all(
@@ -1214,8 +1216,8 @@ app.get("/make-server-5623fde1/movies/partner-liked", async (c) => {
       return c.json({ error: 'No partner connected' }, 404);
     }
 
-    // Get partner's liked movies
-    const partnerLiked = await kv.getByPrefix(`liked:${userProfile.partnerId}:`);
+    // Get partner's liked movies (paginated — may exceed 1000)
+    const partnerLiked = await getByPrefixPaginated(`liked:${userProfile.partnerId}:`);
     
     // Attach IMDb ratings to partner's movies
     const moviesWithImdb = await Promise.all(
@@ -1254,7 +1256,7 @@ app.get("/make-server-5623fde1/movies/matches", async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const matches = await kv.getByPrefix(`match:${user.id}:`);
+    const matches = await getByPrefixPaginated(`match:${user.id}:`);
     return c.json({ movies: matches });
   } catch (error) {
     console.error('Error fetching matched movies:', error);
@@ -1418,7 +1420,8 @@ app.get("/make-server-5623fde1/movies/watched", async (c) => {
       return c.json({ error: 'Unauthorized' }, 401);
     }
 
-    const watched = await kv.getByPrefix(`watched:${user.id}:`);
+    // Paginated — users can have 1000+ watched movies
+    const watched = await getByPrefixPaginated(`watched:${user.id}:`);
     console.log(`Fetched ${watched.length} watched movies for user ${user.id}`);
     return c.json({ movies: watched });
   } catch (error) {
@@ -2066,8 +2069,8 @@ app.post("/make-server-5623fde1/movies/update-imdb-ratings", async (c) => {
       return c.json({ error: 'API keys not configured' }, 500);
     }
 
-    // Get user's liked movies
-    const likedMovies = await kv.getByPrefix(`liked:${user.id}:`);
+    // Get user's liked movies — paginated
+    const likedMovies = await getByPrefixPaginated(`liked:${user.id}:`);
     
     const results = {
       total: likedMovies.length,
@@ -2187,18 +2190,20 @@ app.get("/make-server-5623fde1/movies/excluded-ids", async (c) => {
     
     let excludedIds: number[] = [];
     
-    // Always exclude "not interested" movies
-    const notInterestedItems = await kv.getByPrefix(`notinterested:${user.id}:`);
-    const notInterestedIds = notInterestedItems
-      .map((item: any) => Number(item.movieId ?? item.id))
+    // Always exclude "not interested" movies.
+    // Use key-only lookup: key format is "notinterested:{userId}:{movieId}"
+    const notInterestedKeys = await getKeysByPrefixPaginated(`notinterested:${user.id}:`);
+    const notInterestedIds = notInterestedKeys
+      .map(key => Number(key.split(':').pop()))
       .filter((id: number) => id > 0 && !isNaN(id));
     excludedIds = [...notInterestedIds];
     
-    // Optionally exclude watched movies (default: exclude them)
+    // Optionally exclude watched movies (default: exclude them).
+    // Key format is "watched:{userId}:{movieId}" — extract ID from suffix.
     if (!includeWatched) {
-      const watchedItems = await kv.getByPrefix(`watched:${user.id}:`);
-      const watchedIds = watchedItems
-        .map((item: any) => Number(item.id ?? item.tmdbId))
+      const watchedKeys = await getKeysByPrefixPaginated(`watched:${user.id}:`);
+      const watchedIds = watchedKeys
+        .map(key => Number(key.split(':').pop()))
         .filter((id: number) => id > 0 && !isNaN(id));
       excludedIds = [...excludedIds, ...watchedIds];
     }
@@ -2273,8 +2278,8 @@ app.get("/make-server-5623fde1/movies/interactions/all", async (c) => {
 
     const interactions: any[] = [];
 
-    // Fetch all watched movies
-    const watchedItems = await kv.getByPrefix(`watched:${user.id}:`);
+    // Fetch all watched movies — paginated (users can have 1000+ entries)
+    const watchedItems = await getByPrefixPaginated(`watched:${user.id}:`);
     console.log(`interactions/all: Found ${watchedItems.length} watched items for user ${user.id}`);
     
     for (const item of watchedItems) {
@@ -2304,8 +2309,8 @@ app.get("/make-server-5623fde1/movies/interactions/all", async (c) => {
       }
     }
 
-    // Fetch all not-interested movies
-    const notInterestedItems = await kv.getByPrefix(`notinterested:${user.id}:`);
+    // Fetch all not-interested movies — paginated for safety
+    const notInterestedItems = await getByPrefixPaginated(`notinterested:${user.id}:`);
     console.log(`interactions/all: Found ${notInterestedItems.length} not-interested items for user ${user.id}`);
     
     for (const item of notInterestedItems) {
@@ -2371,19 +2376,22 @@ app.get("/make-server-5623fde1/movies/discover-filtered", async (c) => {
     // Get excluded movie IDs
     let excludedIds: number[] = [];
     
-    // Always exclude "not interested" movies
-    const notInterestedItems = await kv.getByPrefix(`notinterested:${user.id}:`);
-    const notInterestedIds = notInterestedItems
-      .map((item: any) => Number(item.movieId ?? item.id))
+    // Always exclude "not interested" movies.
+    // Key-only lookup is cheaper and handles any scale: "notinterested:{userId}:{movieId}"
+    const notInterestedKeys = await getKeysByPrefixPaginated(`notinterested:${user.id}:`);
+    const notInterestedIds = notInterestedKeys
+      .map(key => Number(key.split(':').pop()))
       .filter((id: number) => id > 0 && !isNaN(id));
     excludedIds = [...notInterestedIds];
     
-    // Optionally exclude watched movies (default: exclude them)
+    // Optionally exclude watched movies (default: exclude them).
+    // Key format: "watched:{userId}:{movieId}" — extract ID from key suffix.
+    // Key-only lookup avoids fetching full movie objects (megabytes of JSON) just
+    // for the ID field — much cheaper for users with 1000+ watched movies.
     if (!includeWatched) {
-      // ── Robust id coercion: Number() handles both numeric and string ids ──
-      const watchedItems = await kv.getByPrefix(`watched:${user.id}:`);
-      const watchedIds = watchedItems
-        .map((item: any) => Number(item.id ?? item.tmdbId))
+      const watchedKeys = await getKeysByPrefixPaginated(`watched:${user.id}:`);
+      const watchedIds = watchedKeys
+        .map(key => Number(key.split(':').pop()))
         .filter((id: number) => id > 0 && !isNaN(id));
       excludedIds = [...excludedIds, ...watchedIds];
       console.log(`discover-filtered: Loaded ${watchedIds.length} watched ids to exclude for user ${user.id}`);
@@ -2540,8 +2548,8 @@ app.get("/make-server-5623fde1/debug/watched/:movieId", async (c) => {
     // Direct key lookup
     const directKey = await kv.get(`watched:${user.id}:${movieId}`);
 
-    // Prefix scan – look for any entry whose stored id matches
-    const allWatched = await kv.getByPrefix(`watched:${user.id}:`);
+    // Prefix scan – look for any entry whose stored id matches (paginated for accuracy)
+    const allWatched = await getByPrefixPaginated(`watched:${user.id}:`);
     const matchingItems = allWatched.filter((item: any) => {
       const rawId = item.id ?? item.tmdbId;
       return String(rawId) === String(movieId);
