@@ -299,7 +299,7 @@ export function SavedMoviesTab({
     }
 
     try {
-      await toggleWatched(movie.id, true);
+      await toggleWatched(movie.id, true, movie); // Fix 2: pass full movie for richer KV entry
       toast.success(`Marked "${movie.title}" as watched`);
       closeMovie();
     } catch (error) {

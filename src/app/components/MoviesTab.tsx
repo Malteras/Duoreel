@@ -697,7 +697,7 @@ export function MoviesTab({
 
     setIsWatchedLoading(true);
     try {
-      await toggleWatched(movie.id, true);
+      await toggleWatched(movie.id, true, movie); // Fix 2: pass full movie for richer KV entry
       toast.success(`Marked "${movie.title}" as watched`);
       // ✅ FIX: Don't manually filter movies here — visibleMovies reactively
       // hides/shows watched movies based on watchedMovieIds + showWatchedMovies.

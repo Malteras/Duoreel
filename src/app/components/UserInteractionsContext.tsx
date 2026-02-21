@@ -15,7 +15,7 @@ interface UserInteractionsContextType {
   interactions: Map<number, MovieInteraction>;
   watchedMovieIds: Set<number>;
   notInterestedMovieIds: Set<number>;
-  toggleWatched: (tmdbId: number, watched: boolean) => Promise<void>;
+  toggleWatched: (tmdbId: number, watched: boolean, movie?: any) => Promise<void>;
   toggleNotInterested: (tmdbId: number, notInterested: boolean) => Promise<void>;
   isWatched: (tmdbId: number) => boolean;
   isNotInterested: (tmdbId: number) => boolean;
@@ -37,7 +37,7 @@ export function UserInteractionsProvider({
   const [interactions, setInteractions] = useState<Map<number, MovieInteraction>>(new Map());
   const [watchedLoadingIds, setWatchedLoadingIds] = useState<Set<number>>(new Set());
   const [notInterestedLoadingIds, setNotInterestedLoadingIds] = useState<Set<number>>(new Set());
-  const [isInitialLoading, setIsInitialLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // Fix 1: default true so MoviesTab waits for interactions before fetching
 
   const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
@@ -95,7 +95,7 @@ export function UserInteractionsProvider({
 
   // Toggle watched status with optimistic update
   const toggleWatched = useCallback(
-    async (tmdbId: number, watched: boolean) => {
+    async (tmdbId: number, watched: boolean, movie?: any) => {
       if (!accessToken) return;
 
       // Set loading state
@@ -126,7 +126,7 @@ export function UserInteractionsProvider({
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ movie: { id: tmdbId } }),
+            body: JSON.stringify({ movie: movie || { id: tmdbId } }), // Fix 2: send full movie data when available
           });
           // ✅ FIX Bug 2: Check HTTP response status — fetch() only throws on
           // network failure, not on HTTP 4xx/5xx. Without this check, a server
