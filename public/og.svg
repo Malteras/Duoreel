@@ -1,0 +1,228 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <!-- Background gradient -->
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#020617"/>
+      <stop offset="45%"  stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+
+    <!-- Pink-to-purple gradient (brand) -->
+    <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%"   stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+
+    <!-- Card gradient -->
+    <linearGradient id="cardGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <!-- Glow filter for hearts / accents -->
+    <filter id="pinkGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+
+    <!-- Clip path for movie cards -->
+    <clipPath id="card1clip"><rect x="710" y="80"  width="190" height="270" rx="16"/></clipPath>
+    <clipPath id="card2clip"><rect x="870" y="150" width="190" height="270" rx="16"/></clipPath>
+    <clipPath id="card3clip"><rect x="1030" y="110" width="140" height="200" rx="12"/></clipPath>
+  </defs>
+
+  <!-- ── Background ───────────────────────────────────────────── -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Ambient glow blobs -->
+  <ellipse cx="980" cy="200" rx="280" ry="220" fill="#ec4899" opacity="0.06"/>
+  <ellipse cx="180" cy="480" rx="200" ry="160" fill="#6366f1" opacity="0.06"/>
+  <ellipse cx="600" cy="630" rx="400" ry="160" fill="#ec4899" opacity="0.04"/>
+
+  <!-- ── Film strip — top ──────────────────────────────────────── -->
+  <rect x="0" y="0" width="1200" height="10" fill="#1e293b"/>
+  <rect x="0" y="0" width="1200" height="2"  fill="#334155"/>
+  <!-- Perforations top -->
+  <rect x="16"  y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="56"  y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="96"  y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="136" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="176" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="216" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="256" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="296" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="336" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="376" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="416" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="456" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="496" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="536" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="576" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="616" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="656" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="696" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="736" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="776" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="816" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="856" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="896" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="936" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="976" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1016" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1056" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1096" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1136" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1164" y="1" width="20" height="8" rx="2" fill="#0f172a"/>
+
+  <!-- ── Film strip — bottom ───────────────────────────────────── -->
+  <rect x="0" y="620" width="1200" height="10" fill="#1e293b"/>
+  <rect x="0" y="628" width="1200" height="2"  fill="#334155"/>
+  <rect x="16"  y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="56"  y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="96"  y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="136" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="176" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="216" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="256" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="296" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="336" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="376" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="416" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="456" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="496" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="536" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="576" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="616" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="656" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="696" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="736" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="776" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="816" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="856" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="896" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="936" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="976" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1016" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1056" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1096" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1136" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+  <rect x="1164" y="622" width="20" height="8" rx="2" fill="#0f172a"/>
+
+  <!-- ── Left side: branding ───────────────────────────────────── -->
+
+  <!-- Film reel icon (decorative, top-left) -->
+  <g transform="translate(72, 110)" opacity="0.85">
+    <!-- Outer ring -->
+    <circle cx="0" cy="0" r="46" fill="none" stroke="#ec4899" stroke-width="3" opacity="0.7"/>
+    <!-- Inner hub -->
+    <circle cx="0" cy="0" r="14" fill="#ec4899" opacity="0.9"/>
+    <circle cx="0" cy="0" r="6"  fill="#020617"/>
+    <!-- Spokes -->
+    <line x1="0"  y1="-46" x2="0"  y2="-14" stroke="#ec4899" stroke-width="2.5" opacity="0.7"/>
+    <line x1="0"  y1="14"  x2="0"  y2="46"  stroke="#ec4899" stroke-width="2.5" opacity="0.7"/>
+    <line x1="-46" y1="0"  x2="-14" y2="0"  stroke="#ec4899" stroke-width="2.5" opacity="0.7"/>
+    <line x1="14"  y1="0"  x2="46"  y2="0"  stroke="#ec4899" stroke-width="2.5" opacity="0.7"/>
+    <line x1="-32" y1="-32" x2="-10" y2="-10" stroke="#ec4899" stroke-width="2.5" opacity="0.5"/>
+    <line x1="10"  y1="10"  x2="32"  y2="32"  stroke="#ec4899" stroke-width="2.5" opacity="0.5"/>
+    <line x1="32"  y1="-32" x2="10"  y2="-10" stroke="#ec4899" stroke-width="2.5" opacity="0.5"/>
+    <line x1="-10" y1="10"  x2="-32" y2="32"  stroke="#ec4899" stroke-width="2.5" opacity="0.5"/>
+    <!-- Small frame holes on outer ring -->
+    <circle cx="0"   cy="-46" r="5" fill="#020617" stroke="#ec4899" stroke-width="1.5"/>
+    <circle cx="0"   cy="46"  r="5" fill="#020617" stroke="#ec4899" stroke-width="1.5"/>
+    <circle cx="-46" cy="0"   r="5" fill="#020617" stroke="#ec4899" stroke-width="1.5"/>
+    <circle cx="46"  cy="0"   r="5" fill="#020617" stroke="#ec4899" stroke-width="1.5"/>
+  </g>
+
+  <!-- DuoReel wordmark -->
+  <text x="72" y="258" font-family="system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif" font-size="96" font-weight="900" letter-spacing="-2">
+    <tspan fill="url(#brandGrad)">Duo</tspan><tspan fill="#f8fafc">Reel</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="76" y="308" font-family="system-ui,-apple-system,sans-serif" font-size="26" fill="#94a3b8" font-weight="400" letter-spacing="0.3">
+    Find movies you both love ♥
+  </text>
+
+  <!-- Divider line -->
+  <rect x="76" y="336" width="320" height="2" rx="1" fill="url(#brandGrad)" opacity="0.5"/>
+
+  <!-- Feature bullets -->
+  <g font-family="system-ui,-apple-system,sans-serif" font-size="22" fill="#64748b">
+    <!-- Bullet 1 -->
+    <rect x="76" y="362" width="6" height="6" rx="3" fill="#ec4899" opacity="0.8"/>
+    <text x="96" y="374">Swipe through curated movie picks</text>
+    <!-- Bullet 2 -->
+    <rect x="76" y="406" width="6" height="6" rx="3" fill="#ec4899" opacity="0.8"/>
+    <text x="96" y="418">Get notified when you both match</text>
+    <!-- Bullet 3 -->
+    <rect x="76" y="450" width="6" height="6" rx="3" fill="#ec4899" opacity="0.8"/>
+    <text x="96" y="462">Import lists from Letterboxd</text>
+  </g>
+
+  <!-- URL badge -->
+  <rect x="72" y="520" width="218" height="44" rx="22" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+  <text x="181" y="547" font-family="system-ui,-apple-system,sans-serif" font-size="18" fill="#94a3b8" font-weight="500" text-anchor="middle">duoreel.com</text>
+
+  <!-- ── Right side: stacked movie card mockups ──────────────────── -->
+
+  <!-- Card shadow -->
+  <rect x="714" y="90"  width="190" height="270" rx="16" fill="#000" opacity="0.35"/>
+  <rect x="874" y="160" width="190" height="270" rx="16" fill="#000" opacity="0.35"/>
+
+  <!-- Card 1 (back) -->
+  <rect x="710" y="80"  width="190" height="270" rx="16" fill="url(#cardGrad)" stroke="#334155" stroke-width="1.5"/>
+  <!-- Poster area (shimmer bars) -->
+  <rect x="710" y="80"  width="190" height="160" rx="16" fill="#1e293b"/>
+  <rect x="710" y="220" width="190" height="20" fill="#1e293b"/><!-- smooth bottom of poster -->
+  <!-- Poster mock lines -->
+  <rect x="730" y="104" width="120" height="10" rx="5" fill="#334155" opacity="0.8"/>
+  <rect x="730" y="122" width="80"  height="8"  rx="4" fill="#334155" opacity="0.5"/>
+  <!-- Stars row -->
+  <text x="726" y="204" font-size="16" fill="#fbbf24">★★★★☆</text>
+  <!-- Title bar -->
+  <rect x="726" y="254" width="154" height="14" rx="5" fill="#334155" opacity="0.8"/>
+  <rect x="726" y="276" width="100" height="10" rx="5" fill="#334155" opacity="0.5"/>
+  <!-- Heart liked badge -->
+  <rect x="852" y="70" width="36" height="36" rx="18" fill="#ec4899" filter="url(#softGlow)"/>
+  <text x="870" y="94" font-size="18" text-anchor="middle" fill="white">♥</text>
+
+  <!-- Card 2 (front) -->
+  <rect x="870" y="150" width="190" height="270" rx="16" fill="url(#cardGrad)" stroke="#475569" stroke-width="1.5"/>
+  <!-- Poster area -->
+  <rect x="870" y="150" width="190" height="165" rx="16" fill="#1e293b"/>
+  <rect x="870" y="285" width="190" height="20" fill="#1e293b"/>
+  <!-- Poster mock content -->
+  <rect x="890" y="176" width="130" height="10" rx="5" fill="#475569" opacity="0.8"/>
+  <rect x="890" y="194" width="90"  height="8"  rx="4" fill="#475569" opacity="0.5"/>
+  <rect x="890" y="210" width="60"  height="8"  rx="4" fill="#475569" opacity="0.4"/>
+  <!-- Stars row -->
+  <text x="886" y="278" font-size="16" fill="#fbbf24">★★★★★</text>
+  <!-- Title / subtitle bars -->
+  <rect x="886" y="324" width="154" height="14" rx="5" fill="#334155" opacity="0.8"/>
+  <rect x="886" y="346" width="110" height="10" rx="5" fill="#334155" opacity="0.5"/>
+  <!-- Heart liked badge -->
+  <rect x="1012" y="140" width="36" height="36" rx="18" fill="#ec4899" filter="url(#softGlow)"/>
+  <text x="1030" y="164" font-size="18" text-anchor="middle" fill="white">♥</text>
+
+  <!-- ── Match pill ──────────────────────────────────────────────── -->
+  <!-- Glow behind pill -->
+  <ellipse cx="966" cy="480" rx="130" ry="34" fill="#ec4899" opacity="0.18"/>
+  <!-- Pill background -->
+  <rect x="830" y="452" width="272" height="56" rx="28" fill="url(#brandGrad)"/>
+  <!-- Checkmark icon circle -->
+  <circle cx="862" cy="480" r="16" fill="rgba(255,255,255,0.25)"/>
+  <text x="862" y="487" font-size="16" text-anchor="middle" fill="white" font-weight="700">✓</text>
+  <!-- Match text -->
+  <text x="990" y="488" font-family="system-ui,-apple-system,sans-serif" font-size="22" font-weight="800" fill="white" text-anchor="middle" letter-spacing="0.2">It's a Match!</text>
+
+  <!-- ── Decorative dots / stars ─────────────────────────────────── -->
+  <circle cx="670" cy="300" r="2.5" fill="#ec4899" opacity="0.5"/>
+  <circle cx="690" cy="350" r="1.5" fill="#a855f7" opacity="0.5"/>
+  <circle cx="655" cy="390" r="2"   fill="#ec4899" opacity="0.4"/>
+  <circle cx="1160" cy="300" r="2"  fill="#ec4899" opacity="0.4"/>
+  <circle cx="1140" cy="340" r="1.5" fill="#a855f7" opacity="0.4"/>
+</svg>

@@ -4,9 +4,11 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
-import { Heart, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film } from 'lucide-react';
+import { Heart, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Link as LinkIcon, Copy, RotateCcw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { useImportContext } from './ImportContext';
@@ -46,6 +48,13 @@ export function SavedMoviesTab({
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
+  // Partner connection state (for the no-partner empty state)
+  const [inviteCode, setInviteCode] = useState('');
+  const [regeneratingCode, setRegeneratingCode] = useState(false);
+  const [partnerEmail, setPartnerEmail] = useState('');
+  const [sendingRequest, setSendingRequest] = useState(false);
+  const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+
   // Infinite scroll state
   const PAGE_SIZE = 40;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -61,11 +70,13 @@ export function SavedMoviesTab({
     const fetchPartnerData = async () => {
       setLoading(true);
       try {
-        const partnerResponse = await fetch(`${baseUrl}/partner`, {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        });
-        const partnerData = await partnerResponse.json();
+        const [partnerRes, outgoingRes, inviteCodeRes] = await Promise.all([
+          fetch(`${baseUrl}/partner`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          fetch(`${baseUrl}/partner/requests/outgoing`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          fetch(`${baseUrl}/partner/invite-code`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        ]);
 
+        const partnerData = await partnerRes.json();
         if (partnerData.partner) {
           setHasPartner(true);
           setPartnerName(partnerData.partner.name || partnerData.partner.email);
@@ -75,7 +86,6 @@ export function SavedMoviesTab({
             headers: { Authorization: `Bearer ${accessToken}` }
           });
           const partnerLikedData = await partnerLikedResponse.json();
-
           if (!partnerLikedData.error) {
             setPartnerLikedMovies(partnerLikedData.movies || []);
           }
@@ -84,6 +94,12 @@ export function SavedMoviesTab({
           setPartnerName('');
           setPartnerLikedMovies([]);
         }
+
+        const outgoingData = await outgoingRes.json();
+        setOutgoingRequests(outgoingData.requests || []);
+
+        const inviteData = await inviteCodeRes.json();
+        if (inviteData.code) setInviteCode(inviteData.code);
       } catch (error) {
         console.error('Error fetching partner data:', error);
       } finally {
@@ -94,161 +110,174 @@ export function SavedMoviesTab({
     fetchPartnerData();
   }, [accessToken, viewMode]); // Re-fetch when switching to partner view
 
-  // TEMPORARILY DISABLED - Fetch IMDb ratings for liked movies (with caching)
-  // Disabled to improve app performance
-  /*
-  useEffect(() => {
-    if (!accessToken || likedMovies.length === 0) return;
+  // ── Partner connection helpers ─────────────────────────────
+  const handleCopyInviteLink = () => {
+    const link = `${window.location.origin}/invite/${inviteCode}`;
+    navigator.clipboard.writeText(link);
+    toast.success('📋 Invite link copied! Send it to your partner.');
+  };
 
-    const fetchImdbRatings = async () => {
-      for (const movie of likedMovies) {
-        // Skip if movie already has imdbRating property OR is already in our local cache
-        if (movie.imdbRating || imdbRatings.has(movie.id)) continue;
-
-        // Set loading state
-        setImdbRatings(prev => new Map(prev).set(movie.id, 'loading'));
-
-        try {
-          // First, get the IMDb ID from movie data or fetch from TMDb
-          let imdbId = movie.imdb_id;
-          
-          if (!imdbId) {
-            // Fetch movie details from backend to get imdb_id
-            const tmdbResponse = await fetch(`${baseUrl}/movies/${movie.id}/details`);
-            if (tmdbResponse.ok) {
-              const tmdbData = await tmdbResponse.json();
-              imdbId = tmdbData.imdb_id;
-            }
-          }
-
-          if (!imdbId) {
-            console.log(`No IMDb ID found for movie ${movie.id}`);
-            setImdbRatings(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(movie.id);
-              return newMap;
-            });
-            continue;
-          }
-
-          // Use the working /omdb/rating/:imdbId endpoint
-          const response = await fetch(`${baseUrl}/omdb/rating/${imdbId}`);
-          
-          if (!response.ok) {
-            console.error(`IMDb rating fetch failed for movie ${movie.id}:`, {
-              status: response.status,
-              statusText: response.statusText,
-              url: `${baseUrl}/omdb/rating/${imdbId}`
-            });
-            setImdbRatings(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(movie.id);
-              return newMap;
-            });
-            continue;
-          }
-
-          const data = await response.json();
-          if (data.imdbRating && data.imdbRating !== 'N/A') {
-            // Save permanently to local state
-            setImdbRatings(prev => new Map(prev).set(movie.id, data.imdbRating));
-          } else {
-            setImdbRatings(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(movie.id);
-              return newMap;
-            });
-          }
-        } catch (error) {
-          console.log(`IMDb rating not available for movie ${movie.id}:`, error);
-          setImdbRatings(prev => {
-            const newMap = new Map(prev);
-            newMap.delete(movie.id);
-            return newMap;
-          });
-        }
+  const handleRegenerateCode = async () => {
+    if (!accessToken) return;
+    setRegeneratingCode(true);
+    try {
+      const response = await fetch(`${baseUrl}/partner/regenerate-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await response.json();
+      if (data.code) {
+        setInviteCode(data.code);
+        toast.success('✨ New invite link generated!');
       }
-    };
+    } catch (error) {
+      console.error('Error regenerating invite code:', error);
+      toast.error('Failed to regenerate invite code');
+    } finally {
+      setRegeneratingCode(false);
+    }
+  };
 
-    fetchImdbRatings();
-  }, [likedMovies, accessToken]);
-  */
-
-  // TEMPORARILY DISABLED - Fetch IMDb ratings for partner's liked movies
-  // Disabled to improve app performance
-  /*
-  useEffect(() => {
-    if (!accessToken || partnerLikedMovies.length === 0) return;
-
-    const fetchPartnerImdbRatings = async () => {
-      for (const movie of partnerLikedMovies) {
-        // Skip if movie already has imdbRating OR is in local cache
-        if (movie.imdbRating || imdbRatings.has(movie.id)) continue;
-
-        // Set loading state
-        setImdbRatings(prev => new Map(prev).set(movie.id, 'loading'));
-
-        try {
-          // First, get the IMDb ID from movie data or fetch from backend
-          let imdbId = movie.imdb_id;
-          
-          if (!imdbId) {
-            // Fetch movie details from backend to get imdb_id
-            const tmdbResponse = await fetch(`${baseUrl}/movies/${movie.id}/details`);
-            if (tmdbResponse.ok) {
-              const tmdbData = await tmdbResponse.json();
-              imdbId = tmdbData.imdb_id;
-            }
-          }
-
-          if (!imdbId) {
-            console.log(`No IMDb ID found for movie ${movie.id}`);
-            setImdbRatings(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(movie.id);
-              return newMap;
-            });
-            continue;
-          }
-
-          // Use the working /omdb/rating/:imdbId endpoint
-          const response = await fetch(`${baseUrl}/omdb/rating/${imdbId}`);
-          
-          if (!response.ok) {
-            console.log(`IMDb rating fetch failed for movie ${movie.id}: ${response.status}`);
-            setImdbRatings(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(movie.id);
-              return newMap;
-            });
-            continue;
-          }
-
-          const data = await response.json();
-          if (data.imdbRating && data.imdbRating !== 'N/A') {
-            // Save permanently to local state
-            setImdbRatings(prev => new Map(prev).set(movie.id, data.imdbRating));
-          } else {
-            setImdbRatings(prev => {
-              const newMap = new Map(prev);
-              newMap.delete(movie.id);
-              return newMap;
-            });
-          }
-        } catch (error) {
-          console.log(`IMDb rating not available for movie ${movie.id}:`, error);
-          setImdbRatings(prev => {
-            const newMap = new Map(prev);
-            newMap.delete(movie.id);
-            return newMap;
-          });
-        }
+  const handleSendRequest = async () => {
+    if (!accessToken || !partnerEmail) return;
+    setSendingRequest(true);
+    try {
+      const response = await fetch(`${baseUrl}/partner/connect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ partnerEmail }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        toast.error(data.error || 'Failed to send request');
+      } else {
+        toast.success('Partner request sent!');
+        setPartnerEmail('');
+        // Refresh outgoing requests
+        const outgoingRes = await fetch(`${baseUrl}/partner/requests/outgoing`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        const outgoingData = await outgoingRes.json();
+        setOutgoingRequests(outgoingData.requests || []);
       }
-    };
+    } catch (error) {
+      console.error('Error sending partner request:', error);
+      toast.error('Failed to send partner request');
+    } finally {
+      setSendingRequest(false);
+    }
+  };
 
-    fetchPartnerImdbRatings();
-  }, [partnerLikedMovies, accessToken]);
-  */
+  // ── Partner Connection UI (same as Profile / Matches) ─────
+  const PartnerConnectionUI = (
+    <div className="max-w-lg mx-auto">
+      {/* Card header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="size-10 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
+          <Users className="size-5 text-pink-400" />
+        </div>
+        <div>
+          <h3 className="text-white font-semibold text-lg">Partner Connection</h3>
+          <p className="text-slate-400 text-sm">Connect with your partner to see their saved movies</p>
+        </div>
+      </div>
+
+      {outgoingRequests.length > 0 && (
+        <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <p className="text-blue-400 font-medium mb-1">Pending Request</p>
+          {outgoingRequests.map((request) => (
+            <p key={request.toUserId} className="text-slate-300 text-sm">
+              Waiting for response from {request.toEmail || request.toUserId}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Invite link section */}
+      <div className="bg-slate-900/50 border border-slate-700 border-dashed rounded-lg p-4 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <LinkIcon className="size-4 text-cyan-400" />
+          <Label className="text-white font-semibold text-sm">Share Your Invite Link</Label>
+        </div>
+
+        {inviteCode ? (
+          <>
+            <div className="flex gap-2 mb-3">
+              <Input
+                value={`${window.location.origin}/invite/${inviteCode}`}
+                readOnly
+                className="bg-slate-800 border-slate-600 text-cyan-400 font-mono text-xs"
+              />
+              <Button
+                onClick={handleCopyInviteLink}
+                className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+              >
+                <Copy className="size-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-slate-500">
+                Send this link to your partner — they'll need to accept your request
+              </p>
+              <Button
+                onClick={handleRegenerateCode}
+                disabled={regeneratingCode}
+                variant="ghost"
+                size="sm"
+                className="text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                {regeneratingCode
+                  ? <Loader2 className="size-3 mr-1 animate-spin" />
+                  : <RotateCcw className="size-3 mr-1" />}
+                <span className="text-xs">Regenerate</span>
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Loader2 className="size-4 animate-spin" />
+            <span>Loading invite code...</span>
+          </div>
+        )}
+      </div>
+
+      {/* OR divider */}
+      <div className="relative mb-4">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-slate-700" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-slate-900 px-3 text-slate-500 font-semibold">or connect by email</span>
+        </div>
+      </div>
+
+      {/* Email input section */}
+      <div className="space-y-2">
+        <Label htmlFor="partnerEmailSaved" className="text-white text-sm">Partner's Email</Label>
+        <div className="flex gap-2">
+          <Input
+            id="partnerEmailSaved"
+            type="email"
+            value={partnerEmail}
+            onChange={(e) => setPartnerEmail(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendRequest()}
+            placeholder="partner@example.com"
+            className="bg-slate-900 border-slate-700 text-white"
+          />
+          <Button
+            onClick={handleSendRequest}
+            disabled={sendingRequest || !partnerEmail || outgoingRequests.length > 0}
+            className="bg-pink-600 hover:bg-pink-700 flex-shrink-0"
+          >
+            {sendingRequest ? <Loader2 className="size-4 mr-2 animate-spin" /> : <LinkIcon className="size-4 mr-2" />}
+            Send Request
+          </Button>
+        </div>
+        <p className="text-xs text-slate-500">They'll need to accept your request</p>
+      </div>
+    </div>
+  );
 
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
@@ -628,11 +657,19 @@ export function SavedMoviesTab({
               </>
             )
           ) : (
-            sortedPartnerMovies.length === 0 ? (
+            /* ── Partner's List view ── */
+            !hasPartner ? (
+              /* No partner at all — show full connection UI */
+              <div className="py-16 px-4">
+                <div className="max-w-lg mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+                  {PartnerConnectionUI}
+                </div>
+              </div>
+            ) : sortedPartnerMovies.length === 0 ? (
               <div className="text-center py-20">
                 <Users className="size-20 mx-auto mb-6 text-slate-700" />
-                <h3 className="text-2xl font-semibold text-white mb-3">{partnerName ? `${partnerName} hasn't liked any movies yet` : "No partner connected"}</h3>
-                <p className="text-slate-400 text-lg">{partnerName ? "They can start liking movies in the Discover tab" : "Connect with a partner in the Profile tab"}</p>
+                <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't liked any movies yet`}</h3>
+                <p className="text-slate-400 text-lg">They can start liking movies in the Discover tab</p>
               </div>
             ) : (
               <>
