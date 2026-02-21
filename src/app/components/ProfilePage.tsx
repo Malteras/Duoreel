@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import {
-  Mail, Heart, Upload, Link as LinkIcon, Loader2,
+  Mail, Bookmark, Upload, Link as LinkIcon, Loader2,
   RefreshCw, LogOut, Minimize2, Maximize2, Copy, RotateCcw
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -412,7 +412,7 @@ export function ProfilePage() {
                     </Avatar>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 text-green-400 font-medium text-sm mb-1">
-                        <Heart className="size-3.5 fill-green-400" />
+                        <Bookmark className="size-3.5 fill-green-400" />
                         Connected
                       </div>
                       <p className="text-white font-semibold">{partner.name || 'Partner'}</p>

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Heart, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink } from 'lucide-react';
+import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useState, useEffect } from 'react';
@@ -285,7 +285,7 @@ export function MovieDetailModal({
                 {isLikeLoading ? (
                   <Loader2 className="size-5 mr-2 animate-spin" />
                 ) : (
-                  <Heart className={`size-5 mr-2 ${isLiked ? 'fill-white' : 'fill-slate-900'}`} />
+                  <Bookmark className={`size-5 mr-2 ${isLiked ? 'fill-white' : 'fill-slate-900'}`} />
                 )}
                 {isLiked ? 'Remove' : 'Save'}
               </Button>

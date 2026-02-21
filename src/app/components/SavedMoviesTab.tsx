@@ -4,7 +4,7 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
-import { Heart, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Link as LinkIcon, Copy, RotateCcw, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Link as LinkIcon, Copy, RotateCcw, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -453,7 +453,7 @@ export function SavedMoviesTab({
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
         <div className="text-center text-white">
-          <Heart className="size-16 mx-auto mb-4 text-slate-600" />
+          <Bookmark className="size-16 mx-auto mb-4 text-slate-600" />
           <h2 className="text-2xl font-bold mb-2">Sign in to see your saved movies</h2>
         </div>
       </div>
@@ -485,7 +485,7 @@ export function SavedMoviesTab({
                   ? 'bg-blue-600 hover:bg-blue-700 text-white' 
                   : 'text-slate-300 hover:text-white hover:bg-slate-700'}
               >
-                <Heart className="size-4 mr-2" />
+                <Bookmark className="size-4 mr-2" />
                 My List
               </Button>
               <Button
@@ -668,8 +668,8 @@ export function SavedMoviesTab({
             ) : sortedPartnerMovies.length === 0 ? (
               <div className="text-center py-20">
                 <Users className="size-20 mx-auto mb-6 text-slate-700" />
-                <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't liked any movies yet`}</h3>
-                <p className="text-slate-400 text-lg">They can start liking movies in the Discover tab</p>
+                <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't saved any movies yet`}</h3>
+                <p className="text-slate-400 text-lg">They can start saving movies in the Discover tab</p>
               </div>
             ) : (
               <>

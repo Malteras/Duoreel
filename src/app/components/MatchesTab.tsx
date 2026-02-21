@@ -598,7 +598,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             <Heart className="size-20 mx-auto mb-6 text-slate-700" />
             <h3 className="text-2xl font-semibold text-white mb-3">No Matches Yet</h3>
             <p className="text-slate-400 text-lg max-w-md mx-auto">
-              Start liking movies in the Discover tab. When you both like the same movie, it'll appear here!
+              Start saving movies in the Discover tab. When you both save the same movie, it'll appear here!
             </p>
           </div>
         ) : filteredAndSortedMovies.length === 0 ? (

@@ -1,4 +1,4 @@
-import { Heart, Ban, Star, Calendar, User, ChevronDown, ChevronUp, Film, Users, Tag, Clock, Loader2, Eye, ExternalLink } from 'lucide-react';
+import { Heart, Bookmark, Ban, Star, Calendar, User, ChevronDown, ChevronUp, Film, Users, Tag, Clock, Loader2, Eye, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
@@ -153,7 +153,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                 }}
                 disabled={isLikeLoading}
               >
-                {isLikeLoading ? <Loader2 className="size-5 animate-spin" /> : <Heart className={`size-5 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} />}
+                {isLikeLoading ? <Loader2 className="size-5 animate-spin" /> : <Bookmark className={`size-5 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} />}
               </Button>
             </div>
             {onDislike && !isMatch && (

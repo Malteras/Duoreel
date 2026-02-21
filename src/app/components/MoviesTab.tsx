@@ -33,13 +33,8 @@ import {
   Loader2,
   RefreshCw,
   ChevronDown,
-  Heart,
   Ban,
   X,
-  Star,
-  Film,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 
 interface MoviesTabProps {

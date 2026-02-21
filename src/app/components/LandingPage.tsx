@@ -570,7 +570,7 @@ export function LandingPage() {
                             Stalker
                           </div>
                           <div className="text-slate-400 text-xs">
-                            You both liked this
+                            You both saved this
                           </div>
                         </div>
                       </div>
@@ -596,7 +596,7 @@ export function LandingPage() {
                             Interstellar
                           </div>
                           <div className="text-slate-400 text-xs">
-                            You both liked this
+                            You both saved this
                           </div>
                         </div>
                       </div>
@@ -1382,7 +1382,7 @@ export function LandingPage() {
                         The Grand Budapest Hotel
                       </div>
                       <div className="text-slate-300 text-xs">
-                        You both liked this movie!
+                        You both saved this movie!
                       </div>
                     </div>
                   </div>

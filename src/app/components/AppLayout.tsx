@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router';
-import { Film, Heart, Users } from 'lucide-react';
+import { Film, Bookmark, Heart, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { UserInteractionsProvider, useUserInteractions } from './UserInteractionsContext';
@@ -165,7 +165,7 @@ function AppLayoutContent({
               </NavLink>
 
               <NavLink to="/saved" className={tabCls}>
-                <Heart className="size-4" />
+                <Bookmark className="size-4" />
                 Saved
               </NavLink>
 
