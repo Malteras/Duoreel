@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react';
 import { projectId } from '/utils/supabase/info';
 
 interface MovieInteraction {
@@ -39,15 +39,33 @@ export function UserInteractionsProvider({
   const [notInterestedLoadingIds, setNotInterestedLoadingIds] = useState<Set<number>>(new Set());
   const [isInitialLoading, setIsInitialLoading] = useState(true); // Fix 1: default true so MoviesTab waits for interactions before fetching
 
+  // Guard against concurrent refreshInteractions calls.
+  // onAuthStateChange + initAuth can both fire in quick succession when a
+  // session is restored, causing two simultaneous fetches. The second one to
+  // resolve would set isInitialLoading=false with potentially stale data from
+  // a previous in-flight request — so we track in-flight state with a ref.
+  const refreshInFlightRef = useRef(false);
+
   const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
   // Load all interactions on mount / auth change
   const refreshInteractions = useCallback(async () => {
     if (!accessToken) {
       setInteractions(new Map());
+      // No token — we can't load interactions, but we must clear isInitialLoading
+      // so MoviesTab doesn't spin forever waiting for a fetch that will never happen.
+      setIsInitialLoading(false);
       return;
     }
 
+    // Skip if a fetch is already in flight — the concurrent call will complete shortly
+    // and its finally{} will set isInitialLoading=false.
+    if (refreshInFlightRef.current) {
+      console.log('refreshInteractions: skipping duplicate concurrent call');
+      return;
+    }
+
+    refreshInFlightRef.current = true;
     setIsInitialLoading(true);
     try {
       const response = await fetch(`${baseUrl}/movies/interactions/all`, {
@@ -64,10 +82,13 @@ export function UserInteractionsProvider({
         });
         setInteractions(map);
         console.log(`Loaded ${map.size} user interactions`);
+      } else {
+        console.error('refreshInteractions: unexpected response shape', data);
       }
     } catch (error) {
       console.error('Error loading user interactions:', error);
     } finally {
+      refreshInFlightRef.current = false;
       setIsInitialLoading(false);
     }
   }, [accessToken, baseUrl]);

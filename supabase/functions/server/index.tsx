@@ -1362,9 +1362,21 @@ app.post("/make-server-5623fde1/movies/watched", async (c) => {
       return c.json({ error: 'Movie ID is required' }, 400);
     }
 
+    // ── Guarantee numeric id ──────────────────────────────────────────────────
+    // The client always sends a numeric TMDb id, but JSON round-trips and
+    // template-literal coercions can occasionally produce a string. Storing a
+    // string id causes both `interactions/all` and `discover-filtered` to
+    // silently drop the entry (their `typeof id === 'number'` guards reject it),
+    // so the movie re-appears as unwatched after a page refresh.
+    const numericId = Number(movie.id);
+    if (!numericId || isNaN(numericId)) {
+      console.error(`Invalid movie id (not coercible to number): ${movie.id} (type: ${typeof movie.id})`);
+      return c.json({ error: 'Movie ID must be a valid number' }, 400);
+    }
+
     // Sanitize movie data - only store essential fields to avoid KV bloat
     const sanitizedMovie = {
-      id: movie.id,
+      id: numericId,                          // always a JS number
       title: movie.title || '',
       poster_path: movie.poster_path || null,
       backdrop_path: movie.backdrop_path || null,
@@ -1379,13 +1391,13 @@ app.post("/make-server-5623fde1/movies/watched", async (c) => {
       original_language: movie.original_language || null,
     };
 
-    await kv.set(`watched:${user.id}:${movie.id}`, { 
+    await kv.set(`watched:${user.id}:${numericId}`, { 
       ...sanitizedMovie, 
       rating: rating || null,
       timestamp: Date.now() 
     });
 
-    console.log(`Stored watched movie ${movie.id} ("${movie.title}") for user ${user.id}`);
+    console.log(`Stored watched movie ${numericId} ("${movie.title}") for user ${user.id} [id type: ${typeof numericId}]`);
     return c.json({ success: true });
   } catch (error) {
     console.error('Error adding watched movie:', error);
@@ -2176,20 +2188,18 @@ app.get("/make-server-5623fde1/movies/excluded-ids", async (c) => {
     let excludedIds: number[] = [];
     
     // Always exclude "not interested" movies
-    // Note: getByPrefix returns VALUES only (not key-value pairs), so access stored fields directly
     const notInterestedItems = await kv.getByPrefix(`notinterested:${user.id}:`);
     const notInterestedIds = notInterestedItems
-      .map((item: any) => item.movieId)
-      .filter((id: any) => typeof id === 'number' && !isNaN(id));
+      .map((item: any) => Number(item.movieId ?? item.id))
+      .filter((id: number) => id > 0 && !isNaN(id));
     excludedIds = [...notInterestedIds];
     
     // Optionally exclude watched movies (default: exclude them)
     if (!includeWatched) {
-      // Watched values are spread movie objects containing an 'id' field
       const watchedItems = await kv.getByPrefix(`watched:${user.id}:`);
       const watchedIds = watchedItems
-        .map((item: any) => item.id)
-        .filter((id: any) => typeof id === 'number' && !isNaN(id));
+        .map((item: any) => Number(item.id ?? item.tmdbId))
+        .filter((id: number) => id > 0 && !isNaN(id));
       excludedIds = [...excludedIds, ...watchedIds];
     }
     
@@ -2268,8 +2278,16 @@ app.get("/make-server-5623fde1/movies/interactions/all", async (c) => {
     console.log(`interactions/all: Found ${watchedItems.length} watched items for user ${user.id}`);
     
     for (const item of watchedItems) {
-      const tmdbId = item.id || item.tmdbId;
-      if (tmdbId && typeof tmdbId === 'number') {
+      // ── Robust id coercion ─────────────────────────────────────────────────
+      // Older KV entries or edge cases may have stored the id as a string.
+      // Number() handles both 1234 and "1234" safely; NaN / 0 are rejected.
+      const rawId = item.id ?? item.tmdbId;
+      const tmdbId = Number(rawId);
+      if (!tmdbId || isNaN(tmdbId)) {
+        console.error(`interactions/all: Skipping watched item with invalid id: ${JSON.stringify(rawId)} (item keys: ${Object.keys(item).join(', ')})`);
+        continue;
+      }
+      {
         const existing = interactions.find((i: any) => i.tmdbId === tmdbId);
         if (existing) {
           existing.isWatched = true;
@@ -2291,8 +2309,9 @@ app.get("/make-server-5623fde1/movies/interactions/all", async (c) => {
     console.log(`interactions/all: Found ${notInterestedItems.length} not-interested items for user ${user.id}`);
     
     for (const item of notInterestedItems) {
-      const tmdbId = item.movieId;
-      if (tmdbId && typeof tmdbId === 'number') {
+      const tmdbId = Number(item.movieId ?? item.id);
+      if (!tmdbId || isNaN(tmdbId)) continue;
+      {
         const existing = interactions.find((i: any) => i.tmdbId === tmdbId);
         if (existing) {
           existing.isNotInterested = true;
@@ -2353,21 +2372,21 @@ app.get("/make-server-5623fde1/movies/discover-filtered", async (c) => {
     let excludedIds: number[] = [];
     
     // Always exclude "not interested" movies
-    // Note: getByPrefix returns VALUES only (not key-value pairs), so access stored fields directly
     const notInterestedItems = await kv.getByPrefix(`notinterested:${user.id}:`);
     const notInterestedIds = notInterestedItems
-      .map((item: any) => item.movieId)
-      .filter((id: any) => typeof id === 'number' && !isNaN(id));
+      .map((item: any) => Number(item.movieId ?? item.id))
+      .filter((id: number) => id > 0 && !isNaN(id));
     excludedIds = [...notInterestedIds];
     
     // Optionally exclude watched movies (default: exclude them)
     if (!includeWatched) {
-      // Watched values are spread movie objects containing an 'id' field
+      // ── Robust id coercion: Number() handles both numeric and string ids ──
       const watchedItems = await kv.getByPrefix(`watched:${user.id}:`);
       const watchedIds = watchedItems
-        .map((item: any) => item.id)
-        .filter((id: any) => typeof id === 'number' && !isNaN(id));
+        .map((item: any) => Number(item.id ?? item.tmdbId))
+        .filter((id: number) => id > 0 && !isNaN(id));
       excludedIds = [...excludedIds, ...watchedIds];
+      console.log(`discover-filtered: Loaded ${watchedIds.length} watched ids to exclude for user ${user.id}`);
     }
     
     const excludedSet = new Set(excludedIds);
@@ -2506,6 +2525,46 @@ app.get("/make-server-5623fde1/movies/discover-filtered", async (c) => {
 });
 
 // Get movie details by TMDb ID
+// ── Debug: inspect a specific watched entry in KV ────────────────────────────
+// Use this to diagnose watched-persistence issues for a specific movie.
+// Example: GET /debug/watched/1198994  (with Authorization header)
+app.get("/make-server-5623fde1/debug/watched/:movieId", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) return c.json({ error: 'Unauthorized' }, 401);
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) return c.json({ error: 'Unauthorized' }, 401);
+
+    const movieId = c.req.param('movieId');
+
+    // Direct key lookup
+    const directKey = await kv.get(`watched:${user.id}:${movieId}`);
+
+    // Prefix scan – look for any entry whose stored id matches
+    const allWatched = await kv.getByPrefix(`watched:${user.id}:`);
+    const matchingItems = allWatched.filter((item: any) => {
+      const rawId = item.id ?? item.tmdbId;
+      return String(rawId) === String(movieId);
+    });
+
+    return c.json({
+      userId:            user.id,
+      queriedMovieId:    movieId,
+      directKeyFound:    !!directKey,
+      directKeyIdType:   directKey ? typeof directKey.id : null,
+      directKeyId:       directKey?.id,
+      totalWatchedCount: allWatched.length,
+      matchingItemCount: matchingItems.length,
+      // Sample to show id types stored in KV
+      sampleWatched: allWatched.slice(0, 5).map((i: any) => ({
+        id: i.id, idType: typeof i.id, tmdbId: i.tmdbId, title: i.title,
+      })),
+    });
+  } catch (error) {
+    return c.json({ error: `Debug failed: ${error}` }, 500);
+  }
+});
+
 // IMPORTANT: This wildcard route MUST be registered AFTER all specific /movies/xxx routes
 // (like /movies/excluded-ids, /movies/discover-filtered, etc.) to prevent route shadowing.
 // Hono matches routes in registration order, so /movies/:id would intercept

@@ -380,7 +380,10 @@ export function MoviesTab({
     enrichingRef.current = new Set();
     setImdbRatings(new Map());
     fetchMovies(1, false);
-  }, [filters, sortBy, showWatchedMovies, contextLoading]);
+    // fetchMovies is included so this effect always runs with the freshest
+    // callback (no stale likedMovieIds / pendingRemovals closures).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sortBy, showWatchedMovies, contextLoading, fetchMovies]);
 
   // ──────────────── Enrich movies with details (director, actors, providers) ────────────────
   useEffect(() => {
