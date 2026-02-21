@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Heart, Link as LinkIcon, Loader2, Users, X, Check, UserX, Bell } from 'lucide-react';
+import { Heart, Link as LinkIcon, Loader2, Users, X, Check, UserX, Bell, Copy, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { MovieCard } from './MovieCard';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -26,7 +26,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [partnerEmail, setPartnerEmail] = useState('');
-  
+
+  // Invite code state
+  const [inviteCode, setInviteCode] = useState('');
+  const [regeneratingCode, setRegeneratingCode] = useState(false);
+
   // Movie modal state from hook
   const { selectedMovie, modalOpen, openMovie, closeMovie, isLoadingDeepLink } = useMovieModal(accessToken);
   const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
@@ -37,42 +41,37 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch partner info
-      const partnerResponse = await fetch(`${baseUrl}/partner`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      const partnerData = await partnerResponse.json();
+      // Fetch partner info, requests, matches, and invite code in parallel
+      const [partnerRes, incomingRes, outgoingRes, matchesRes, inviteCodeRes] = await Promise.all([
+        fetch(`${baseUrl}/partner`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch(`${baseUrl}/partner/requests/incoming`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch(`${baseUrl}/partner/requests/outgoing`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch(`${baseUrl}/movies/matches`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch(`${baseUrl}/partner/invite-code`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+      ]);
+
+      const partnerData = await partnerRes.json();
       if (partnerData.partner) {
         setPartner(partnerData.partner);
       } else {
         setPartner(null);
       }
 
-      // Fetch incoming requests
-      const incomingResponse = await fetch(`${baseUrl}/partner/requests/incoming`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      const incomingData = await incomingResponse.json();
+      const incomingData = await incomingRes.json();
       setIncomingRequests(incomingData.requests || []);
 
-      // Fetch outgoing requests
-      const outgoingResponse = await fetch(`${baseUrl}/partner/requests/outgoing`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      const outgoingData = await outgoingResponse.json();
+      const outgoingData = await outgoingRes.json();
       setOutgoingRequests(outgoingData.requests || []);
 
-      // Fetch matched movies
-      const matchesResponse = await fetch(`${baseUrl}/movies/matches`, {
-        headers: { Authorization: `Bearer ${accessToken}` }
-      });
-      const matchesData = await matchesResponse.json();
+      const matchesData = await matchesRes.json();
       if (matchesData.movies) {
         setMatchedMovies(matchesData.movies);
-        // All matched movies are already liked by definition
         setLikedMovies(new Set(matchesData.movies.map((m: any) => m.id)));
       }
-      
+
+      const inviteData = await inviteCodeRes.json();
+      if (inviteData.code) setInviteCode(inviteData.code);
+
       // Mark matches as seen
       await fetch(`${baseUrl}/notifications/matches/seen`, {
         method: 'POST',
@@ -314,6 +313,133 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     }
   };
 
+  const handleCopyInviteLink = () => {
+    const link = `${window.location.origin}/invite/${inviteCode}`;
+    navigator.clipboard.writeText(link);
+    toast.success('📋 Invite link copied! Send it to your partner.');
+  };
+
+  const handleRegenerateCode = async () => {
+    if (!accessToken) return;
+    setRegeneratingCode(true);
+    try {
+      const response = await fetch(`${baseUrl}/partner/regenerate-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await response.json();
+      if (data.code) {
+        setInviteCode(data.code);
+        toast.success('✨ New invite link generated!');
+      }
+    } catch (error) {
+      console.error('Error regenerating invite code:', error);
+      toast.error('Failed to regenerate invite code');
+    } finally {
+      setRegeneratingCode(false);
+    }
+  };
+
+  // Partner Connection empty state — same UI as ProfilePage
+  const PartnerConnectionUI = (
+    <div className="space-y-4">
+      {outgoingRequests.length > 0 && (
+        <div className="mb-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+          <p className="text-blue-400 font-medium mb-1">Pending Request</p>
+          {outgoingRequests.map((request) => (
+            <p key={request.toUserId} className="text-slate-300 text-sm">
+              Waiting for response from {request.toEmail || request.toUserId}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Invite link section */}
+      <div className="bg-slate-900/50 border border-slate-700 border-dashed rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <LinkIcon className="size-4 text-cyan-400" />
+          <Label className="text-white font-semibold text-sm">Share Your Invite Link</Label>
+        </div>
+
+        {inviteCode ? (
+          <>
+            <div className="flex gap-2 mb-3">
+              <Input
+                value={`${window.location.origin}/invite/${inviteCode}`}
+                readOnly
+                className="bg-slate-800 border-slate-600 text-cyan-400 font-mono text-xs"
+              />
+              <Button
+                onClick={handleCopyInviteLink}
+                className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+              >
+                <Copy className="size-4 mr-2" />
+                Copy
+              </Button>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-slate-500">
+                Send this link to your partner — they'll need to accept your request
+              </p>
+              <Button
+                onClick={handleRegenerateCode}
+                disabled={regeneratingCode}
+                variant="ghost"
+                size="sm"
+                className="text-slate-400 hover:text-white hover:bg-slate-800"
+              >
+                {regeneratingCode
+                  ? <Loader2 className="size-3 mr-1 animate-spin" />
+                  : <RotateCcw className="size-3 mr-1" />}
+                <span className="text-xs">Regenerate</span>
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-2 text-sm text-slate-500">
+            <Loader2 className="size-4 animate-spin" />
+            <span>Loading invite code...</span>
+          </div>
+        )}
+      </div>
+
+      {/* OR divider */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-slate-700" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-slate-800 px-3 text-slate-500 font-semibold">or connect by email</span>
+        </div>
+      </div>
+
+      {/* Email input section */}
+      <div className="space-y-2">
+        <Label htmlFor="partnerEmailMatches" className="text-white text-sm">Partner's Email</Label>
+        <div className="flex gap-2">
+          <Input
+            id="partnerEmailMatches"
+            type="email"
+            value={partnerEmail}
+            onChange={(e) => setPartnerEmail(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendRequest()}
+            placeholder="partner@example.com"
+            className="bg-slate-900 border-slate-700 text-white"
+          />
+          <Button
+            onClick={handleSendRequest}
+            disabled={saving || !partnerEmail || outgoingRequests.length > 0}
+            className="bg-pink-600 hover:bg-pink-700 flex-shrink-0"
+          >
+            {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : <LinkIcon className="size-4 mr-2" />}
+            Send Request
+          </Button>
+        </div>
+        <p className="text-xs text-slate-500">They'll need to accept your request</p>
+      </div>
+    </div>
+  );
+
   if (!accessToken) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
@@ -412,42 +538,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 </div>
               </div>
             ) : (
-              <div>
-                {outgoingRequests.length > 0 && (
-                  <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                    <p className="text-blue-400 font-medium mb-2">Pending Request</p>
-                    {outgoingRequests.map((request) => (
-                      <p key={request.toUserId} className="text-slate-300 text-sm">
-                        Waiting for response from {request.toUserId}
-                      </p>
-                    ))}
-                  </div>
-                )}
-                <Label htmlFor="partnerEmail" className="text-white text-base mb-3 block">
-                  Enter your partner's email to send a connection request
-                </Label>
-                <div className="flex gap-3">
-                  <Input
-                    id="partnerEmail"
-                    type="email"
-                    value={partnerEmail}
-                    onChange={(e) => setPartnerEmail(e.target.value)}
-                    placeholder="partner@example.com"
-                    className="bg-slate-900 border-slate-700 text-white text-lg h-12"
-                  />
-                  <Button 
-                    onClick={handleSendRequest} 
-                    disabled={saving || !partnerEmail || outgoingRequests.length > 0}
-                    className="bg-pink-600 hover:bg-pink-700 h-12 px-6"
-                  >
-                    {saving ? <Loader2 className="size-5 mr-2 animate-spin" /> : <LinkIcon className="size-5 mr-2" />}
-                    Send Request
-                  </Button>
-                </div>
-                <p className="text-sm text-slate-400 mt-3">
-                  Your partner must accept the request before you can see matches
-                </p>
-              </div>
+              PartnerConnectionUI
             )}
           </CardContent>
         </Card>
