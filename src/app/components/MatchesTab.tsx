@@ -474,44 +474,46 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         )}
 
         {/* Partner Connection */}
-        <Card className="bg-slate-800/50 border-slate-700 mb-8">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Users className="size-6" />Partner Connection
-            </CardTitle>
-            <CardDescription className="text-slate-400">
-              Connect with your partner to find movie matches
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {partner ? (
-              <div className="flex flex-col sm:flex-row items-center gap-4 p-6 bg-gradient-to-r from-pink-500/10 to-purple-500/10 border border-pink-500/30 rounded-xl">
-                <Avatar className="size-20 ring-4 ring-pink-500/30">
-                  <AvatarImage src={partner.photoUrl} />
-                  <AvatarFallback className="bg-gradient-to-br from-pink-600 to-purple-600 text-white text-2xl">
-                    {partner.name?.[0]?.toUpperCase() || partner.email?.[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 text-center sm:text-left">
-                  <div className="flex items-center justify-center sm:justify-start gap-2 text-pink-400 font-medium mb-2">
-                    <Heart className="size-5 fill-pink-400" />Connected
-                  </div>
-                  <p className="text-white text-xl font-semibold">{partner.name || 'Partner'}</p>
-                  <p className="text-slate-400">{partner.email}</p>
-                </div>
-                <Button
-                  onClick={handleRemovePartner}
-                  variant="outline"
-                  className="w-full sm:w-auto bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
-                >
-                  <UserX className="size-4 mr-2" />Remove Partner
-                </Button>
-              </div>
-            ) : (
-              PartnerConnectionUI
-            )}
-          </CardContent>
-        </Card>
+        {partner ? (
+          /* ── Compact connected strip ── */
+          <div className="flex items-center gap-3 px-4 py-2.5 mb-6 bg-slate-800/40 border border-slate-700/60 rounded-xl">
+            <Avatar className="size-8 ring-2 ring-pink-500/40 flex-shrink-0">
+              <AvatarImage src={partner.photoUrl} />
+              <AvatarFallback className="bg-gradient-to-br from-pink-600 to-purple-600 text-white text-xs">
+                {partner.name?.[0]?.toUpperCase() || partner.email?.[0]?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <Heart className="size-3.5 text-pink-500 fill-pink-500 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <span className="text-white text-sm font-medium truncate">{partner.name || 'Partner'}</span>
+              <span className="text-slate-500 text-xs ml-2 hidden sm:inline truncate">{partner.email}</span>
+            </div>
+            <Button
+              onClick={handleRemovePartner}
+              variant="ghost"
+              size="sm"
+              className="flex-shrink-0 text-slate-500 hover:text-red-400 hover:bg-red-950/30 text-xs h-7 px-2"
+            >
+              <UserX className="size-3.5 mr-1" />
+              <span className="hidden sm:inline">Remove</span>
+            </Button>
+          </div>
+        ) : (
+          /* ── Full connection card (no partner) ── */
+          <Card className="bg-slate-800/50 border-slate-700 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Users className="size-6" />Partner Connection
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Connect with your partner to find movie matches
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {PartnerConnectionUI}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Matched Movies heading */}
         <div className="mb-6">
