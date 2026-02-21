@@ -29,6 +29,7 @@ const STREAMING_SERVICES = [
   { label: 'Hulu',       value: '15',  logo: 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg' },
   { label: 'Paramount+', value: '531', logo: 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg' },
   { label: 'Peacock',    value: '387', logo: 'https://image.tmdb.org/t/p/original/xTHltMrZPAJFLkuXDpEAFnD1WRa.jpg' },
+  { label: 'Criterion',  value: '258', logo: 'https://image.tmdb.org/t/p/original/eSOBHkMNbAEwPYukUAtJJNcgjJo.jpg' },
 ];
 
 export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter }: MatchesTabProps) {
