@@ -11,7 +11,7 @@ const OG_IMAGE_URL = `${SITE_URL}/og.svg`;
 // Make's hosting redirects all paths (including /manifest.json) to the SPA
 // shell. The Supabase URL is a real, stable, CORS-enabled endpoint.
 const MANIFEST_URL =
-  'https://xycuaqjmebzurygsxovt.supabase.co/functions/v1/make-server-5623fde1/manifest.webmanifest?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh5Y3VhcWptZWJ6dXJ5Z3N4b3Z0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE5OTA2NzYsImV4cCI6MjA3NzU2NjY3Nn0.ji8NVruOtyq42ncS_RBlbXVATzPzdsawxy6E45ZRlEo';
+  'https://xycuaqjmebzurygsxovt.supabase.co/functions/v1/make-server-5623fde1/manifest.webmanifest';
 
 // Injects Open Graph + Twitter Card meta tags into the HTML entry point so
 // that bots / link-preview crawlers (WhatsApp, iMessage, Telegram, Slack,
