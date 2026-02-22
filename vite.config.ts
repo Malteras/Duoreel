@@ -13,13 +13,42 @@ const OG_IMAGE_URL = `${SITE_URL}/og.svg`;
 const injectOgMetaPlugin: Plugin = {
   name: 'inject-og-meta',
   transformIndexHtml(html) {
+    // Manifest inlined as data URI — Figma Make hosting redirects all paths
+    // to the SPA shell, so /manifest.json cannot be served as a static file.
+    const manifest = {
+      name: 'DuoReel',
+      short_name: 'DuoReel',
+      description: 'Find movies you both love',
+      start_url: '/discover',
+      display: 'standalone',
+      background_color: '#0f172a',
+      theme_color: '#0f172a',
+      orientation: 'portrait',
+      icons: [
+        {
+          src: '/icons/icon.svg',
+          sizes: 'any',
+          type: 'image/svg+xml',
+          purpose: 'any'
+        },
+        {
+          src: '/icons/icon-maskable.svg',
+          sizes: 'any',
+          type: 'image/svg+xml',
+          purpose: 'maskable'
+        }
+      ],
+      categories: ['entertainment', 'lifestyle']
+    };
+    const manifestDataUri = `data:application/manifest+json;base64,${Buffer.from(JSON.stringify(manifest)).toString('base64')}`;
+
     const tags = `
     <!-- Primary meta -->
     <meta name="description" content="Connect with your partner and discover movies you'll both want to watch. Like, match, and never argue about what to watch again." />
     <link rel="canonical" href="${SITE_URL}/" />
 
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
+    <!-- PWA — manifest inlined as data URI (Figma Make hosting workaround) -->
+    <link rel="manifest" href="${manifestDataUri}" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="mobile-web-app-capable" content="yes" />
 
@@ -51,22 +80,7 @@ const injectOgMetaPlugin: Plugin = {
     `;
 
     // Insert PWA meta + OG tags just before </head>
-    let result = html.replace('</head>', `${tags}</head>`);
-
-    // Inject service worker registration before </body>
-    result = result.replace(
-      '</body>',
-      `  <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch((err) => {
-            console.warn('SW registration failed:', err);
-          });
-        });
-      }
-    </script>
-  </body>`
-    );
+    const result = html.replace('</head>', `${tags}</head>`);
 
     return result;
   },
