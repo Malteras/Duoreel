@@ -134,7 +134,7 @@ function AppLayoutContent({
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         {/* Sticky header */}
         <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
             {/* Logo row */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ function AppLayoutContent({
                   <h1 className="text-2xl font-bold text-white">
                     <span className="text-pink-500">Duo</span>Reel
                   </h1>
-                  <p className="text-sm text-slate-400">Find movies you both love</p>
+                  <p className="hidden md:block text-sm text-slate-400">Find movies you both love</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -157,8 +157,8 @@ function AppLayoutContent({
               </div>
             </div>
 
-            {/* Tab nav */}
-            <nav className="grid w-full max-w-md mx-auto grid-cols-3 bg-slate-800/80 border border-slate-600 rounded-lg p-1 gap-1">
+            {/* Tab nav — desktop only, mobile uses bottom bar */}
+            <nav className="hidden md:grid w-full max-w-md mx-auto grid-cols-3 bg-slate-800/80 border border-slate-600 rounded-lg p-1 gap-1">
               <NavLink to="/discover" className={tabCls}>
                 <Film className="size-4" />
                 Discover
@@ -186,9 +186,59 @@ function AppLayoutContent({
           </div>
         </div>
 
-        {/* Page content */}
-        <Outlet context={context} />
+        {/* Page content — add bottom padding on mobile so content isn't hidden behind bottom tab bar */}
+        <div className="[&>*]:pb-20 md:[&>*]:pb-0">
+          <Outlet context={context} />
+        </div>
         <GlobalImportWidgets />
+
+        {/* ── Mobile bottom tab bar ── */}
+        <nav
+          className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 flex items-center justify-around px-2 pt-2"
+          style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+        >
+          <NavLink
+            to="/discover"
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+                isActive ? 'text-blue-400' : 'text-slate-400'
+              }`
+            }
+          >
+            <Film className="size-6" />
+            <span>Discover</span>
+          </NavLink>
+
+          <NavLink
+            to="/saved"
+            className={({ isActive }) =>
+              `flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+                isActive ? 'text-blue-400' : 'text-slate-400'
+              }`
+            }
+          >
+            <Bookmark className="size-6" />
+            <span>Saved</span>
+          </NavLink>
+
+          <NavLink
+            to="/matches"
+            onClick={handleMatchesClick}
+            className={({ isActive }) =>
+              `relative flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+                isActive ? 'text-pink-400' : 'text-slate-400'
+              }`
+            }
+          >
+            <Users className="size-6" />
+            <span>Matches</span>
+            {matchNotificationCount > 0 && (
+              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center animate-pulse">
+                {matchNotificationCount}
+              </span>
+            )}
+          </NavLink>
+        </nav>
       </div>
     </ImportProvider>
   );

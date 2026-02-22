@@ -1274,6 +1274,23 @@ export function MoviesTab({
         )}
       </div>
 
+      {/* ── Mobile Filters FAB — only on mobile, only outside search mode ── */}
+      {!isSearchMode && (
+        <button
+          className="md:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 bg-slate-800 border border-slate-600 text-white text-sm font-semibold px-4 py-3 rounded-full shadow-lg active:scale-95 transition-transform"
+          onClick={() => setShowFiltersModal(true)}
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}
+        >
+          <SlidersHorizontal className="size-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="bg-blue-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      )}
+
       {/* Advanced Filters Modal */}
       <AdvancedFiltersModal
         isOpen={showFiltersModal}
