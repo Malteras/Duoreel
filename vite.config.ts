@@ -18,6 +18,17 @@ const injectOgMetaPlugin: Plugin = {
     <meta name="description" content="Connect with your partner and discover movies you'll both want to watch. Like, match, and never argue about what to watch again." />
     <link rel="canonical" href="${SITE_URL}/" />
 
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- iOS PWA support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="DuoReel" />
+    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type"        content="website" />
     <meta property="og:site_name"   content="DuoReel" />
@@ -39,8 +50,25 @@ const injectOgMetaPlugin: Plugin = {
     <meta name="twitter:image:alt"   content="DuoReel — Find movies you both love" />
     `;
 
-    // Insert just before </head> so it doesn't conflict with existing charset / viewport tags
-    return html.replace('</head>', `${tags}</head>`);
+    // Insert PWA meta + OG tags just before </head>
+    let result = html.replace('</head>', `${tags}</head>`);
+
+    // Inject service worker registration before </body>
+    result = result.replace(
+      '</body>',
+      `  <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.warn('SW registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>`
+    );
+
+    return result;
   },
 };
 

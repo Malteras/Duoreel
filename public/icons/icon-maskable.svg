@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Maskable icon: safe zone is centre 80% (410x410). Fill full canvas with bg. -->
+  <rect width="512" height="512" fill="#0f172a"/>
+
+  <!-- Film reel — shifted up slightly to sit in safe zone -->
+  <circle cx="256" cy="210" r="100" fill="none" stroke="#1e293b" stroke-width="18"/>
+  <circle cx="256" cy="210" r="34" fill="#1e293b"/>
+  <circle cx="256" cy="210" r="12" fill="#0f172a"/>
+
+  <!-- Sprocket holes -->
+  <circle cx="256" cy="116" r="12" fill="#0f172a"/>
+  <circle cx="256" cy="304" r="12" fill="#0f172a"/>
+  <circle cx="163" cy="157" r="12" fill="#0f172a"/>
+  <circle cx="349" cy="157" r="12" fill="#0f172a"/>
+  <circle cx="163" cy="263" r="12" fill="#0f172a"/>
+  <circle cx="349" cy="263" r="12" fill="#0f172a"/>
+
+  <!-- Pink accent -->
+  <path d="M 256 110 A 100 100 0 0 1 356 210" fill="none" stroke="#ec4899" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Heart -->
+  <path d="M 256 340 C 256 340 225 317 225 299 C 225 287 236 280 246 285 C 251 288 256 294 256 294 C 256 294 261 288 266 285 C 276 280 287 287 287 299 C 287 317 256 340 256 340 Z" fill="#ec4899"/>
+
+  <!-- Wordmark -->
+  <text x="256" y="418" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="66" letter-spacing="-2">
+    <tspan fill="#ec4899">Duo</tspan><tspan fill="white">Reel</tspan>
+  </text>
+</svg>

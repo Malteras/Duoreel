@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="#0f172a"/>
+
+  <!-- Film reel outer ring -->
+  <circle cx="256" cy="220" r="120" fill="none" stroke="#1e293b" stroke-width="20"/>
+  <!-- Film reel inner hub -->
+  <circle cx="256" cy="220" r="40" fill="#1e293b"/>
+  <!-- Inner hub detail -->
+  <circle cx="256" cy="220" r="14" fill="#0f172a"/>
+
+  <!-- Sprocket holes (6 around the ring) -->
+  <circle cx="256" cy="106" r="14" fill="#0f172a"/>
+  <circle cx="256" cy="334" r="14" fill="#0f172a"/>
+  <circle cx="152" cy="163" r="14" fill="#0f172a"/>
+  <circle cx="360" cy="163" r="14" fill="#0f172a"/>
+  <circle cx="152" cy="277" r="14" fill="#0f172a"/>
+  <circle cx="360" cy="277" r="14" fill="#0f172a"/>
+
+  <!-- Pink accent arc on reel -->
+  <path d="M 256 100 A 120 120 0 0 1 376 220" fill="none" stroke="#ec4899" stroke-width="8" stroke-linecap="round"/>
+  <path d="M 136 220 A 120 120 0 0 1 202 118" fill="none" stroke="#ec4899" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- Heart icon (match symbol) small, below reel -->
+  <path d="M 256 360 C 256 360 220 335 220 315 C 220 302 232 294 244 300 C 250 303 256 310 256 310 C 256 310 262 303 268 300 C 280 294 292 302 292 315 C 292 335 256 360 256 360 Z" fill="#ec4899"/>
+
+  <!-- Wordmark -->
+  <text x="256" y="434" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="72" letter-spacing="-2">
+    <tspan fill="#ec4899">Duo</tspan><tspan fill="white">Reel</tspan>
+  </text>
+</svg>
