@@ -218,13 +218,7 @@ export function MovieDetailModal({
               )}
             </div>
 
-            {/* Close Button - Top Right */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 bg-slate-800/80 hover:bg-slate-700/80 backdrop-blur-sm p-2 rounded-full transition-colors"
-            >
-              <X className="size-5 text-white" />
-            </button>
+
           </div>
 
           <div className="p-6 space-y-6">
