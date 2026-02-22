@@ -178,6 +178,12 @@ export function MoviesTab({
   const pendingTimersRef = useRef<Map<number, NodeJS.Timeout>>(
     new Map(),
   );
+  const pendingRemovalsRef = useRef<Set<number>>(new Set());
+
+  // Keep ref in sync so fetchMovies can read it without being a reactive dependency
+  useEffect(() => {
+    pendingRemovalsRef.current = pendingRemovals;
+  }, [pendingRemovals]);
 
   // Movie details enrichment tracking
   const [enrichedIds, setEnrichedIds] = useState<Set<number>>(
@@ -327,7 +333,7 @@ export function MoviesTab({
           const newMovies = data.results.filter(
             (m: any) =>
               !likedMovieIds.has(m.id) &&
-              !pendingRemovals.has(m.id),
+              !pendingRemovalsRef.current.has(m.id),
           );
 
           if (append) {
@@ -360,7 +366,6 @@ export function MoviesTab({
       sortBy,
       showWatchedMovies,
       likedMovieIds,
-      pendingRemovals,
       baseUrl,
     ],
   );
