@@ -12,6 +12,7 @@ import { MovieCard } from './MovieCard';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { MovieDetailModal } from './MovieDetailModal';
 import { useMovieModal } from '../hooks/useMovieModal';
+import { PartnerConnectCard } from './PartnerConnectCard';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -511,7 +512,18 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {PartnerConnectionUI}
+              <PartnerConnectCard
+                inviteCode={inviteCode}
+                onCopyLink={handleCopyInviteLink}
+                onRegenerate={handleRegenerateCode}
+                regenerating={regeneratingCode}
+                partnerEmail={partnerEmail}
+                onPartnerEmailChange={setPartnerEmail}
+                onSendRequest={handleSendRequest}
+                sending={saving}
+                outgoingRequests={outgoingRequests}
+                inputId="partnerEmailMatches"
+              />
             </CardContent>
           </Card>
         )}
