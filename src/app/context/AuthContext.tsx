@@ -1,9 +1,10 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 
 export const supabase = createClient(
-  `https://${projectId}.supabase.co`, 
+  `https://${projectId}.supabase.co`,
   publicAnonKey,
   {
     auth: {
@@ -21,8 +22,6 @@ export const supabase = createClient(
     }
   }
 );
-
-const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
 interface AuthContextType {
   accessToken: string | null;
@@ -51,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (code) {
           console.log('PKCE auth code found in URL, exchanging for session...');
-          
+
           // Exchange the auth code for a session
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
@@ -74,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 data.session.user?.user_metadata?.name ??
                 data.session.user?.email?.split('@')[0] ??
                 'User';
-              await fetch(`${baseUrl}/api/ensure-profile`, {
+              await fetch(`${API_BASE_URL}/api/ensure-profile`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -119,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Keep auth state in sync for token refresh, sign-out, etc.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
-      
+
       if (session?.access_token) {
         setAccessToken(session.access_token);
         setUserEmail(session.user?.email ?? null);

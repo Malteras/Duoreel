@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react';
-import { projectId } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 
 interface MovieInteraction {
   tmdbId: number;
@@ -37,7 +37,7 @@ export function UserInteractionsProvider({
   const [interactions, setInteractions] = useState<Map<number, MovieInteraction>>(new Map());
   const [watchedLoadingIds, setWatchedLoadingIds] = useState<Set<number>>(new Set());
   const [notInterestedLoadingIds, setNotInterestedLoadingIds] = useState<Set<number>>(new Set());
-  const [isInitialLoading, setIsInitialLoading] = useState(true); // Fix 1: default true so MoviesTab waits for interactions before fetching
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Guard against concurrent refreshInteractions calls.
   // onAuthStateChange + initAuth can both fire in quick succession when a
@@ -45,8 +45,6 @@ export function UserInteractionsProvider({
   // resolve would set isInitialLoading=false with potentially stale data from
   // a previous in-flight request — so we track in-flight state with a ref.
   const refreshInFlightRef = useRef(false);
-
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
   // Load all interactions on mount / auth change
   const refreshInteractions = useCallback(async () => {
@@ -68,7 +66,7 @@ export function UserInteractionsProvider({
     refreshInFlightRef.current = true;
     setIsInitialLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/movies/interactions/all`, {
+      const response = await fetch(`${API_BASE_URL}/movies/interactions/all`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = await response.json();
@@ -91,7 +89,7 @@ export function UserInteractionsProvider({
       refreshInFlightRef.current = false;
       setIsInitialLoading(false);
     }
-  }, [accessToken, baseUrl]);
+  }, [accessToken]);
 
   useEffect(() => {
     refreshInteractions();
@@ -119,7 +117,6 @@ export function UserInteractionsProvider({
     async (tmdbId: number, watched: boolean, movie?: any) => {
       if (!accessToken) return;
 
-      // Set loading state
       setWatchedLoadingIds((prev) => new Set(prev).add(tmdbId));
 
       // Optimistic update
@@ -141,19 +138,14 @@ export function UserInteractionsProvider({
 
       try {
         if (watched) {
-          const response = await fetch(`${baseUrl}/movies/watched`, {
+          const response = await fetch(`${API_BASE_URL}/movies/watched`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               Authorization: `Bearer ${accessToken}`,
             },
-            body: JSON.stringify({ movie: movie || { id: tmdbId } }), // Fix 2: send full movie data when available
+            body: JSON.stringify({ movie: movie || { id: tmdbId } }),
           });
-          // ✅ FIX Bug 2: Check HTTP response status — fetch() only throws on
-          // network failure, not on HTTP 4xx/5xx. Without this check, a server
-          // error silently leaves the optimistic update in place while the data
-          // is never actually written to the KV store. On reload the state is
-          // lost because there's nothing in the backend to restore from.
           if (!response.ok) {
             const errorBody = await response.json().catch(() => ({}));
             console.error(
@@ -163,7 +155,7 @@ export function UserInteractionsProvider({
             throw new Error(`HTTP ${response.status}: Failed to save watched status`);
           }
         } else {
-          const response = await fetch(`${baseUrl}/movies/watched/${tmdbId}`, {
+          const response = await fetch(`${API_BASE_URL}/movies/watched/${tmdbId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${accessToken}` },
           });
@@ -188,7 +180,7 @@ export function UserInteractionsProvider({
         });
       }
     },
-    [accessToken, baseUrl, refreshInteractions]
+    [accessToken, refreshInteractions]
   );
 
   // Toggle not-interested status with optimistic update
@@ -196,7 +188,6 @@ export function UserInteractionsProvider({
     async (tmdbId: number, notInterested: boolean) => {
       if (!accessToken) return;
 
-      // Set loading state
       setNotInterestedLoadingIds((prev) => new Set(prev).add(tmdbId));
 
       // Optimistic update
@@ -218,7 +209,7 @@ export function UserInteractionsProvider({
 
       try {
         if (notInterested) {
-          await fetch(`${baseUrl}/movies/not-interested`, {
+          await fetch(`${API_BASE_URL}/movies/not-interested`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -227,7 +218,7 @@ export function UserInteractionsProvider({
             body: JSON.stringify({ movieId: tmdbId }),
           });
         } else {
-          await fetch(`${baseUrl}/movies/not-interested/${tmdbId}`, {
+          await fetch(`${API_BASE_URL}/movies/not-interested/${tmdbId}`, {
             method: 'DELETE',
             headers: { Authorization: `Bearer ${accessToken}` },
           });
@@ -243,7 +234,7 @@ export function UserInteractionsProvider({
         });
       }
     },
-    [accessToken, baseUrl, refreshInteractions]
+    [accessToken, refreshInteractions]
   );
 
   // Helper functions

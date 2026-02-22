@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router';
-import { Film, Bookmark, Heart, Users } from 'lucide-react';
+import { Film, Bookmark, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { UserInteractionsProvider, useUserInteractions } from './UserInteractionsContext';
@@ -10,6 +10,7 @@ import { TooltipProvider } from './ui/tooltip';
 import { ProfileDropdown } from './ProfileDropdown';
 import { NotificationBell } from './NotificationBell';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 import duoReelLogo from 'figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
 
 export interface AppLayoutContext {
@@ -36,31 +37,21 @@ function GlobalImportWidgets() {
   const { watchlist, watched } = useImportContext();
 
   const watchlistOffset = 24;
-  const watchedOffset =
-    watchlist.importing && watchlist.minimized ? 128 : 24;
+  const watchedOffset = watchlist.importing && watchlist.minimized ? 128 : 24;
 
   return (
     <>
-      <MinimizedImportWidget
-        importState={watchlist}
-        color="blue"
-        bottomOffset={watchlistOffset}
-      />
-      <MinimizedImportWidget
-        importState={watched}
-        color="green"
-        bottomOffset={watchedOffset}
-      />
+      <MinimizedImportWidget importState={watchlist} color="blue" bottomOffset={watchlistOffset} />
+      <MinimizedImportWidget importState={watched} color="green" bottomOffset={watchedOffset} />
     </>
   );
 }
 
-// ── Fix 3: inner component that can consume UserInteractionsContext ──
+// ── Inner component that can consume UserInteractionsContext ──────────────────
 // AppLayout is the Provider, so we can't call useUserInteractions() there.
 // AppLayoutContent sits inside the Provider and can call it freely.
 interface AppLayoutContentProps {
   context: AppLayoutContext;
-  baseUrl: string;
   accessToken: string;
   setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
   handleSignOut: () => Promise<void>;
@@ -70,7 +61,6 @@ interface AppLayoutContentProps {
 
 function AppLayoutContent({
   context,
-  baseUrl,
   accessToken,
   setLikedMovies,
   handleSignOut,
@@ -81,16 +71,12 @@ function AppLayoutContent({
 
   const tabCls = ({ isActive }: { isActive: boolean }) =>
     `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
-      isActive
-        ? 'bg-blue-600 text-white'
-        : 'text-slate-200 hover:text-white hover:bg-slate-700'
+      isActive ? 'bg-blue-600 text-white' : 'text-slate-200 hover:text-white hover:bg-slate-700'
     }`;
 
   const matchTabCls = ({ isActive }: { isActive: boolean }) =>
     `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
-      isActive
-        ? 'bg-pink-600 text-white'
-        : 'text-slate-200 hover:text-white hover:bg-slate-700'
+      isActive ? 'bg-pink-600 text-white' : 'text-slate-200 hover:text-white hover:bg-slate-700'
     }`;
 
   return (
@@ -98,7 +84,7 @@ function AppLayoutContent({
       accessToken={accessToken}
       onWatchlistImported={(imported, failed, total) => {
         // Re-fetch liked movies to reflect the import
-        fetch(`${baseUrl}/movies/liked`, {
+        fetch(`${API_BASE_URL}/movies/liked`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         })
           .then(r => r.ok ? r.json() : Promise.reject(r.status))
@@ -106,27 +92,19 @@ function AppLayoutContent({
           .catch(err => console.error('Error refreshing liked movies:', err));
 
         // Create bell notification for import completion
-        fetch(`${baseUrl}/notifications/import-complete`, {
+        fetch(`${API_BASE_URL}/notifications/import-complete`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify({ type: 'watchlist', imported, failed, total }),
         }).catch(err => console.error('Error creating import notification:', err));
       }}
       onWatchedImported={(imported, failed, total) => {
-        // Fix 3: refresh interactions so watchedMovieIds updates immediately
-        // without requiring a page reload
         refreshInteractions();
 
         // Create bell notification for watched import completion
-        fetch(`${baseUrl}/notifications/import-complete`, {
+        fetch(`${API_BASE_URL}/notifications/import-complete`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
           body: JSON.stringify({ type: 'watched', imported, failed, total }),
         }).catch(err => console.error('Error creating import notification:', err));
       }}
@@ -151,7 +129,6 @@ function AppLayoutContent({
                 <ProfileDropdown
                   accessToken={accessToken}
                   userEmail={context.userEmail}
-                  projectId={projectId}
                   onSignOut={handleSignOut}
                 />
               </div>
@@ -169,11 +146,7 @@ function AppLayoutContent({
                 Saved
               </NavLink>
 
-              <NavLink
-                to="/matches"
-                onClick={handleMatchesClick}
-                className={matchTabCls}
-              >
+              <NavLink to="/matches" onClick={handleMatchesClick} className={matchTabCls}>
                 <Users className="size-4" />
                 Matches
                 {matchNotificationCount > 0 && (
@@ -252,12 +225,10 @@ export function AppLayout() {
   const [likedMovies, setLikedMovies] = useState<any[]>([]);
   const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(new Map());
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
-
   // Fetch liked movies once on mount
   useEffect(() => {
     if (!accessToken) return;
-    fetch(`${baseUrl}/movies/liked`, {
+    fetch(`${API_BASE_URL}/movies/liked`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then(r => r.ok ? r.json() : Promise.reject(r.status))
@@ -271,7 +242,7 @@ export function AppLayout() {
 
     const fetchNotifications = async () => {
       try {
-        const r = await fetch(`${baseUrl}/notifications/matches`, {
+        const r = await fetch(`${API_BASE_URL}/notifications/matches`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
         const data = await r.json();
@@ -288,7 +259,7 @@ export function AppLayout() {
 
   const handleSignOut = async () => {
     try {
-      await fetch(`${baseUrl}/auth/signout`, {
+      await fetch(`${API_BASE_URL}/auth/signout`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -302,7 +273,7 @@ export function AppLayout() {
 
   const handleMatchesClick = () => {
     if (matchNotificationCount > 0 && accessToken) {
-      fetch(`${baseUrl}/notifications/matches/seen`, {
+      fetch(`${API_BASE_URL}/notifications/matches/seen`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
       }).then(() => setMatchNotificationCount(0));
@@ -334,7 +305,6 @@ export function AppLayout() {
       <UserInteractionsProvider accessToken={accessToken}>
         <AppLayoutContent
           context={context}
-          baseUrl={baseUrl}
           accessToken={accessToken!}
           setLikedMovies={setLikedMovies}
           handleSignOut={handleSignOut}

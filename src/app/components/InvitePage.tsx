@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
-import { Loader2, Heart, AlertCircle, Home } from 'lucide-react';
+import { Loader2, AlertCircle, Home } from 'lucide-react';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
 import { Helmet } from 'react-helmet-async';
-import { projectId } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 
-type InviteStatus = 
-  | 'loading' 
-  | 'success' 
-  | 'error' 
-  | 'self_invite' 
+type InviteStatus =
+  | 'loading'
+  | 'success'
+  | 'error'
+  | 'self_invite'
   | 'already_connected'
   | 'inviter_connected';
 
@@ -22,8 +22,6 @@ export function InvitePage() {
 
   const [status, setStatus] = useState<InviteStatus>('loading');
   const [partnerName, setPartnerName] = useState('');
-
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
   // Invite-page specific OG meta — shown while the link is being processed,
   // which is exactly when a social-media bot or messaging app scrapes it.
@@ -42,7 +40,7 @@ export function InvitePage() {
     // Logged in — accept the invite
     const acceptInvite = async () => {
       try {
-        const res = await fetch(`${baseUrl}/partner/accept-invite`, {
+        const res = await fetch(`${API_BASE_URL}/partner/accept-invite`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -55,7 +53,7 @@ export function InvitePage() {
 
         if (res.ok) {
           setPartnerName(data.inviterName);
-          
+
           if (data.alreadySent) {
             setStatus('success');
             toast.info(`You've already sent a request to ${data.inviterName}`);
@@ -63,7 +61,7 @@ export function InvitePage() {
             setStatus('success');
             toast.success(`🎬 Request sent to ${data.inviterName}!`);
           }
-          
+
           // Redirect to discover after 3 seconds
           setTimeout(() => navigate('/discover'), 3000);
         } else if (data.error === 'self_invite') {
@@ -90,7 +88,7 @@ export function InvitePage() {
     acceptInvite();
   }, [accessToken, code]);
 
-  // ─── Loading State ────────────────────────────────────────
+  // ─── Loading State ─────────────────────────────────────────
   if (status === 'loading') {
     return (
       <>
@@ -117,7 +115,7 @@ export function InvitePage() {
     );
   }
 
-  // ─── Success State ────────────────────────────────────────
+  // ─── Success State ─────────────────────────────────────────
   if (status === 'success') {
     return (
       <>
@@ -140,10 +138,7 @@ export function InvitePage() {
               <Loader2 className="size-4 animate-spin" />
               <span>Redirecting to Discover...</span>
             </div>
-            <Button
-              onClick={() => navigate('/discover')}
-              className="bg-pink-600 hover:bg-pink-700"
-            >
+            <Button onClick={() => navigate('/discover')} className="bg-pink-600 hover:bg-pink-700">
               Go to Discover Now →
             </Button>
           </div>
@@ -152,7 +147,7 @@ export function InvitePage() {
     );
   }
 
-  // ─── Self Invite Error ────────────────────────────────────
+  // ─── Self Invite Error ─────────────────────────────────────
   if (status === 'self_invite') {
     return (
       <>
@@ -160,16 +155,9 @@ export function InvitePage() {
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
           <div className="max-w-md w-full text-center">
             <div className="text-6xl mb-6">🔗</div>
-            <h1 className="text-3xl font-bold text-white mb-3">
-              That's Your Own Link!
-            </h1>
-            <p className="text-slate-400 mb-8">
-              This is your personal invite link. Share it with your partner instead!
-            </p>
-            <Button
-              onClick={() => navigate('/profile')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
+            <h1 className="text-3xl font-bold text-white mb-3">That's Your Own Link!</h1>
+            <p className="text-slate-400 mb-8">This is your personal invite link. Share it with your partner instead!</p>
+            <Button onClick={() => navigate('/profile')} className="bg-blue-600 hover:bg-blue-700">
               Go to Profile →
             </Button>
           </div>
@@ -178,7 +166,7 @@ export function InvitePage() {
     );
   }
 
-  // ─── Already Connected Error ──────────────────────────────
+  // ─── Already Connected Error ───────────────────────────────
   if (status === 'already_connected') {
     return (
       <>
@@ -186,16 +174,11 @@ export function InvitePage() {
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
           <div className="max-w-md w-full text-center">
             <div className="text-6xl mb-6">💚</div>
-            <h1 className="text-3xl font-bold text-white mb-3">
-              Already Connected
-            </h1>
+            <h1 className="text-3xl font-bold text-white mb-3">Already Connected</h1>
             <p className="text-slate-400 mb-8">
               You're already connected with a partner. Disconnect first to connect with someone else.
             </p>
-            <Button
-              onClick={() => navigate('/matches')}
-              className="bg-green-600 hover:bg-green-700"
-            >
+            <Button onClick={() => navigate('/matches')} className="bg-green-600 hover:bg-green-700">
               View Your Matches →
             </Button>
           </div>
@@ -204,7 +187,7 @@ export function InvitePage() {
     );
   }
 
-  // ─── Inviter Connected Error ──────────────────────────────
+  // ─── Inviter Connected Error ───────────────────────────────
   if (status === 'inviter_connected') {
     return (
       <>
@@ -212,16 +195,9 @@ export function InvitePage() {
         <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
           <div className="max-w-md w-full text-center">
             <div className="text-6xl mb-6">💔</div>
-            <h1 className="text-3xl font-bold text-white mb-3">
-              Partner Already Connected
-            </h1>
-            <p className="text-slate-400 mb-8">
-              {partnerName} is already connected with someone else.
-            </p>
-            <Button
-              onClick={() => navigate('/discover')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
+            <h1 className="text-3xl font-bold text-white mb-3">Partner Already Connected</h1>
+            <p className="text-slate-400 mb-8">{partnerName} is already connected with someone else.</p>
+            <Button onClick={() => navigate('/discover')} className="bg-blue-600 hover:bg-blue-700">
               Go to Discover →
             </Button>
           </div>
@@ -230,19 +206,15 @@ export function InvitePage() {
     );
   }
 
-  // ─── Invalid Link Error ───────────────────────────────────
+  // ─── Invalid Link Error ────────────────────────────────────
   return (
     <>
       <Helmet><title>DuoReel — Invalid Invite Link</title></Helmet>
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
           <AlertCircle className="size-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-white mb-3">
-            Invalid Invite Link
-          </h1>
-          <p className="text-slate-400 mb-8">
-            This invite link doesn't exist or has been regenerated.
-          </p>
+          <h1 className="text-3xl font-bold text-white mb-3">Invalid Invite Link</h1>
+          <p className="text-slate-400 mb-8">This invite link doesn't exist or has been regenerated.</p>
           <Button
             onClick={() => navigate('/discover')}
             variant="outline"

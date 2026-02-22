@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_BASE_URL } from '../../utils/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -24,7 +25,7 @@ export function AuthScreen({ projectId, publicAnonKey, onAuthSuccess, onBack, de
   const [signupData, setSignupData] = useState({ name: '', email: '', password: '' });
   const [signinData, setSigninData] = useState({ email: '', password: '' });
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+  const baseUrl = API_BASE_URL;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();

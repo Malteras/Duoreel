@@ -1,10 +1,11 @@
+import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
-import { useState, useEffect } from 'react';
 import { Search, Loader2, Eye, EyeOff, Clock } from 'lucide-react';
 
 interface AdvancedFiltersModalProps {
@@ -114,7 +115,7 @@ export function AdvancedFiltersModal({
   const [searchingActor, setSearchingActor] = useState(false);
   const [localShowWatched, setLocalShowWatched] = useState(showWatchedMovies);
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+  const baseUrl = API_BASE_URL;
 
   // Reset filters when modal opens
   useEffect(() => {

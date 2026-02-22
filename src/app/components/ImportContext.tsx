@@ -1,6 +1,6 @@
 import { createContext, useContext, ReactNode } from 'react';
 import { useCSVImport, CSVImportState } from '../hooks/useCSVImport';
-import { projectId } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 
 interface ImportContextType {
   watchlist: CSVImportState;
@@ -22,17 +22,15 @@ export function ImportProvider({
   onWatchlistImported,
   onWatchedImported,
 }: ImportProviderProps) {
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
-
   const watchlist = useCSVImport({
-    endpoint: `${baseUrl}/movies/import`,
+    endpoint: `${API_BASE_URL}/movies/import`,
     accessToken,
     label: 'watchlist',
     onSuccess: onWatchlistImported,
   });
 
   const watched = useCSVImport({
-    endpoint: `${baseUrl}/movies/import-watched`,
+    endpoint: `${API_BASE_URL}/movies/import-watched`,
     accessToken,
     label: 'watched movies',
     onSuccess: onWatchedImported,

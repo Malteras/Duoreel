@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { API_BASE_URL } from '../../utils/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -59,7 +60,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
   const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(new Map());
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+  const baseUrl = API_BASE_URL;
 
   // ── Data fetching ──────────────────────────────────────────────────────────
   const fetchData = async () => {

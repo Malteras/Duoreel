@@ -9,24 +9,22 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from './ui/dropdown-menu';
+import { API_BASE_URL } from '../../utils/api';
 
 interface ProfileDropdownProps {
   accessToken: string | null;
   userEmail: string | null;
-  projectId: string;
   onSignOut: () => void;
 }
 
-export function ProfileDropdown({ accessToken, userEmail, projectId, onSignOut }: ProfileDropdownProps) {
+export function ProfileDropdown({ accessToken, userEmail, onSignOut }: ProfileDropdownProps) {
   const [profile, setProfile] = useState<any>(null);
-
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
 
   // Fetch profile for avatar + name display
   useEffect(() => {
     if (!accessToken) return;
 
-    fetch(`${baseUrl}/profile`, {
+    fetch(`${API_BASE_URL}/profile`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
       .then(r => r.ok ? r.json() : Promise.reject())

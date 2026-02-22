@@ -1,10 +1,11 @@
+import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
-import { useState, useEffect } from 'react';
 
 interface MovieDetailModalProps {
   movie: any;
@@ -61,7 +62,7 @@ export function MovieDetailModal({
   useEffect(() => {
     const imdbId = movie?.external_ids?.imdb_id;
     
-    if (isOpen && imdbId && projectId && publicAnonKey && globalImdbCache && setGlobalImdbCache) {
+    if (isOpen && imdbId && publicAnonKey && globalImdbCache && setGlobalImdbCache) {
       // Check if we already have this rating in cache
       if (globalImdbCache.has(imdbId)) {
         console.log(`Using cached IMDb rating for ${imdbId}:`, globalImdbCache.get(imdbId));
@@ -70,7 +71,7 @@ export function MovieDetailModal({
 
       // Not in cache, fetch it
       setLoadingImdb(true);
-      fetch(`https://${projectId}.supabase.co/functions/v1/make-server-5623fde1/omdb/rating/${imdbId}`, {
+      fetch(`${API_BASE_URL}/omdb/rating/${imdbId}`, {
         headers: { Authorization: `Bearer ${publicAnonKey}` }
       })
         .then(async res => {
@@ -102,7 +103,7 @@ export function MovieDetailModal({
         .catch(err => console.error('Error fetching IMDb rating:', err))
         .finally(() => setLoadingImdb(false));
     }
-  }, [isOpen, movie?.external_ids?.imdb_id, projectId, publicAnonKey, globalImdbCache, setGlobalImdbCache]);
+  }, [isOpen, movie?.external_ids?.imdb_id, publicAnonKey, globalImdbCache, setGlobalImdbCache]);
 
   if (!movie) return null;
 

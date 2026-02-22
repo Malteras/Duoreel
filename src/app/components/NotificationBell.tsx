@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import { Button } from './ui/button';
-import { projectId } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 
@@ -43,13 +43,11 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
-
   // Fetch unread count
   const fetchUnreadCount = useCallback(async () => {
     if (!accessToken) return;
     try {
-      const response = await fetch(`${baseUrl}/notifications/unread-count`, {
+      const response = await fetch(`${API_BASE_URL}/notifications/unread-count`, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = await response.json();
@@ -57,7 +55,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
     } catch (error) {
       console.error('Error fetching unread count:', error);
     }
-  }, [accessToken, baseUrl]);
+  }, [accessToken]);
 
   // Poll unread count every 30 seconds
   useEffect(() => {
@@ -76,7 +74,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
 
       try {
         const response = await fetch(
-          `${baseUrl}/notifications?limit=20&offset=${currentOffset}`,
+          `${API_BASE_URL}/notifications?limit=20&offset=${currentOffset}`,
           {
             headers: { Authorization: `Bearer ${accessToken}` },
           }
@@ -98,7 +96,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
         setLoading(false);
       }
     },
-    [accessToken, baseUrl, offset]
+    [accessToken, offset]
   );
 
   // Load notifications when dropdown opens
@@ -121,7 +119,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   // Mark all as read
   const handleMarkAllRead = async () => {
     try {
-      await fetch(`${baseUrl}/notifications/mark-all-read`, {
+      await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
       });
@@ -139,7 +137,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
     if (!notification || notification.read) return;
 
     try {
-      await fetch(`${baseUrl}/notifications/mark-read`, {
+      await fetch(`${API_BASE_URL}/notifications/mark-read`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -162,11 +160,11 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   const [rejectingRequest, setRejectingRequest] = useState<string | null>(null);
 
   const handleAcceptRequest = async (e: React.MouseEvent, fromUserId: string, notificationId: string) => {
-    e.stopPropagation(); // Prevent notification click
+    e.stopPropagation();
     setAcceptingRequest(fromUserId);
 
     try {
-      const response = await fetch(`${baseUrl}/partner/accept`, {
+      const response = await fetch(`${API_BASE_URL}/partner/accept`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -176,15 +174,11 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         toast.success('🎉 Partner request accepted!');
-        
-        // Remove notification from list
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-        fetchUnreadCount(); // Refresh unread count
-        
-        // Navigate to matches page to show connection
+        fetchUnreadCount();
         setTimeout(() => {
           setIsOpen(false);
           navigate('/matches');
@@ -201,11 +195,11 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   };
 
   const handleRejectRequest = async (e: React.MouseEvent, fromUserId: string, notificationId: string) => {
-    e.stopPropagation(); // Prevent notification click
+    e.stopPropagation();
     setRejectingRequest(fromUserId);
 
     try {
-      const response = await fetch(`${baseUrl}/partner/reject`, {
+      const response = await fetch(`${API_BASE_URL}/partner/reject`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -215,13 +209,11 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
       });
 
       const data = await response.json();
-      
+
       if (response.ok) {
         toast.success('Partner request rejected');
-        
-        // Remove notification from list
         setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
-        fetchUnreadCount(); // Refresh unread count
+        fetchUnreadCount();
       } else {
         toast.error(data.error || 'Failed to reject request');
       }
@@ -237,7 +229,6 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id);
 
-    // Navigate based on notification type
     if (notification.type === 'movie_match' && notification.data.movieId) {
       setIsOpen(false);
       navigate(`/matches?movie=${notification.data.movieId}`);
@@ -247,7 +238,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
       notification.type === 'match_milestone'
     ) {
       setIsOpen(false);
-      navigate('/matches'); // Partnership requests and milestones are shown in the Matches tab
+      navigate('/matches');
     } else if (notification.type === 'import_complete') {
       setIsOpen(false);
       navigate(notification.data.importType === 'watched' ? '/discover' : '/saved');
@@ -381,7 +372,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           <div className="flex-1 min-w-0">
             <p className="text-sm text-slate-300 leading-relaxed">{message}</p>
             <p className="text-xs text-slate-500 mt-1 mb-2">{formatTime(notification.createdAt)}</p>
-            
+
             {/* Action buttons */}
             <div className="flex gap-2">
               <Button
