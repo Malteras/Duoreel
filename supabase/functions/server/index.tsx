@@ -107,6 +107,43 @@ app.get("/make-server-5623fde1/health", (c) => {
   return c.json({ status: "ok" });
 });
 
+// ── PWA Manifest ──────────────────────────────────────────────────────────────
+// Served from here because Figma Make's hosting redirects all paths to the
+// SPA shell, so /manifest.json cannot be served as a static file.
+app.get("/make-server-5623fde1/manifest.webmanifest", (c) => {
+  const manifest = {
+    name: "DuoReel",
+    short_name: "DuoReel",
+    description: "Find movies you both love",
+    start_url: "/discover",
+    display: "standalone",
+    background_color: "#0f172a",
+    theme_color: "#0f172a",
+    orientation: "portrait",
+    icons: [
+      {
+        src: "/icons/icon.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+        purpose: "any",
+      },
+      {
+        src: "/icons/icon-maskable.svg",
+        sizes: "any",
+        type: "image/svg+xml",
+        purpose: "maskable",
+      },
+    ],
+    categories: ["entertainment", "lifestyle"],
+  };
+
+  return c.json(manifest, 200, {
+    "Content-Type": "application/manifest+json",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=3600",
+  });
+});
+
 // Auth routes
 app.post("/make-server-5623fde1/auth/signup", async (c) => {
   try {
