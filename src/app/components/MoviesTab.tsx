@@ -35,6 +35,7 @@ import {
   ChevronDown,
   Ban,
   X,
+  Film,
 } from "lucide-react";
 
 interface MoviesTabProps {
