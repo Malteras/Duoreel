@@ -164,11 +164,11 @@ export function MovieDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-slate-900 border-slate-700 overflow-hidden" aria-describedby={undefined}>
+      <DialogContent className="max-w-4xl max-h-[90dvh] p-0 bg-slate-900 border-slate-700 overflow-hidden" aria-describedby={undefined}>
         <DialogHeader className="sr-only">
           <DialogTitle>{movie.title}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[90vh]">
+        <ScrollArea className="max-h-[90dvh]">
           {/* Backdrop Image */}
           <div className="relative h-64 md:h-80 overflow-hidden">
             <img 

@@ -427,7 +427,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   // ── Guard ──────────────────────────────────────────────────────────────────
   if (!accessToken) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center text-white">
           <Users className="size-16 mx-auto mb-4 text-slate-600" />
           <h2 className="text-2xl font-bold mb-2">Sign in to view matches</h2>
@@ -438,7 +438,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
       <div className="max-w-6xl mx-auto px-4 py-8">
 
         {/* Incoming Partner Requests */}

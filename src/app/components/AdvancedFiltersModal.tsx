@@ -195,7 +195,7 @@ export function AdvancedFiltersModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby={undefined}>
+      <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl max-h-[90dvh] overflow-y-auto" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">Advanced Filters</DialogTitle>
         </DialogHeader>

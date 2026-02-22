@@ -896,7 +896,7 @@ export function MoviesTab({
   // ──────────────── Render ────────────────
   if (!accessToken) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center" style={{ minHeight: '100dvh' }}>
         <div className="text-center text-white">
           <Film className="size-16 mx-auto mb-4 text-slate-600" />
           <h2 className="text-2xl font-bold mb-2">
@@ -908,7 +908,7 @@ export function MoviesTab({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Search + Filter Bar */}
         <div className="mb-6 space-y-4">

@@ -131,7 +131,7 @@ function AppLayoutContent({
         }).catch(err => console.error('Error creating import notification:', err));
       }}
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
         {/* Sticky header */}
         <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
           <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
