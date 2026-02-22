@@ -185,3 +185,25 @@ Always use `lucide-react`. Icon sizes follow this convention:
 - Inline with text: `size-4`
 - Standalone/action: `size-5`
 - Large decorative: `size-6` or `size-8`
+
+
+### Viewport Height on Mobile
+
+Never use `100vh` or `min-h-screen` alone for full-height layouts. Mobile browsers (Chrome, Brave, Samsung Internet) calculate `100vh` against the total viewport including browser chrome (address bar, tab strip), causing elements to be clipped or pushed off-screen when the browser UI is visible.
+
+**Always pair `min-h-screen` with a `dvh` style override:**
+```tsx
+<div className="min-h-screen ..." style={{ minHeight: '100dvh' }}>
+```
+
+**For modals, use `dvh` arbitrary values instead of `vh`:**
+```tsx
+// ✅ correct
+<DialogContent className="max-h-[90dvh] ...">
+<ScrollArea className="max-h-[90dvh]">
+
+// ❌ wrong — clips on mobile browsers
+<DialogContent className="max-h-[90vh] ...">
+```
+
+`dvh` (dynamic viewport height) updates in real time based on the actually visible viewport. It is supported on all modern mobile browsers and behaves identically to `vh` on desktop.
