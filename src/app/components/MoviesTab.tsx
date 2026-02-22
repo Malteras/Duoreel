@@ -179,6 +179,7 @@ export function MoviesTab({
     new Map(),
   );
   const pendingRemovalsRef = useRef<Set<number>>(new Set());
+  const likedMovieIdsRef = useRef<Set<number>>(new Set());
 
   // Keep ref in sync so fetchMovies can read it without being a reactive dependency
   useEffect(() => {
@@ -214,6 +215,11 @@ export function MoviesTab({
     () => new Set(likedMovies.map((m) => m.id)),
     [likedMovies],
   );
+
+  // Keep ref in sync so fetchMovies can read it without being a reactive dependency
+  useEffect(() => {
+    likedMovieIdsRef.current = likedMovieIds;
+  }, [likedMovieIds]);
 
   // Active filter count for badge display
   const activeFilterCount = useMemo(() => {
@@ -332,7 +338,7 @@ export function MoviesTab({
           // Also filter out liked movies from discover (they already saved them)
           const newMovies = data.results.filter(
             (m: any) =>
-              !likedMovieIds.has(m.id) &&
+              !likedMovieIdsRef.current.has(m.id) &&
               !pendingRemovalsRef.current.has(m.id),
           );
 
@@ -365,7 +371,6 @@ export function MoviesTab({
       filters,
       sortBy,
       showWatchedMovies,
-      likedMovieIds,
       baseUrl,
     ],
   );
