@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../../utils/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -39,7 +40,7 @@ export function ProfilePage() {
   // IMDb update state
   const [updatingImdb, setUpdatingImdb] = useState(false);
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+  const baseUrl = API_BASE_URL;
 
   // ─── Fetch profile + partner on mount ───────────────────────────
   useEffect(() => {

@@ -5,6 +5,7 @@ import {
   useCallback,
   useMemo,
 } from "react";
+import { API_BASE_URL } from "../../utils/api";
 import { MovieCard } from "./MovieCard";
 import { MovieDetailModal } from "./MovieDetailModal";
 import { MovieCardSkeletonGrid } from "./MovieCardSkeleton";
@@ -208,7 +209,7 @@ export function MoviesTab({
     isInitialLoading: contextLoading,
   } = useUserInteractions();
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+  const baseUrl = API_BASE_URL;
 
   // Liked movie IDs set for quick lookup
   const likedMovieIds = useMemo(

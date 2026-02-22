@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { API_BASE_URL } from '../../utils/api';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -61,7 +62,7 @@ export function SavedMoviesTab({
   const [sentinelEl, setSentinelEl] = useState<HTMLDivElement | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const baseUrl = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+  const baseUrl = API_BASE_URL;
 
   // Fetch partner info and partner's list
   useEffect(() => {
