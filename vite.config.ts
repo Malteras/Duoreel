@@ -42,13 +42,28 @@ const injectOgMetaPlugin: Plugin = {
     };
     const manifestDataUri = `data:application/manifest+json;base64,${Buffer.from(JSON.stringify(manifest)).toString('base64')}`;
 
+    // Inline script that creates a blob: URL for the manifest and injects the
+    // <link rel="manifest"> dynamically. This bypasses both data: URI browser
+    // restrictions and Figma Make's hosting redirect for /manifest.json.
+    const manifestScript = `<script>
+    (function(){
+      var m = ${JSON.stringify(manifest)};
+      var b = new Blob([JSON.stringify(m)], {type: 'application/manifest+json'});
+      var u = URL.createObjectURL(b);
+      var l = document.createElement('link');
+      l.rel = 'manifest';
+      l.href = u;
+      document.head.appendChild(l);
+    })();
+    </script>`;
+
     const tags = `
     <!-- Primary meta -->
     <meta name="description" content="Connect with your partner and discover movies you'll both want to watch. Like, match, and never argue about what to watch again." />
     <link rel="canonical" href="${SITE_URL}/" />
 
-    <!-- PWA — manifest inlined as data URI (Figma Make hosting workaround) -->
-    <link rel="manifest" href="${manifestDataUri}" />
+    <!-- PWA — manifest injected via blob URL (Figma Make hosting workaround) -->
+    ${manifestScript}
     <meta name="theme-color" content="#0f172a" />
     <meta name="mobile-web-app-capable" content="yes" />
 

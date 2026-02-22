@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router';
+import { Helmet } from 'react-helmet-async';
 import { AuthProvider } from '../context/AuthContext';
 import { Toaster } from './ui/sonner';
 
@@ -6,6 +7,9 @@ import { Toaster } from './ui/sonner';
 export function Root() {
   return (
     <AuthProvider>
+      <Helmet>
+        <title>DuoReel</title>
+      </Helmet>
       <Outlet />
       <Toaster />
     </AuthProvider>
