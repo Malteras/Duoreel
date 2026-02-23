@@ -613,6 +613,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
                 projectId={projectId}
                 publicAnonKey={publicAnonKey}
+                globalImdbCache={globalImdbCache}
               />
             ))}
           </div>
@@ -639,6 +640,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}
         setGlobalImdbCache={setGlobalImdbCache}
+        imdbRatingFromCard={selectedMovie ? ((selectedMovie as any).imdbRating || null) : null}
       />
     </div>
   );

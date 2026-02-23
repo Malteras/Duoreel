@@ -630,6 +630,7 @@ export function SavedMoviesTab({
                     onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
                     projectId={projectId}
                     publicAnonKey={publicAnonKey}
+                    globalImdbCache={globalImdbCache}
                   />
                 ))}
               </div>
@@ -690,6 +691,7 @@ export function SavedMoviesTab({
                     onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
                     projectId={projectId}
                     publicAnonKey={publicAnonKey}
+                    globalImdbCache={globalImdbCache}
                   />
                 ))}
               </div>
@@ -762,6 +764,7 @@ export function SavedMoviesTab({
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}
         setGlobalImdbCache={setGlobalImdbCache}
+        imdbRatingFromCard={selectedMovie ? ((selectedMovie as any).imdbRating || null) : null}
         onWatched={() => selectedMovie && handleWatched(selectedMovie)}
         onUnwatched={() => selectedMovie && handleUnwatched(selectedMovie.id)}
       />
