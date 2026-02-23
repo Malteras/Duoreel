@@ -111,13 +111,23 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
         
-        {/* Match Badge - shown at top right if isMatch */}
-        {isMatch && (
-          <div className="absolute top-4 right-4">
-            <div className="bg-pink-600 text-white px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm font-semibold shadow-lg">
-              <Heart className="size-4 fill-white" />
-              Match
-            </div>
+        {/* Status Badges - top right: Match and/or Watched */}
+        {(isMatch || isWatched) && (
+          <div className="absolute top-4 right-4 z-10 flex flex-col items-end gap-1.5">
+            {isMatch && (
+              <div className={`bg-pink-600 text-white rounded-full flex items-center shadow-lg font-semibold
+                ${isWatched ? 'px-2 py-1 gap-1 text-xs' : 'px-3 py-1.5 gap-1.5 text-sm'}`}>
+                <Heart className={isWatched ? 'size-3 fill-white' : 'size-4 fill-white'} />
+                Match
+              </div>
+            )}
+            {isWatched && (
+              <div className={`bg-slate-700/80 text-slate-300 rounded-full flex items-center shadow-lg backdrop-blur-sm font-medium
+                ${isMatch ? 'px-2 py-1 gap-1 text-xs' : 'px-3 py-1.5 gap-1.5 text-sm'}`}>
+                <Eye className={isMatch ? 'size-3' : 'size-4'} />
+                Watched
+              </div>
+            )}
           </div>
         )}
         
@@ -195,16 +205,6 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
               </div>
             )}
           </>
-        )}
-        
-        {/* Watched Badge - shown at bottom left if isWatched */}
-        {isWatched && (
-          <div className="absolute bottom-4 left-4 z-10">
-            <div className="bg-slate-700/80 text-slate-300 px-3 py-1.5 rounded-full flex items-center gap-1.5 text-sm font-medium shadow-lg backdrop-blur-sm">
-              <Eye className="size-4" />
-              Watched
-            </div>
-          </div>
         )}
         
         {/* Rating Badges - bottom right of poster */}
