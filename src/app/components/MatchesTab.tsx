@@ -1,12 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../../utils/api';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { Heart, Link as LinkIcon, Loader2, Users, X, Check, UserX, Bell, Copy, RotateCcw, Filter, ArrowUpDown, Tv } from 'lucide-react';
+import { Heart, Loader2, Users, X, Check, UserX, Bell, Filter, ArrowUpDown, Tv } from 'lucide-react';
 import { toast } from 'sonner';
 import { MovieCard } from './MovieCard';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -44,11 +42,10 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [partnerEmail, setPartnerEmail] = useState('');
 
   // ── Filter / sort state ────────────────────────────────────────────────────
-  // 'all' = no service filter; any other value is a TMDb provider_id string
   const [selectedService, setSelectedService] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'default' | 'rating' | 'year-new' | 'year-old'>('default');
 
-  // Enrichment state (watch/providers, director, actors, runtime)
+  // Enrichment state
   const [enrichedIds, setEnrichedIds] = useState<Set<number>>(new Set());
   const enrichingRef = useRef<Set<number>>(new Set());
 
@@ -56,7 +53,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [inviteCode, setInviteCode] = useState('');
   const [regeneratingCode, setRegeneratingCode] = useState(false);
 
-  // Movie modal state from hook
   const { selectedMovie, modalOpen, openMovie, closeMovie } = useMovieModal(accessToken);
   const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
   const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(new Map());
@@ -64,7 +60,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const baseUrl = API_BASE_URL;
 
   // ── Data fetching ──────────────────────────────────────────────────────────
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [partnerRes, incomingRes, outgoingRes, matchesRes, inviteCodeRes] = await Promise.all([
@@ -104,12 +100,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     } finally {
       setLoading(false);
     }
-  };
+  }, [accessToken, baseUrl]);
 
   useEffect(() => {
     if (!accessToken) return;
     fetchData();
-  }, [accessToken]);
+  }, [accessToken, fetchData]);
 
   // ── IMDb ratings ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -132,15 +128,13 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           }));
         }
       } catch (err) {
-        console.log('Error fetching IMDb ratings:', err);
+        console.error('Error fetching IMDb ratings:', err);
       }
     };
     fetchImdbRatings();
   }, [matchedMovies.length, accessToken]);
 
   // ── Provider enrichment ────────────────────────────────────────────────────
-  // Batch-fetches /movies/{id} (3 concurrent, 200 ms gap) to populate
-  // watch/providers, director, actors, runtime for each matched movie.
   useEffect(() => {
     if (matchedMovies.length === 0 || !accessToken) return;
     const enrichMovies = async () => {
@@ -339,93 +333,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     finally { setRegeneratingCode(false); }
   };
 
-  // ── Partner connection UI ──────────────────────────────────────────────────
-  const PartnerConnectionUI = (
-    <div className="space-y-4">
-      {outgoingRequests.length > 0 && (
-        <div className="mb-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-          <p className="text-blue-400 font-medium mb-1">Pending Request</p>
-          {outgoingRequests.map((r) => (
-            <p key={r.toUserId} className="text-slate-300 text-sm">
-              Waiting for response from {r.toEmail || r.toUserId}
-            </p>
-          ))}
-        </div>
-      )}
-
-      <div className="bg-slate-900/50 border border-slate-700 border-dashed rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <LinkIcon className="size-4 text-cyan-400" />
-          <Label className="text-white font-semibold text-sm">Share Your Invite Link</Label>
-        </div>
-        {inviteCode ? (
-          <>
-            <div className="flex gap-2 mb-3">
-              <Input
-                value={`${window.location.origin}/invite/${inviteCode}`}
-                readOnly
-                className="bg-slate-800 border-slate-600 text-cyan-400 font-mono text-xs"
-              />
-              <Button onClick={handleCopyInviteLink} className="bg-blue-600 hover:bg-blue-700 flex-shrink-0">
-                <Copy className="size-4 mr-2" />Copy
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-xs text-slate-500">
-                Send this link to your partner — they'll need to accept your request
-              </p>
-              <Button
-                onClick={handleRegenerateCode}
-                disabled={regeneratingCode}
-                variant="ghost"
-                size="sm"
-                className="text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                {regeneratingCode ? <Loader2 className="size-3 mr-1 animate-spin" /> : <RotateCcw className="size-3 mr-1" />}
-                <span className="text-xs">Regenerate</span>
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Loader2 className="size-4 animate-spin" /><span>Loading invite code...</span>
-          </div>
-        )}
-      </div>
-
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-slate-700" /></div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-slate-800 px-3 text-slate-500 font-semibold">or connect by email</span>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="partnerEmailMatches" className="text-white text-sm">Partner's Email</Label>
-        <div className="flex gap-2">
-          <Input
-            id="partnerEmailMatches"
-            type="email"
-            value={partnerEmail}
-            onChange={(e) => setPartnerEmail(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendRequest()}
-            placeholder="partner@example.com"
-            className="bg-slate-900 border-slate-700 text-white"
-          />
-          <Button
-            onClick={handleSendRequest}
-            disabled={saving || !partnerEmail || outgoingRequests.length > 0}
-            className="bg-pink-600 hover:bg-pink-700 flex-shrink-0"
-          >
-            {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : <LinkIcon className="size-4 mr-2" />}
-            Send Request
-          </Button>
-        </div>
-        <p className="text-xs text-slate-500">They'll need to accept your request</p>
-      </div>
-    </div>
-  );
-
   // ── Guard ──────────────────────────────────────────────────────────────────
   if (!accessToken) {
     return (
@@ -537,11 +444,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           <p className="text-slate-400">Movies you both want to watch</p>
         </div>
 
-        {/* ── Filter & Sort bar — only when there are matches ── */}
+        {/* ── Filter & Sort bar ── */}
         {!loading && partner && matchedMovies.length > 0 && (
           <div className="flex items-center gap-3 md:justify-between mb-6">
-
-            {/* Service filter — same SelectTrigger style as SavedMoviesTab */}
             <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
               <label className="text-sm font-medium text-slate-300 hidden md:block">Service:</label>
               <Select value={selectedService} onValueChange={setSelectedService}>
@@ -565,7 +470,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </Select>
             </div>
 
-            {/* Sort dropdown */}
             <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
               <label className="text-sm font-medium text-slate-300 hidden md:block">Sort by:</label>
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
@@ -586,7 +490,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           </div>
         )}
 
-        {/* Match count line — shown when filters are active */}
+        {/* Match count */}
         {!loading && partner && matchedMovies.length > 0 && (
           <p className="text-sm text-slate-500 mb-4">
             {filteredAndSortedMovies.length === matchedMovies.length

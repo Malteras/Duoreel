@@ -5,11 +5,9 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Link as LinkIcon, Copy, RotateCcw, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { useImportContext } from './ImportContext';
@@ -27,15 +25,15 @@ interface SavedMoviesTabProps {
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
 }
 
-export function SavedMoviesTab({ 
-  accessToken, 
-  projectId, 
-  publicAnonKey, 
+export function SavedMoviesTab({
+  accessToken,
+  projectId,
+  publicAnonKey,
   navigateToDiscoverWithFilter,
   likedMovies,
   setLikedMovies,
   globalImdbCache,
-  setGlobalImdbCache
+  setGlobalImdbCache,
 }: SavedMoviesTabProps) {
   const { watchedMovieIds, toggleWatched, isWatched, watchedLoadingIds } = useUserInteractions();
   const { selectedMovie, modalOpen, openMovie, closeMovie, isLoadingDeepLink } = useMovieModal(accessToken);
@@ -50,7 +48,7 @@ export function SavedMoviesTab({
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
-  // Partner connection state (for the no-partner empty state)
+  // Partner connection state
   const [inviteCode, setInviteCode] = useState('');
   const [regeneratingCode, setRegeneratingCode] = useState(false);
   const [partnerEmail, setPartnerEmail] = useState('');
@@ -83,9 +81,8 @@ export function SavedMoviesTab({
           setHasPartner(true);
           setPartnerName(partnerData.partner.name || partnerData.partner.email);
 
-          // Fetch partner's liked movies (refresh every time)
           const partnerLikedResponse = await fetch(`${baseUrl}/movies/partner-liked`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
+            headers: { Authorization: `Bearer ${accessToken}` },
           });
           const partnerLikedData = await partnerLikedResponse.json();
           if (!partnerLikedData.error) {
@@ -110,12 +107,11 @@ export function SavedMoviesTab({
     };
 
     fetchPartnerData();
-  }, [accessToken, viewMode]); // Re-fetch when switching to partner view
+  }, [accessToken, viewMode]);
 
   // ── Partner connection helpers ─────────────────────────────
   const handleCopyInviteLink = () => {
-    const link = `${window.location.origin}/invite/${inviteCode}`;
-    navigator.clipboard.writeText(link);
+    navigator.clipboard.writeText(`${window.location.origin}/invite/${inviteCode}`);
     toast.success('📋 Invite link copied! Send it to your partner.');
   };
 
@@ -155,7 +151,6 @@ export function SavedMoviesTab({
       } else {
         toast.success('Partner request sent!');
         setPartnerEmail('');
-        // Refresh outgoing requests
         const outgoingRes = await fetch(`${baseUrl}/partner/requests/outgoing`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -170,43 +165,13 @@ export function SavedMoviesTab({
     }
   };
 
-  // ── Partner Connection UI (same as Profile / Matches) ─────
-  const PartnerConnectionUI = (
-    <div className="max-w-lg mx-auto">
-      {/* Card header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="size-10 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
-          <Users className="size-5 text-pink-400" />
-        </div>
-        <div>
-          <h3 className="text-white font-semibold text-lg">Partner Connection</h3>
-          <p className="text-slate-400 text-sm">Connect with your partner to see their saved movies</p>
-        </div>
-      </div>
-      <PartnerConnectCard
-        inviteCode={inviteCode}
-        onCopyLink={handleCopyInviteLink}
-        onRegenerate={handleRegenerateCode}
-        regenerating={regeneratingCode}
-        partnerEmail={partnerEmail}
-        onPartnerEmailChange={setPartnerEmail}
-        onSendRequest={handleSendRequest}
-        sending={sendingRequest}
-        outgoingRequests={outgoingRequests}
-        inputId="partnerEmailSaved"
-      />
-    </div>
-  );
-
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
-
     try {
       const response = await fetch(`${baseUrl}/movies/like/${movieId}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${accessToken}` }
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
       if (response.ok) {
         setLikedMovies(prev => prev.filter(m => m.id !== movieId));
         toast.success('Removed from your list');
@@ -219,17 +184,12 @@ export function SavedMoviesTab({
 
   const handleLike = async (movie: any) => {
     if (!accessToken) return;
-
     try {
       const response = await fetch(`${baseUrl}/movies/like`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ movie })
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ movie }),
       });
-
       if (response.ok) {
         setLikedMovies(prev => [...prev, movie]);
         toast.success('Added to your saved list');
@@ -245,9 +205,8 @@ export function SavedMoviesTab({
       toast.error('Please sign in to mark movies as watched');
       return;
     }
-
     try {
-      await toggleWatched(movie.id, true, movie); // Fix 2: pass full movie for richer KV entry
+      await toggleWatched(movie.id, true, movie);
       toast.success(`Marked "${movie.title}" as watched`);
       closeMovie();
     } catch (error) {
@@ -258,7 +217,6 @@ export function SavedMoviesTab({
 
   const handleUnwatched = async (movieId: number) => {
     if (!accessToken) return;
-
     try {
       await toggleWatched(movieId, false);
       toast.success('Removed from watched list');
@@ -271,99 +229,50 @@ export function SavedMoviesTab({
   // Sort movies based on current sort option
   const getSortedMovies = (movies: any[]) => {
     const sortedMovies = [...movies];
-    
     switch (sortBy) {
-      case 'newest':
-        return sortedMovies.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-      case 'oldest':
-        return sortedMovies.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-      case 'title':
-        return sortedMovies.sort((a, b) => a.title.localeCompare(b.title));
-      case 'rating':
-        return sortedMovies.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
-      case 'release-newest':
-        return sortedMovies.sort((a, b) => new Date(b.release_date || '1900-01-01').getTime() - new Date(a.release_date || '1900-01-01').getTime());
-      case 'release-oldest':
-        return sortedMovies.sort((a, b) => new Date(a.release_date || '1900-01-01').getTime() - new Date(b.release_date || '1900-01-01').getTime());
-      default:
-        return sortedMovies;
+      case 'newest':   return sortedMovies.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+      case 'oldest':   return sortedMovies.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+      case 'title':    return sortedMovies.sort((a, b) => a.title.localeCompare(b.title));
+      case 'rating':   return sortedMovies.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+      case 'release-newest': return sortedMovies.sort((a, b) => new Date(b.release_date || '1900-01-01').getTime() - new Date(a.release_date || '1900-01-01').getTime());
+      case 'release-oldest': return sortedMovies.sort((a, b) => new Date(a.release_date || '1900-01-01').getTime() - new Date(b.release_date || '1900-01-01').getTime());
+      default: return sortedMovies;
     }
   };
 
   // Filter movies based on watched status
   const getFilteredMovies = (movies: any[]) => {
     switch (filterBy) {
-      case 'watched':
-        return movies.filter(movie => watchedMovieIds.has(movie.id));
-      case 'unwatched':
-        return movies.filter(movie => !watchedMovieIds.has(movie.id));
-      case 'all':
-      default:
-        return movies;
+      case 'watched':   return movies.filter(movie => watchedMovieIds.has(movie.id));
+      case 'unwatched': return movies.filter(movie => !watchedMovieIds.has(movie.id));
+      default:          return movies;
     }
   };
 
-  const getSortLabel = () => {
-    switch (sortBy) {
-      case 'newest': return 'Newest First';
-      case 'oldest': return 'Oldest First';
-      case 'title': return 'A-Z';
-      case 'rating': return 'Highest Rated';
-      case 'release-newest': return 'Release Date (Newest)';
-      case 'release-oldest': return 'Release Date (Oldest)';
-      default: return 'Newest First';
-    }
-  };
+  const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
+  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds]);
+  const sortedPartnerMovies = useMemo(() => getSortedMovies(partnerLikedMovies),  [partnerLikedMovies, sortBy]);
 
-  const sortedLikedMovies = useMemo(
-    () => getSortedMovies(likedMovies),
-    [likedMovies, sortBy]
-  );
-  const filteredLikedMovies = useMemo(
-    () => getFilteredMovies(sortedLikedMovies),
-    [sortedLikedMovies, filterBy, watchedMovieIds]
-  );
-  const sortedPartnerMovies = useMemo(
-    () => getSortedMovies(partnerLikedMovies),
-    [partnerLikedMovies, sortBy]
-  );
-
-  // Paginated slices for rendering
-  const visibleLikedMovies = useMemo(
-    () => filteredLikedMovies.slice(0, visibleCount),
-    [filteredLikedMovies, visibleCount]
-  );
-  const visiblePartnerMovies = useMemo(
-    () => sortedPartnerMovies.slice(0, visibleCount),
-    [sortedPartnerMovies, visibleCount]
-  );
+  const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount), [filteredLikedMovies, visibleCount]);
+  const visiblePartnerMovies = useMemo(() => sortedPartnerMovies.slice(0, visibleCount),  [sortedPartnerMovies, visibleCount]);
 
   const hasMoreMovies = viewMode === 'mine'
     ? visibleCount < filteredLikedMovies.length
     : visibleCount < sortedPartnerMovies.length;
 
-  // Reset pagination when filter, sort, or view mode changes
-  useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
-  }, [filterBy, sortBy, viewMode]);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, sortBy, viewMode]);
 
-  // Infinite scroll — load more movies when sentinel enters viewport
   useEffect(() => {
     if (!sentinelEl || !hasMoreMovies) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !loadingMore) {
           setLoadingMore(true);
-          setTimeout(() => {
-            setVisibleCount((prev) => prev + PAGE_SIZE);
-            setLoadingMore(false);
-          }, 150);
+          setTimeout(() => { setVisibleCount((prev) => prev + PAGE_SIZE); setLoadingMore(false); }, 150);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
-
     observer.observe(sentinelEl);
     return () => observer.disconnect();
   }, [sentinelEl, hasMoreMovies, loadingMore]);
@@ -382,49 +291,42 @@ export function SavedMoviesTab({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Always visible header section */}
+
+        {/* ── Header ── */}
         <div className="mb-6 space-y-4">
-          {/* Explanation text - always visible */}
           <p className="text-slate-300 text-lg text-center max-w-2xl mx-auto">
-            {viewMode === 'mine' 
+            {viewMode === 'mine'
               ? "Your personal movie collection - all the movies you'd love to watch"
-              : hasPartner 
+              : hasPartner
                 ? `Explore ${partnerName}'s saved movies to find what they want to watch`
-                : "Connect with a partner to see their saved movies"}
+                : 'Connect with a partner to see their saved movies'}
           </p>
 
-          {/* Toggle Buttons - always visible */}
+          {/* Toggle Buttons */}
           <div className="flex justify-center">
             <div className="inline-flex gap-2 bg-slate-800/50 p-1.5 rounded-lg border border-slate-700/50">
               <Button
                 variant={viewMode === 'mine' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('mine')}
-                className={viewMode === 'mine' 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700'}
+                className={viewMode === 'mine' ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700'}
               >
-                <Bookmark className="size-4 mr-2" />
-                My List
+                <Bookmark className="size-4 mr-2" />My List
               </Button>
               <Button
                 variant={viewMode === 'partner' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setViewMode('partner')}
-                className={viewMode === 'partner' 
-                  ? 'bg-pink-600 hover:bg-pink-700 text-white' 
-                  : 'text-slate-300 hover:text-white hover:bg-slate-700'}
+                className={viewMode === 'partner' ? 'bg-pink-600 hover:bg-pink-700 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-700'}
               >
-                <Users className="size-4 mr-2" />
-                Partner's List
+                <Users className="size-4 mr-2" />Partner's List
               </Button>
             </div>
           </div>
 
-          {/* Sort Dropdown - Show when viewing "My List" and has movies */}
+          {/* Sort / Filter — only in "My List" with movies */}
           {viewMode === 'mine' && likedMovies.length > 0 && (
             <div className="flex items-center gap-3 md:justify-between">
-              {/* Filter Dropdown */}
               <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
                 <label className="text-sm font-medium text-slate-300 hidden md:block">Show:</label>
                 <Select value={filterBy} onValueChange={(value: 'all' | 'unwatched' | 'watched') => setFilterBy(value)}>
@@ -442,7 +344,6 @@ export function SavedMoviesTab({
                 </Select>
               </div>
 
-              {/* Sort Dropdown */}
               <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
                 <label className="text-sm font-medium text-slate-300 hidden md:block">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
@@ -478,72 +379,58 @@ export function SavedMoviesTab({
           )}
         </div>
 
-        {/* Loading indicator */}
+        {/* ── Content ── */}
         {loading ? (
           <MovieCardSkeletonGrid count={8} />
-        ) : (
-          /* Display movies based on view mode */
-          viewMode === 'mine' ? (
-            filteredLikedMovies.length === 0 ? (
-              likedMovies.length === 0 ? (
-                /* ── True empty state: no movies at all ── */
-                <div className="text-center py-16">
-                  <div className="relative inline-block mb-6">
-                    <Upload className="size-20 mx-auto text-slate-600" />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-white mb-3">
-                    Your watchlist is empty
-                  </h3>
-                  <p className="text-slate-400 text-lg mb-8 max-w-md mx-auto">
-                    Already have a Letterboxd account? Import your watchlist
-                    instantly — or start discovering movies.
-                  </p>
-                  <div className="flex items-center justify-center gap-3 mb-4">
-                    <Button
-                      onClick={() => watchlist.setDialogOpen(true)}
-                      className="bg-green-600 hover:bg-green-700 text-white px-6"
-                    >
-                      <Upload className="size-4 mr-2" />
-                      Import from Letterboxd
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setHelpModalOpen(true)}
-                      className="text-slate-400 hover:text-white hover:bg-slate-700 rounded-full"
-                      title="How to export from Letterboxd"
-                    >
-                      <HelpCircle className="size-5" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
-                    <Film className="size-4" />
-                    <span>Or browse the Discover tab to find movies you'll love</span>
-                  </div>
+        ) : viewMode === 'mine' ? (
+          filteredLikedMovies.length === 0 ? (
+            likedMovies.length === 0 ? (
+              /* True empty state */
+              <div className="text-center py-16">
+                <div className="relative inline-block mb-6">
+                  <Upload className="size-20 mx-auto text-slate-600" />
                 </div>
-              ) : (
-                /* ── Filter empty state: has movies but filter hides them ── */
-                <div className="text-center py-20">
-                  <Filter className="size-16 mx-auto mb-6 text-slate-700" />
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    No {filterBy === 'watched' ? 'watched' : 'unwatched'} movies
-                  </h3>
-                  <p className="text-slate-400">
-                    {filterBy === 'watched'
-                      ? "You haven't marked any saved movies as watched yet."
-                      : "All your saved movies have been watched! Nice work."}
-                  </p>
+                <h3 className="text-2xl font-semibold text-white mb-3">Your watchlist is empty</h3>
+                <p className="text-slate-400 text-lg mb-8 max-w-md mx-auto">
+                  Already have a Letterboxd account? Import your watchlist instantly — or start discovering movies.
+                </p>
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <Button onClick={() => watchlist.setDialogOpen(true)} className="bg-green-600 hover:bg-green-700 text-white px-6">
+                    <Upload className="size-4 mr-2" />Import from Letterboxd
+                  </Button>
                   <Button
-                    variant="ghost"
-                    onClick={() => setFilterBy('all')}
-                    className="mt-4 text-blue-400 hover:text-blue-300"
+                    variant="ghost" size="icon"
+                    onClick={() => setHelpModalOpen(true)}
+                    className="text-slate-400 hover:text-white hover:bg-slate-700 rounded-full"
+                    title="How to export from Letterboxd"
                   >
-                    Show all movies
+                    <HelpCircle className="size-5" />
                   </Button>
                 </div>
-              )
+                <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+                  <Film className="size-4" />
+                  <span>Or browse the Discover tab to find movies you'll love</span>
+                </div>
+              </div>
             ) : (
-              <>
+              /* Filter empty state */
+              <div className="text-center py-20">
+                <Filter className="size-16 mx-auto mb-6 text-slate-700" />
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  No {filterBy === 'watched' ? 'watched' : 'unwatched'} movies
+                </h3>
+                <p className="text-slate-400">
+                  {filterBy === 'watched'
+                    ? "You haven't marked any saved movies as watched yet."
+                    : 'All your saved movies have been watched! Nice work.'}
+                </p>
+                <Button variant="ghost" onClick={() => setFilterBy('all')} className="mt-4 text-blue-400 hover:text-blue-300">
+                  Show all movies
+                </Button>
+              </div>
+            )
+          ) : (
+            <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {visibleLikedMovies.map((movie) => (
                   <MovieCard
@@ -563,35 +450,48 @@ export function SavedMoviesTab({
                   />
                 ))}
               </div>
-
-              {/* Infinite scroll sentinel */}
-              <div
-                ref={setSentinelEl}
-                className="flex justify-center mt-8 h-12 items-center"
-              >
-                {loadingMore && (
-                  <Film className="size-8 animate-spin text-slate-400" />
-                )}
+              <div ref={setSentinelEl} className="flex justify-center mt-8 h-12 items-center">
+                {loadingMore && <Film className="size-8 animate-spin text-slate-400" />}
               </div>
-              </>
-            )
-          ) : (
-            /* ── Partner's List view ── */
-            !hasPartner ? (
-              /* No partner at all — show full connection UI */
-              <div className="py-16 px-4">
-                <div className="max-w-lg mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-                  {PartnerConnectionUI}
+            </>
+          )
+        ) : (
+          /* ── Partner's List view ── */
+          !hasPartner ? (
+            <div className="py-16 px-4">
+              <div className="max-w-lg mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+                {/* Card header */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="size-10 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
+                    <Users className="size-5 text-pink-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold text-lg">Partner Connection</h3>
+                    <p className="text-slate-400 text-sm">Connect with your partner to see their saved movies</p>
+                  </div>
                 </div>
+                <PartnerConnectCard
+                  inviteCode={inviteCode}
+                  onCopyLink={handleCopyInviteLink}
+                  onRegenerate={handleRegenerateCode}
+                  regenerating={regeneratingCode}
+                  partnerEmail={partnerEmail}
+                  onPartnerEmailChange={setPartnerEmail}
+                  onSendRequest={handleSendRequest}
+                  sending={sendingRequest}
+                  outgoingRequests={outgoingRequests}
+                  inputId="partnerEmailSaved"
+                />
               </div>
-            ) : sortedPartnerMovies.length === 0 ? (
-              <div className="text-center py-20">
-                <Users className="size-20 mx-auto mb-6 text-slate-700" />
-                <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't saved any movies yet`}</h3>
-                <p className="text-slate-400 text-lg">They can start saving movies in the Discover tab</p>
-              </div>
-            ) : (
-              <>
+            </div>
+          ) : sortedPartnerMovies.length === 0 ? (
+            <div className="text-center py-20">
+              <Users className="size-20 mx-auto mb-6 text-slate-700" />
+              <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't saved any movies yet`}</h3>
+              <p className="text-slate-400 text-lg">They can start saving movies in the Discover tab</p>
+            </div>
+          ) : (
+            <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {visiblePartnerMovies.map((movie) => (
                   <MovieCard
@@ -610,18 +510,10 @@ export function SavedMoviesTab({
                   />
                 ))}
               </div>
-
-              {/* Infinite scroll sentinel */}
-              <div
-                ref={setSentinelEl}
-                className="flex justify-center mt-8 h-12 items-center"
-              >
-                {loadingMore && (
-                  <Film className="size-8 animate-spin text-slate-400" />
-                )}
+              <div ref={setSentinelEl} className="flex justify-center mt-8 h-12 items-center">
+                {loadingMore && <Film className="size-8 animate-spin text-slate-400" />}
               </div>
-              </>
-            )
+            </>
           )
         )}
       </div>
@@ -633,60 +525,32 @@ export function SavedMoviesTab({
             <DialogTitle className="text-xl">How to Export from Letterboxd</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-2">
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">1</div>
-              <div>
-                <p className="text-white font-medium">Go to letterboxd.com</p>
-                <p className="text-slate-400 text-sm">Sign in to your account</p>
+            {[
+              { n: 1, title: 'Go to letterboxd.com', desc: 'Sign in to your account', color: 'bg-blue-600' },
+              { n: 2, title: 'Open Settings', desc: 'Click your profile picture → Settings → Import & Export', color: 'bg-blue-600' },
+              { n: 3, title: 'Export Your Data', desc: 'Click "Export Your Data" — this downloads a .zip file', color: 'bg-blue-600' },
+              { n: 4, title: 'Unzip and find your files', desc: 'Look for watchlist.csv or watched.csv', color: 'bg-blue-600' },
+              { n: 5, title: 'Upload it here', desc: 'Click "Import from Letterboxd" and upload the CSV file', color: 'bg-green-600' },
+            ].map(({ n, title, desc, color }) => (
+              <div key={n} className="flex gap-3">
+                <div className={`flex-shrink-0 size-7 rounded-full ${color} text-white text-sm font-bold flex items-center justify-center`}>{n}</div>
+                <div>
+                  <p className="text-white font-medium">{title}</p>
+                  <p className="text-slate-400 text-sm">{desc}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">2</div>
-              <div>
-                <p className="text-white font-medium">Open Settings</p>
-                <p className="text-slate-400 text-sm">Click your profile picture → Settings → Import & Export</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">3</div>
-              <div>
-                <p className="text-white font-medium">Export Your Data</p>
-                <p className="text-slate-400 text-sm">Click "Export Your Data" — this downloads a .zip file</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 size-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">4</div>
-              <div>
-                <p className="text-white font-medium">Unzip and find your files</p>
-                <p className="text-slate-400 text-sm">
-                  Look for <span className="text-cyan-400 font-mono text-xs">watchlist.csv</span> (your
-                  want-to-watch list) or <span className="text-cyan-400 font-mono text-xs">watched.csv</span> (movies
-                  you've already seen)
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="flex-shrink-0 size-7 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center">5</div>
-              <div>
-                <p className="text-white font-medium">Upload it here</p>
-                <p className="text-slate-400 text-sm">Click "Import from Letterboxd" and upload the CSV file</p>
-              </div>
-            </div>
+            ))}
           </div>
           <Button
-            onClick={() => {
-              setHelpModalOpen(false);
-              watchlist.setDialogOpen(true);
-            }}
+            onClick={() => { setHelpModalOpen(false); watchlist.setDialogOpen(true); }}
             className="w-full bg-green-600 hover:bg-green-700 mt-4"
           >
-            <Upload className="size-4 mr-2" />
-            Got it — Import now
+            <Upload className="size-4 mr-2" />Got it — Import now
           </Button>
         </DialogContent>
       </Dialog>
 
-      {/* ── Import Watchlist Dialog (shared via ImportContext) ── */}
+      {/* ── Import Dialog ── */}
       <ImportDialog
         importState={watchlist}
         title="Import Movies from Letterboxd"
