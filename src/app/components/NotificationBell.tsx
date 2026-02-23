@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Bell, Check, Heart, Users, Loader2, ExternalLink, PartyPopper, CheckCircle, XCircle, Upload } from 'lucide-react';
+import { Bell, Check, Heart, Users, Loader2, ExternalLink, PartyPopper, CheckCircle, XCircle, Upload, Trash2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -128,6 +128,23 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error('Error marking all as read:', error);
+    }
+  };
+
+  // Clear all notifications
+  const handleClearAll = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/notifications/clear-all`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      setNotifications([]);
+      setUnreadCount(0);
+      setOffset(0);
+      setHasMore(false);
+    } catch (error) {
+      console.error('Error clearing notifications:', error);
     }
   };
 
@@ -477,6 +494,19 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
             </>
           )}
         </div>
+
+        {/* Footer — Clear all */}
+        {notifications.length > 0 && (
+          <div className="border-t border-slate-700 p-2">
+            <button
+              onClick={handleClearAll}
+              className="w-full flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-red-400 py-1.5 rounded transition-colors hover:bg-red-950/20"
+            >
+              <Trash2 className="size-3" />
+              Clear all notifications
+            </button>
+          </div>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

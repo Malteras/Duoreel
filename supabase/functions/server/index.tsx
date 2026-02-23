@@ -942,6 +942,36 @@ app.post("/make-server-5623fde1/notifications/mark-all-read", async (c) => {
   }
 });
 
+// Clear all notifications
+app.post("/make-server-5623fde1/notifications/clear-all", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    // Get all notifications for the user and delete them
+    const notifications = await kv.getByPrefix(`notification:${user.id}:`);
+    
+    for (const notification of notifications) {
+      await kv.del(`notification:${user.id}:${notification.id}`);
+    }
+
+    // Reset unread count to 0
+    await kv.set(`notifications:unread:${user.id}`, 0);
+
+    return c.json({ success: true, deleted: notifications.length });
+  } catch (error) {
+    console.error('Error clearing notifications:', error);
+    return c.json({ error: `Failed to clear notifications: ${error}` }, 500);
+  }
+});
+
 // Create import completion notification
 app.post("/make-server-5623fde1/notifications/import-complete", async (c) => {
   try {
