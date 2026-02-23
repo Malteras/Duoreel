@@ -407,11 +407,6 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
           const watchProviders = (movie as any)['watch/providers']?.results?.US?.flatrate;
           const movieHomepage = (movie as any).homepage;
           
-          // Temporary debug display
-          if ((movie as any)['watch/providers']) {
-            console.log(`Movie ${movie.title} has watch/providers:`, (movie as any)['watch/providers']);
-          }
-          
           return watchProviders && watchProviders.length > 0 ? (
             <div className="text-sm">
               <div className="flex flex-wrap items-center gap-2">
@@ -442,7 +437,16 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
             </div>
           ) : (
             <div className="text-sm">
-              <span className="text-slate-500 text-xs italic">No streaming info available</span>
+              <a
+                href={`https://www.justwatch.com/us/search?q=${encodeURIComponent(cleanTitle(movie.title))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-slate-500 text-xs hover:text-blue-400 transition-colors inline-flex items-center gap-1"
+              >
+                Find where to watch
+                <ExternalLink className="size-3" />
+              </a>
             </div>
           );
         })()}

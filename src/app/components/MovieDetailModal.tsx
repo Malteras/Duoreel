@@ -436,34 +436,46 @@ export function MovieDetailModal({
             </div>
 
             {/* Watch Providers */}
-            {movie['watch/providers']?.results?.US?.flatrate && movie['watch/providers'].results.US.flatrate.length > 0 && (
-              <div className="pt-4 border-t border-slate-800">
-                <h4 className="text-sm font-semibold text-slate-400 mb-3">Watch on:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {movie['watch/providers'].results.US.flatrate.map((provider: any) => {
-                    const providerUrl = getProviderUrl(provider.provider_name, movie.title, movie.homepage);
-                    
-                    return (
-                      <a
-                        key={provider.provider_id}
-                        href={providerUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg hover:bg-slate-600 transition-colors group"
-                      >
-                        <img
-                          src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
-                          alt={provider.provider_name}
-                          className="size-5 rounded object-cover"
-                        />
-                        <span className="text-slate-200 text-sm">{provider.provider_name}</span>
-                        <ExternalLink className="size-3 text-slate-400 group-hover:text-slate-300 transition-colors" />
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            <div className="pt-4 border-t border-slate-800">
+              {movie['watch/providers']?.results?.US?.flatrate && movie['watch/providers'].results.US.flatrate.length > 0 ? (
+                <>
+                  <h4 className="text-sm font-semibold text-slate-400 mb-3">Watch on:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {movie['watch/providers'].results.US.flatrate.map((provider: any) => {
+                      const providerUrl = getProviderUrl(provider.provider_name, movie.title, movie.homepage);
+                      
+                      return (
+                        <a
+                          key={provider.provider_id}
+                          href={providerUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg hover:bg-slate-600 transition-colors group"
+                        >
+                          <img
+                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                            alt={provider.provider_name}
+                            className="size-5 rounded object-cover"
+                          />
+                          <span className="text-slate-200 text-sm">{provider.provider_name}</span>
+                          <ExternalLink className="size-3 text-slate-400 group-hover:text-slate-300 transition-colors" />
+                        </a>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : (
+                <a
+                  href={`https://www.justwatch.com/us/search?q=${encodeURIComponent(cleanTitle(movie.title))}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-slate-500 text-sm hover:text-blue-400 transition-colors inline-flex items-center gap-1.5"
+                >
+                  Find where to watch
+                  <ExternalLink className="size-3.5" />
+                </a>
+              )}
+            </div>
           </div>
         </ScrollArea>
       </DialogContent>
