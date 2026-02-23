@@ -181,42 +181,64 @@ export function MovieDetailModal({
             
             {/* Rating Badges - Bottom Right */}
             <div className="absolute bottom-4 right-4 flex items-center gap-2">
-              {/* TMDb Rating */}
+              {/* TMDB Rating Badge */}
               {movie.vote_average && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="flex items-center gap-1 bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-lg">
-                      <Star className="size-3 fill-white text-white" />
+                      <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
                       <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent className="bg-slate-800 text-white border-slate-700">
-                    <p>TMDb Rating ({movie.vote_count?.toLocaleString()} votes)</p>
+                    <p>TMDB community rating ({movie.vote_count?.toLocaleString()} votes)</p>
                   </TooltipContent>
                 </Tooltip>
               )}
               
-              {/* IMDb Rating - using cached data from movie object */}
-              {((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids?.imdb_id || '') && globalImdbCache.get(movie.external_ids?.imdb_id || '') !== 'N/A')) && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
+              {/* IMDb Rating Badge — always a link when imdb_id exists */}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  {movie.external_ids?.imdb_id ? (
                     <a
-                      href={movie.external_ids?.imdb_id ? `https://www.imdb.com/title/${movie.external_ids.imdb_id}` : '#'}
+                      href={`https://www.imdb.com/title/${movie.external_ids.imdb_id}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 bg-[#F5C518] backdrop-blur-sm px-2 py-1 rounded-full hover:bg-[#F5C518]/90 transition-colors shadow-lg"
+                      className={`backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                        ((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A'))
+                          ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
+                          : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
+                      }`}
                     >
-                      <Star className="size-3 fill-black text-black" />
-                      <span className="text-xs font-bold text-black">
-                        {(movie as any).imdbRating || globalImdbCache?.get(movie.external_ids?.imdb_id || '')}
-                      </span>
+                      <span className={`text-[9px] font-bold uppercase tracking-wide ${
+                        ((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A'))
+                          ? 'text-black/70'
+                          : 'text-black/40'
+                      }`}>IMDb</span>
+                      {((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A')) ? (
+                        <span className="text-xs font-bold text-black">
+                          {(movie as any).imdbRating || globalImdbCache?.get(movie.external_ids.imdb_id)}
+                        </span>
+                      ) : (
+                        <Loader2 className="size-3 text-black/50 animate-spin" />
+                      )}
                     </a>
-                  </TooltipTrigger>
-                  <TooltipContent className="bg-slate-800 text-white border-slate-700">
-                    <p>IMDb Rating - Click to view on IMDb</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
+                  ) : (
+                    <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                      <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                      <Loader2 className="size-3 text-black/40 animate-spin" />
+                    </div>
+                  )}
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                  <p>{movie.external_ids?.imdb_id
+                    ? (((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A'))
+                      ? 'View on IMDb'
+                      : 'Rating loading — click to view on IMDb')
+                    : 'Fetching IMDb info...'
+                  }</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
 
 
