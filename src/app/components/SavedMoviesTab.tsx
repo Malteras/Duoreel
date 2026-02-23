@@ -5,7 +5,7 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -255,6 +255,7 @@ export function SavedMoviesTab({
 
   const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount), [filteredLikedMovies, visibleCount]);
   const visiblePartnerMovies = useMemo(() => sortedPartnerMovies.slice(0, visibleCount),  [sortedPartnerMovies, visibleCount]);
+  const hiddenWatchedCount = useMemo(() => likedMovies.filter(m => watchedMovieIds.has(m.id)).length, [likedMovies, watchedMovieIds]);
 
   const hasMoreMovies = viewMode === 'mine'
     ? visibleCount < filteredLikedMovies.length
@@ -332,7 +333,13 @@ export function SavedMoviesTab({
                 <Select value={filterBy} onValueChange={(value: 'all' | 'unwatched' | 'watched') => setFilterBy(value)}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white flex-1 md:w-fit">
                     <div className="flex items-center gap-2 truncate md:overflow-visible">
-                      <Filter className="size-4 md:hidden flex-shrink-0" />
+                      {filterBy === 'unwatched' ? (
+                        <EyeOff className="size-4 flex-shrink-0 text-slate-400" />
+                      ) : filterBy === 'watched' ? (
+                        <Eye className="size-4 flex-shrink-0 text-green-500" />
+                      ) : (
+                        <Filter className="size-4 flex-shrink-0 text-slate-400" />
+                      )}
                       <SelectValue />
                     </div>
                   </SelectTrigger>
@@ -366,10 +373,32 @@ export function SavedMoviesTab({
             </div>
           )}
 
-          {/* Movie count */}
+          {/* Movie count + hidden filter hint */}
           {viewMode === 'mine' && filteredLikedMovies.length > 0 && (
             <p className="text-sm text-slate-500 text-center">
               Showing {Math.min(visibleCount, filteredLikedMovies.length)} of {filteredLikedMovies.length} movies
+              {filterBy === 'unwatched' && hiddenWatchedCount > 0 && (
+                <>
+                  {' · '}
+                  <button
+                    onClick={() => setFilterBy('all')}
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                  >
+                    {hiddenWatchedCount} watched {hiddenWatchedCount === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
+                  </button>
+                </>
+              )}
+              {filterBy === 'watched' && (likedMovies.length - hiddenWatchedCount) > 0 && (
+                <>
+                  {' · '}
+                  <button
+                    onClick={() => setFilterBy('all')}
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                  >
+                    {likedMovies.length - hiddenWatchedCount} unwatched {(likedMovies.length - hiddenWatchedCount) === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
+                  </button>
+                </>
+              )}
             </p>
           )}
           {viewMode === 'partner' && sortedPartnerMovies.length > 0 && (
