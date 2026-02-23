@@ -108,6 +108,18 @@ const RATING_OPTIONS = [
   { label: "5.0+", value: "5" },
 ];
 
+const DEFAULT_FILTERS = {
+  genre: "all",
+  decade: "all",
+  rating: "all",
+  year: "all",
+  director: null as string | null,
+  actor: null as string | null,
+  language: null as string | null,
+  duration: "all",
+  streamingServices: [] as string[],
+};
+
 export function MoviesTab({
   accessToken,
   projectId,
@@ -133,17 +145,7 @@ export function MoviesTab({
   >([]);
 
   // Filter state
-  const [filters, setFilters] = useState({
-    genre: "all",
-    decade: "all",
-    rating: "all",
-    year: "all",
-    director: null as string | null,
-    actor: null as string | null,
-    language: null as string | null,
-    duration: "all",
-    streamingServices: [] as string[],
-  });
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [sortBy, setSortBy] = useState("popularity");
   const [showWatchedMovies, setShowWatchedMovies] =
     useState(false);
@@ -838,17 +840,7 @@ export function MoviesTab({
   };
 
   const handleClearFilters = () => {
-    setFilters({
-      genre: "all",
-      decade: "all",
-      rating: "all",
-      year: "all",
-      director: null,
-      actor: null,
-      language: null,
-      duration: "all",
-      streamingServices: [],
-    });
+    setFilters(DEFAULT_FILTERS);
     setSortBy("popularity");
     setShowWatchedMovies(false);
     setPage(1);
