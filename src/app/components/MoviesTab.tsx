@@ -1266,6 +1266,7 @@ export function MoviesTab({
                   imdbRating={imdbRatings.get(movie.id)}
                   projectId={projectId}
                   publicAnonKey={publicAnonKey}
+                  globalImdbCache={globalImdbCache}
                 />
               ))}
             </div>
@@ -1379,6 +1380,7 @@ export function MoviesTab({
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}
         setGlobalImdbCache={setGlobalImdbCache}
+        imdbRatingFromCard={selectedMovie ? (imdbRatings.get(selectedMovie.id) || null) : null}
       />
     </div>
   );

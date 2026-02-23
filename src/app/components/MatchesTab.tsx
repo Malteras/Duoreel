@@ -22,6 +22,7 @@ import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { MovieDetailModal } from './MovieDetailModal';
 import { useMovieModal } from '../hooks/useMovieModal';
 import { PartnerConnectCard } from './PartnerConnectCard';
+import { useUserInteractions } from './UserInteractionsContext';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -44,6 +45,7 @@ const STREAMING_SERVICES = [
 ];
 
 export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter }: MatchesTabProps) {
+  const { watchedMovieIds, toggleWatched, isWatched, watchedLoadingIds } = useUserInteractions();
   const [partner, setPartner] = useState<any>(null);
   const [matchedMovies, setMatchedMovies] = useState<any[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
@@ -324,6 +326,32 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     } catch { toast.error('Failed to dislike movie'); }
   };
 
+  const handleWatched = async (movie: any) => {
+    if (!accessToken) {
+      toast.error('Please sign in to mark movies as watched');
+      return;
+    }
+    try {
+      await toggleWatched(movie.id, true, movie);
+      toast.success(`Marked "${movie.title}" as watched`);
+      closeMovie();
+    } catch (error) {
+      console.error('Error marking movie as watched:', error);
+      toast.error('Failed to mark as watched');
+    }
+  };
+
+  const handleUnwatched = async (movieId: number) => {
+    if (!accessToken) return;
+    try {
+      await toggleWatched(movieId, false);
+      toast.success('Removed from watched list');
+    } catch (error) {
+      console.error('Error unmarking movie as watched:', error);
+      toast.error('Failed to unmark as watched');
+    }
+  };
+
   const handleCopyInviteLink = () => {
     navigator.clipboard.writeText(`${window.location.origin}/invite/${inviteCode}`);
     toast.success('📋 Invite link copied! Send it to your partner.');
@@ -574,6 +602,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 movie={movie}
                 isLiked={likedMovies.has(movie.id)}
                 isMatch={true}
+                isWatched={watchedMovieIds.has(movie.id)}
                 onLike={() => {}}
                 onUnlike={() => handleUnlike(movie.id)}
                 onDislike={() => handleDislike(movie.id)}
@@ -598,7 +627,10 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         onLike={() => {}}
         onUnlike={() => selectedMovie && handleUnlike(selectedMovie.id)}
         onDislike={() => selectedMovie && handleDislike(selectedMovie.id)}
-        isWatched={false}
+        isWatched={selectedMovie ? watchedMovieIds.has(selectedMovie.id) : false}
+        isWatchedLoading={selectedMovie ? watchedLoadingIds.has(selectedMovie.id) : false}
+        onWatched={() => selectedMovie && handleWatched(selectedMovie)}
+        onUnwatched={() => selectedMovie && handleUnwatched(selectedMovie.id)}
         onGenreClick={(genre) => navigateToDiscoverWithFilter('genre', genre)}
         onDirectorClick={(director) => navigateToDiscoverWithFilter('director', director)}
         onActorClick={(actor) => navigateToDiscoverWithFilter('actor', actor)}

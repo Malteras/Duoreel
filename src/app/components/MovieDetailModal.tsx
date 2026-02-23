@@ -30,6 +30,7 @@ interface MovieDetailModalProps {
   publicAnonKey?: string;
   globalImdbCache?: Map<string, string>;
   setGlobalImdbCache?: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  imdbRatingFromCard?: string | null;
 }
 
 export function MovieDetailModal({ 
@@ -54,25 +55,37 @@ export function MovieDetailModal({
   projectId,
   publicAnonKey,
   globalImdbCache,
-  setGlobalImdbCache
+  setGlobalImdbCache,
+  imdbRatingFromCard
 }: MovieDetailModalProps) {
   const [loadingImdb, setLoadingImdb] = useState(false);
 
   // Strip wrapping quotes from TMDB titles (e.g., "\"Wuthering Heights\"" → "Wuthering Heights")
-  const cleanTitle = (title: string) => title.replace(/^["']+|["']+$/g, '').trim();
+  const cleanTitle = (title: string) => title.replace(/^[\"']+|[\"']+$/g, '').trim();
 
-  // Fetch IMDb rating when modal opens - check cache first
+  // Fetch IMDb rating when modal opens — skip if already available from any source
   useEffect(() => {
     const imdbId = movie?.external_ids?.imdb_id;
     
     if (isOpen && imdbId && publicAnonKey && globalImdbCache && setGlobalImdbCache) {
-      // Check if we already have this rating in cache
-      if (globalImdbCache.has(imdbId)) {
-        console.log(`Using cached IMDb rating for ${imdbId}:`, globalImdbCache.get(imdbId));
-        return; // Already cached, no need to fetch
+      // Check all existing sources: card prop, movie object, cache
+      const existingRating = imdbRatingFromCard || (movie as any)?.imdbRating;
+      if (existingRating && existingRating !== 'N/A') {
+        // Write to cache so other cards benefit too
+        if (!globalImdbCache.has(imdbId)) {
+          const newCache = new Map(globalImdbCache);
+          newCache.set(imdbId, existingRating);
+          setGlobalImdbCache(newCache);
+        }
+        return; // Already have it, no fetch needed
       }
 
-      // Not in cache, fetch it
+      // Check cache
+      if (globalImdbCache.has(imdbId) && globalImdbCache.get(imdbId) !== 'N/A') {
+        return; // Already cached from a previous modal open
+      }
+
+      // Not available anywhere — fetch it
       setLoadingImdb(true);
       fetch(`${API_BASE_URL}/omdb/rating/${imdbId}`, {
         headers: { Authorization: `Bearer ${publicAnonKey}` }
@@ -106,7 +119,7 @@ export function MovieDetailModal({
         .catch(err => console.error('Error fetching IMDb rating:', err))
         .finally(() => setLoadingImdb(false));
     }
-  }, [isOpen, movie?.external_ids?.imdb_id, publicAnonKey, globalImdbCache, setGlobalImdbCache]);
+  }, [isOpen, movie?.external_ids?.imdb_id, publicAnonKey, globalImdbCache, setGlobalImdbCache, imdbRatingFromCard]);
 
   if (!movie) return null;
 

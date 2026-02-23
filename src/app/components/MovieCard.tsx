@@ -46,9 +46,10 @@ interface MovieCardProps {
   imdbRating?: string; // IMDb rating prop
   projectId?: string; // For API calls
   publicAnonKey?: string;
+  globalImdbCache?: Map<string, string>;
 }
 
-export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike, onDislike, onNotInterested, isNotInterestedLoading, onClick, showActions = true, onDirectorClick, onGenreClick, onYearClick, onActorClick, imdbRating, projectId, publicAnonKey }: MovieCardProps) {
+export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike, onDislike, onNotInterested, isNotInterestedLoading, onClick, showActions = true, onDirectorClick, onGenreClick, onYearClick, onActorClick, imdbRating, projectId, publicAnonKey, globalImdbCache }: MovieCardProps) {
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : '/placeholder-movie.png'
@@ -59,9 +60,10 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
-  // Use the imdbRating prop directly if available, otherwise check movie object
-  const displayImdbRating = imdbRating || (movie as any).imdbRating;
   const hasImdbId = (movie as any).external_ids?.imdb_id;
+  // Resolution: prop → movie object → global cache (populated by modal fetch)
+  const cachedRating = hasImdbId ? globalImdbCache?.get(hasImdbId) : undefined;
+  const displayImdbRating = imdbRating || (movie as any).imdbRating || (cachedRating && cachedRating !== 'N/A' ? cachedRating : null);
 
   // Strip wrapping quotes from TMDB titles (e.g., "\"Wuthering Heights\"" → "Wuthering Heights")
   const cleanTitle = (title: string) => title.replace(/^["']+|["']+$/g, '').trim();
