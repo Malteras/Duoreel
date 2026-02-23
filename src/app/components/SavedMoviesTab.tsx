@@ -336,7 +336,7 @@ export function SavedMoviesTab({
                       {filterBy === 'unwatched' ? (
                         <EyeOff className="size-4 flex-shrink-0 text-slate-400" />
                       ) : filterBy === 'watched' ? (
-                        <Eye className="size-4 flex-shrink-0 text-green-500" />
+                        <Eye className="size-4 flex-shrink-0 text-slate-400" />
                       ) : (
                         <Filter className="size-4 flex-shrink-0 text-slate-400" />
                       )}
