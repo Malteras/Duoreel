@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
-
-const BASE_URL = `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1`;
+import { publicAnonKey } from '/utils/supabase/info';
+import { API_BASE_URL } from '../../utils/api';
 
 /**
  * Manages movie modal state and syncs with the `?movie=<tmdbId>` URL param.
@@ -34,7 +33,7 @@ export function useMovieModal(accessToken?: string | null) {
     setIsLoadingDeepLink(true);
     const authHeader = accessToken ? `Bearer ${accessToken}` : `Bearer ${publicAnonKey}`;
 
-    fetch(`${BASE_URL}/movies/${movieIdParam}`, {
+    fetch(`${API_BASE_URL}/movies/${movieIdParam}`, {
       headers: { Authorization: authHeader },
     })
       .then(r => {

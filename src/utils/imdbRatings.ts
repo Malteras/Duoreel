@@ -1,4 +1,5 @@
 // IMDb Rating Fetching Utilities with Smart Caching
+import { API_BASE_URL } from './api';
 
 interface ImdbRatingCache {
   imdbId: string;
@@ -42,7 +43,7 @@ export async function bulkFetchCachedRatings(
 
   try {
     const response = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1/imdb-ratings/bulk?tmdbIds=${tmdbIds.join(',')}`,
+      `${API_BASE_URL}/imdb-ratings/bulk?tmdbIds=${tmdbIds.join(',')}`,
       {
         headers: { Authorization: `Bearer ${publicAnonKey}` }
       }
@@ -75,7 +76,7 @@ export async function fetchAndStoreRating(
 
   try {
     const response = await fetch(
-      `https://${projectId}.supabase.co/functions/v1/make-server-5623fde1/imdb-ratings/fetch-and-store`,
+      `${API_BASE_URL}/imdb-ratings/fetch-and-store`,
       {
         method: 'POST',
         headers: {
