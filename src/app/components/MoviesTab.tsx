@@ -1219,36 +1219,10 @@ export function MoviesTab({
                     movie.id,
                   )}
                   onClick={() => openMovie(movie)}
-                  onDirectorClick={(director) => {
-                    setFilters({ ...filters, director });
-                    setPage(1);
-                    setIsSearchMode(false);
-                    setSearchQuery("");
-                  }}
-                  onGenreClick={(genreId) => {
-                    setFilters({
-                      ...filters,
-                      genre: genreId.toString(),
-                    });
-                    setPage(1);
-                    setIsSearchMode(false);
-                    setSearchQuery("");
-                  }}
-                  onYearClick={(year) => {
-                    setFilters({
-                      ...filters,
-                      year: year.toString(),
-                    });
-                    setPage(1);
-                    setIsSearchMode(false);
-                    setSearchQuery("");
-                  }}
-                  onActorClick={(actor) => {
-                    setFilters({ ...filters, actor });
-                    setPage(1);
-                    setIsSearchMode(false);
-                    setSearchQuery("");
-                  }}
+                  onDirectorClick={(director) => updateFilter("director", director)}
+                  onGenreClick={(genreId) => updateFilter("genre", genreId.toString())}
+                  onYearClick={(year) => updateFilter("year", year.toString())}
+                  onActorClick={(actor) => updateFilter("actor", actor)}
                   imdbRating={imdbRatings.get(movie.id)}
                   projectId={projectId}
                   publicAnonKey={publicAnonKey}
