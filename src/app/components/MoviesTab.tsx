@@ -841,6 +841,13 @@ export function MoviesTab({
     setSearchQuery("");
   };
 
+  const updateFilter = (key: keyof typeof filters, value: typeof filters[keyof typeof filters]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(1);
+    setIsSearchMode(false);
+    setSearchQuery("");
+  };
+
   const handleClearFilters = () => {
     setFilters(DEFAULT_FILTERS);
     setSortBy("popularity");
@@ -944,12 +951,7 @@ export function MoviesTab({
               {/* Genre */}
               <Select
                 value={filters.genre}
-                onValueChange={(value) => {
-                  setFilters({ ...filters, genre: value });
-                  setPage(1);
-                  setIsSearchMode(false);
-                  setSearchQuery("");
-                }}
+                onValueChange={(value) => updateFilter("genre", value)}
               >
                 <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[150px]">
                   <SelectValue placeholder="All Genres" />
@@ -972,12 +974,7 @@ export function MoviesTab({
               {/* Decade */}
               <Select
                 value={filters.decade}
-                onValueChange={(value) => {
-                  setFilters({ ...filters, decade: value });
-                  setPage(1);
-                  setIsSearchMode(false);
-                  setSearchQuery("");
-                }}
+                onValueChange={(value) => updateFilter("decade", value)}
               >
                 <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[130px]">
                   <SelectValue placeholder="All Time" />
@@ -994,12 +991,7 @@ export function MoviesTab({
               {/* Rating */}
               <Select
                 value={filters.rating}
-                onValueChange={(value) => {
-                  setFilters({ ...filters, rating: value });
-                  setPage(1);
-                  setIsSearchMode(false);
-                  setSearchQuery("");
-                }}
+                onValueChange={(value) => updateFilter("rating", value)}
               >
                 <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[130px]">
                   <SelectValue placeholder="All Ratings" />
@@ -1349,24 +1341,15 @@ export function MoviesTab({
             : false)
         }
         onGenreClick={(genreId) => {
-          setFilters({ ...filters, genre: genreId.toString() });
-          setPage(1);
-          setIsSearchMode(false);
-          setSearchQuery("");
+          updateFilter("genre", genreId.toString());
           closeMovie();
         }}
         onDirectorClick={(director) => {
-          setFilters({ ...filters, director });
-          setPage(1);
-          setIsSearchMode(false);
-          setSearchQuery("");
+          updateFilter("director", director);
           closeMovie();
         }}
         onActorClick={(actor) => {
-          setFilters({ ...filters, actor });
-          setPage(1);
-          setIsSearchMode(false);
-          setSearchQuery("");
+          updateFilter("actor", actor);
           closeMovie();
         }}
         onLanguageClick={() => {}}
