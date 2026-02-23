@@ -61,6 +61,10 @@ export function SavedMoviesTab({
   const [sentinelEl, setSentinelEl] = useState<HTMLDivElement | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
+  // Enrichment state — fill in missing genres/director/actors/runtime/providers for un-enriched movies
+  const [enrichedIds, setEnrichedIds] = useState<Set<number>>(new Set());
+  const enrichingRef = useRef<Set<number>>(new Set());
+
   const baseUrl = API_BASE_URL;
 
   // Fetch partner info and partner's list
@@ -108,6 +112,150 @@ export function SavedMoviesTab({
 
     fetchPartnerData();
   }, [accessToken, viewMode]);
+
+  // ── Enrich movies missing detail data (imported movies only have basic TMDB search fields) ──
+  useEffect(() => {
+    if (likedMovies.length === 0 || !publicAnonKey) return;
+
+    const enrichMovies = async () => {
+      // Only enrich movies that lack genres (object array) — the reliable indicator of un-enriched data.
+      // Enriched movies have genres: [{id, name}], un-enriched have genre_ids: [number] from TMDB search.
+      const toEnrich = likedMovies.filter(
+        (m) =>
+          !enrichedIds.has(m.id) &&
+          !enrichingRef.current.has(m.id) &&
+          (!m.genres || m.genres.length === 0) &&
+          !m.director
+      );
+      if (toEnrich.length === 0) return;
+
+      toEnrich.forEach((m) => enrichingRef.current.add(m.id));
+
+      const BATCH = 3;
+      for (let i = 0; i < toEnrich.length; i += BATCH) {
+        const batch = toEnrich.slice(i, i + BATCH);
+        const results = await Promise.allSettled(
+          batch.map(async (movie) => {
+            const res = await fetch(`${baseUrl}/movies/${movie.id}`, {
+              headers: { Authorization: `Bearer ${publicAnonKey}` },
+            });
+            if (!res.ok) return null;
+            return res.json();
+          })
+        );
+
+        // Update liked movies in parent state with enriched data
+        const updates = new Map<number, any>();
+        batch.forEach((movie, idx) => {
+          const result = results[idx];
+          if (result.status !== 'fulfilled' || !result.value) return;
+          const d = result.value;
+          updates.set(movie.id, {
+            runtime: d.runtime || movie.runtime,
+            director: d.credits?.crew?.find((c: any) => c.job === 'Director')?.name || movie.director,
+            actors: d.credits?.cast?.slice(0, 5).map((a: any) => a.name) || movie.actors,
+            genres: d.genres || movie.genres,
+            external_ids: d.external_ids || movie.external_ids,
+            homepage: d.homepage || movie.homepage,
+            'watch/providers': d['watch/providers'] || movie['watch/providers'],
+          });
+        });
+
+        if (updates.size > 0) {
+          setLikedMovies((prev: any[]) =>
+            prev.map((movie) => {
+              const enriched = updates.get(movie.id);
+              return enriched ? { ...movie, ...enriched } : movie;
+            })
+          );
+        }
+
+        setEnrichedIds((prev) => {
+          const s = new Set(prev);
+          batch.forEach((m) => s.add(m.id));
+          return s;
+        });
+
+        // Throttle batches to avoid rate limiting
+        if (i + BATCH < toEnrich.length) {
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+    };
+
+    enrichMovies();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [likedMovies.length, publicAnonKey]);
+
+  // ── Enrich partner's movies missing detail data ──
+  useEffect(() => {
+    if (partnerLikedMovies.length === 0 || !publicAnonKey) return;
+
+    const enrichPartnerMovies = async () => {
+      const toEnrich = partnerLikedMovies.filter(
+        (m) =>
+          !enrichedIds.has(m.id) &&
+          !enrichingRef.current.has(m.id) &&
+          (!m.genres || m.genres.length === 0) &&
+          !m.director
+      );
+      if (toEnrich.length === 0) return;
+
+      toEnrich.forEach((m) => enrichingRef.current.add(m.id));
+
+      const BATCH = 3;
+      for (let i = 0; i < toEnrich.length; i += BATCH) {
+        const batch = toEnrich.slice(i, i + BATCH);
+        const results = await Promise.allSettled(
+          batch.map(async (movie) => {
+            const res = await fetch(`${baseUrl}/movies/${movie.id}`, {
+              headers: { Authorization: `Bearer ${publicAnonKey}` },
+            });
+            if (!res.ok) return null;
+            return res.json();
+          })
+        );
+
+        const updates = new Map<number, any>();
+        batch.forEach((movie, idx) => {
+          const result = results[idx];
+          if (result.status !== 'fulfilled' || !result.value) return;
+          const d = result.value;
+          updates.set(movie.id, {
+            runtime: d.runtime || movie.runtime,
+            director: d.credits?.crew?.find((c: any) => c.job === 'Director')?.name || movie.director,
+            actors: d.credits?.cast?.slice(0, 5).map((a: any) => a.name) || movie.actors,
+            genres: d.genres || movie.genres,
+            external_ids: d.external_ids || movie.external_ids,
+            homepage: d.homepage || movie.homepage,
+            'watch/providers': d['watch/providers'] || movie['watch/providers'],
+          });
+        });
+
+        if (updates.size > 0) {
+          setPartnerLikedMovies((prev) =>
+            prev.map((movie) => {
+              const enriched = updates.get(movie.id);
+              return enriched ? { ...movie, ...enriched } : movie;
+            })
+          );
+        }
+
+        setEnrichedIds((prev) => {
+          const s = new Set(prev);
+          batch.forEach((m) => s.add(m.id));
+          return s;
+        });
+
+        if (i + BATCH < toEnrich.length) {
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+    };
+
+    enrichPartnerMovies();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [partnerLikedMovies.length, publicAnonKey]);
 
   // ── Partner connection helpers ─────────────────────────────
   const handleCopyInviteLink = () => {
@@ -262,6 +410,11 @@ export function SavedMoviesTab({
     : visibleCount < sortedPartnerMovies.length;
 
   useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, sortBy, viewMode]);
+
+  // Reset enrichment tracking when movies change significantly (e.g., after import)
+  useEffect(() => {
+    enrichingRef.current = new Set();
+  }, [likedMovies.length]);
 
   useEffect(() => {
     if (!sentinelEl || !hasMoreMovies) return;
