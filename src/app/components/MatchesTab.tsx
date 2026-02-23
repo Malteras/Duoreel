@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { API_BASE_URL } from '../../utils/api';
+import { STREAMING_SERVICES } from '../../constants/streaming';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
@@ -30,19 +31,6 @@ interface MatchesTabProps {
   publicAnonKey: string;
   navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year', value: string | number) => void;
 }
-
-// Streaming services — mirrors AdvancedFiltersModal
-const STREAMING_SERVICES = [
-  { label: 'Netflix',    value: '8',   logo: 'https://image.tmdb.org/t/p/original/9A1JSVmSxsyaBK4SUFsYVqbAYfW.jpg' },
-  { label: 'Amazon',     value: '9',   logo: 'https://image.tmdb.org/t/p/original/emthp39XA2YScoYL1p0sdbAH2WA.jpg' },
-  { label: 'Disney+',   value: '337',  logo: 'https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vpzxTj19Q.jpg' },
-  { label: 'Max',        value: '384', logo: 'https://image.tmdb.org/t/p/original/Ajqyt5aNxNGjmF9uOfxArGrdf3X.jpg' },
-  { label: 'Apple TV+', value: '350',  logo: 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg' },
-  { label: 'Hulu',       value: '15',  logo: 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg' },
-  { label: 'Paramount+', value: '531', logo: 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg' },
-  { label: 'Peacock',    value: '387', logo: 'https://image.tmdb.org/t/p/original/xTHltMrZPAJFLkuXDpEAFnD1WRa.jpg' },
-  { label: 'Criterion',  value: '258', logo: 'https://image.tmdb.org/t/p/original/eSOBHkMNbAEwPYukUAtJJNcgjJo.jpg' },
-];
 
 export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter }: MatchesTabProps) {
   const { watchedMovieIds, toggleWatched, isWatched, watchedLoadingIds } = useUserInteractions();
