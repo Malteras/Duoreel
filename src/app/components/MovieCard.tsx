@@ -142,49 +142,73 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
         {showActions && (
           <>
             <div className="absolute top-4 left-4">
-              <Button
-                size="icon"
-                variant={isLiked ? "default" : "secondary"}
-                className={`rounded-full ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsLikeLoading(true);
-                  isLiked ? onUnlike?.() : onLike();
-                }}
-                disabled={isLikeLoading}
-              >
-                {isLikeLoading ? <Loader2 className="size-5 animate-spin" /> : <Bookmark className={`size-5 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} />}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    size="icon"
+                    variant={isLiked ? "default" : "secondary"}
+                    className={`rounded-full ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsLikeLoading(true);
+                      isLiked ? onUnlike?.() : onLike();
+                    }}
+                    disabled={isLikeLoading}
+                    aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
+                  >
+                    {isLikeLoading ? <Loader2 className="size-5 animate-spin" /> : <Bookmark className={`size-5 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} />}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                  <p>{isLiked ? 'Remove from watchlist' : 'Save to watchlist'}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             {onDislike && !isMatch && (
               <div className="absolute top-4 right-4">
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full bg-slate-800/90 hover:bg-slate-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDislike();
-                  }}
-                >
-                  <Ban className="size-5 text-white" />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="rounded-full bg-slate-800/90 hover:bg-slate-700"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDislike();
+                      }}
+                      aria-label="Not interested"
+                    >
+                      <Ban className="size-5 text-white" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                    <p>Not interested</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             )}
             {onNotInterested && !isMatch && (
               <div className="absolute top-4 right-4">
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full bg-slate-800/90 hover:bg-slate-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onNotInterested();
-                  }}
-                  disabled={isNotInterestedLoading}
-                >
-                  {isNotInterestedLoading ? <Loader2 className="size-5 animate-spin" /> : <Ban className="size-5 text-white" />}
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="rounded-full bg-slate-800/90 hover:bg-slate-700"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onNotInterested();
+                      }}
+                      disabled={isNotInterestedLoading}
+                      aria-label="Not interested"
+                    >
+                      {isNotInterestedLoading ? <Loader2 className="size-5 animate-spin" /> : <Ban className="size-5 text-white" />}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                    <p>Not interested</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             )}
           </>

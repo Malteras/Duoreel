@@ -403,6 +403,7 @@ export function SavedMoviesTab({
                     onClick={() => setHelpModalOpen(true)}
                     className="text-slate-400 hover:text-white hover:bg-slate-700 rounded-full"
                     title="How to export from Letterboxd"
+                    aria-label="How to export from Letterboxd"
                   >
                     <HelpCircle className="size-5" />
                   </Button>

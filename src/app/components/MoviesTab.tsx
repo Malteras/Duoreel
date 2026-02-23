@@ -20,6 +20,7 @@ import { useMovieModal } from "../hooks/useMovieModal";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -937,6 +938,7 @@ export function MoviesTab({
                     fetchMovies(1, false);
                   }}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  aria-label="Clear search"
                 >
                   <X className="size-3.5" />
                 </button>
@@ -1023,6 +1025,7 @@ export function MoviesTab({
               variant="outline"
               className="bg-slate-800/80 border-slate-700 text-white hover:bg-slate-700 hover:text-white h-9 px-3 relative shrink-0"
               onClick={() => setShowFiltersModal(true)}
+              aria-label="Open filters"
             >
               <SlidersHorizontal className="size-3.5 md:mr-2" />
               <span className="hidden md:inline">Filters</span>
@@ -1034,14 +1037,21 @@ export function MoviesTab({
             </Button>
 
             {/* Refresh — always visible */}
-            <Button
-              variant="outline"
-              className="bg-slate-800/80 border-slate-700 text-white hover:bg-slate-700 hover:text-white h-9 px-3 shrink-0"
-              onClick={handleRefresh}
-              title="Refresh movies"
-            >
-              <RefreshCw className="size-3.5" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="bg-slate-800/80 border-slate-700 text-white hover:bg-slate-700 hover:text-white h-9 px-3 shrink-0"
+                  onClick={handleRefresh}
+                  aria-label="Refresh movies"
+                >
+                  <RefreshCw className="size-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                <p>Refresh movies</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {/* Row 2: Sort + remaining active filter badges */}
