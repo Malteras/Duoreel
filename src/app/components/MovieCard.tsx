@@ -159,7 +159,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                     {isLikeLoading ? <Loader2 className="size-5 animate-spin" /> : <Bookmark className={`size-5 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} />}
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                <TooltipContent side="bottom" sideOffset={4} className="bg-slate-800 text-white border-slate-700">
                   <p>{isLiked ? 'Remove from watchlist' : 'Save to watchlist'}</p>
                 </TooltipContent>
               </Tooltip>
@@ -181,7 +181,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                       <Ban className="size-5 text-white" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                  <TooltipContent side="bottom" sideOffset={4} className="bg-slate-800 text-white border-slate-700">
                     <p>Not interested</p>
                   </TooltipContent>
                 </Tooltip>
@@ -205,7 +205,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                       {isNotInterestedLoading ? <Loader2 className="size-5 animate-spin" /> : <Ban className="size-5 text-white" />}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                  <TooltipContent side="bottom" sideOffset={4} className="bg-slate-800 text-white border-slate-700">
                     <p>Not interested</p>
                   </TooltipContent>
                 </Tooltip>
