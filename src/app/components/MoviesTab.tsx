@@ -18,6 +18,7 @@ import {
   onRatingFetched,
 } from "../../utils/imdbRatings";
 import { useMovieModal } from "../hooks/useMovieModal";
+import { useWatchedActions } from "../hooks/useWatchedActions";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
@@ -141,9 +142,15 @@ export function MoviesTab({
     openMovie,
     closeMovie,
   } = useMovieModal(accessToken);
+
   const [isLikeLoading, setIsLikeLoading] = useState(false);
-  const [isWatchedLoading, setIsWatchedLoading] =
-    useState(false);
+  const [isWatchedLoading, setIsWatchedLoading] = useState(false);
+
+  const { handleWatched, handleUnwatched } = useWatchedActions({
+    accessToken,
+    closeMovie,
+    onWatchedLoading: (loading) => setIsWatchedLoading(loading),
+  });
 
   // IMDb ratings local state (keyed by TMDb ID)
   const [imdbRatings, setImdbRatings] = useState<
@@ -178,7 +185,6 @@ export function MoviesTab({
   const {
     watchedMovieIds,
     notInterestedMovieIds,
-    toggleWatched,
     toggleNotInterested,
     isWatched,
     isNotInterested,
@@ -673,41 +679,6 @@ export function MoviesTab({
     } catch (error) {
       console.error("Error unliking movie:", error);
       toast.error("Failed to remove movie");
-    }
-  };
-
-  // ──────────────── Watched / Unwatched (via context) ────────────────
-  const handleWatched = async (movie: Movie) => {
-    if (!accessToken) {
-      toast.error("Please sign in to mark movies as watched");
-      return;
-    }
-
-    setIsWatchedLoading(true);
-    try {
-      await toggleWatched(movie.id, true, movie); // Fix 2: pass full movie for richer KV entry
-      toast.success(`Marked "${movie.title}" as watched`);
-      // ✅ FIX: Don't manually filter movies here — visibleMovies reactively
-      // hides/shows watched movies based on watchedMovieIds + showWatchedMovies.
-      // Removing from movies state caused Scenario B to break (movie never
-      // reappeared when filter toggled ON) and Scenario D to break via race
-      // condition (re-fetch could outrun the API write).
-      closeMovie();
-    } catch (error) {
-      console.error("Error marking movie as watched:", error);
-      toast.error("Failed to mark as watched");
-    } finally {
-      setIsWatchedLoading(false);
-    }
-  };
-
-  const handleUnwatched = async (movieId: number) => {
-    try {
-      await toggleWatched(movieId, false);
-      toast.success("Removed from watched list");
-    } catch (error) {
-      console.error("Error unmarking movie as watched:", error);
-      toast.error("Failed to unmark as watched");
     }
   };
 

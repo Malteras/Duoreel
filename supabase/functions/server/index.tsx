@@ -4,6 +4,7 @@ import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
 import { getByPrefixPaginated, getKeysByPrefixPaginated } from "./kv_paginated.tsx";
 import { createClient } from "npm:@supabase/supabase-js";
+import pMap from "npm:p-map";
 
 const app = new Hono();
 
@@ -101,6 +102,12 @@ app.use(
     maxAge: 600,
   }),
 );
+
+// Global error handler - catch unhandled errors in route handlers
+app.onError((err, c) => {
+  console.error('Unhandled error in route handler:', err);
+  return c.json({ error: 'Internal server error', message: err.message }, 500);
+});
 
 // Health check endpoint
 app.get("/make-server-5623fde1/health", (c) => {
@@ -2663,4 +2670,11 @@ app.get("/make-server-5623fde1/movies/:id", async (c) => {
   }
 });
 
-Deno.serve(app.fetch);
+// Start the server with error handling
+try {
+  Deno.serve(app.fetch);
+  console.log('DuoReel server started successfully');
+} catch (error) {
+  console.error('Fatal error starting server:', error);
+  throw error;
+}

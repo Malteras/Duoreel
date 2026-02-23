@@ -1,11 +1,14 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
-import { STREAMING_SERVICES } from '../../constants/streaming';
-import { Button } from './ui/button';
+import { MovieCard } from './MovieCard';
+import { MovieDetailModal } from './MovieDetailModal';
+import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,14 +20,23 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from './ui/alert-dialog';
-import { Heart, Loader2, Users, X, Check, UserX, Bell, Filter, ArrowUpDown, Tv } from 'lucide-react';
+import {
+  Users,
+  Heart,
+  UserX,
+  Check,
+  X,
+  Bell,
+  Tv,
+  ArrowUpDown,
+  Filter,
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { MovieCard } from './MovieCard';
-import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
-import { MovieDetailModal } from './MovieDetailModal';
 import { useMovieModal } from '../hooks/useMovieModal';
+import { STREAMING_SERVICES } from '../../constants/streaming';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { useUserInteractions } from './UserInteractionsContext';
+import { useWatchedActions } from '../hooks/useWatchedActions';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -34,7 +46,7 @@ interface MatchesTabProps {
 }
 
 export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter }: MatchesTabProps) {
-  const { watchedMovieIds, toggleWatched, isWatched, watchedLoadingIds } = useUserInteractions();
+  const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
   const [partner, setPartner] = useState<any>(null);
   const [matchedMovies, setMatchedMovies] = useState<Movie[]>([]);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]); // partner request objects, not movies
@@ -56,6 +68,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [regeneratingCode, setRegeneratingCode] = useState(false);
 
   const { selectedMovie, modalOpen, openMovie, closeMovie } = useMovieModal(accessToken);
+
+  const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
+
   const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
   const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(new Map());
 
@@ -313,32 +328,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         toast.success('Removed from matches');
       }
     } catch { toast.error('Failed to dislike movie'); }
-  };
-
-  const handleWatched = async (movie: Movie) => {
-    if (!accessToken) {
-      toast.error('Please sign in to mark movies as watched');
-      return;
-    }
-    try {
-      await toggleWatched(movie.id, true, movie);
-      toast.success(`Marked \"${movie.title}\" as watched`);
-      closeMovie();
-    } catch (error) {
-      console.error('Error marking movie as watched:', error);
-      toast.error('Failed to mark as watched');
-    }
-  };
-
-  const handleUnwatched = async (movieId: number) => {
-    if (!accessToken) return;
-    try {
-      await toggleWatched(movieId, false);
-      toast.success('Removed from watched list');
-    } catch (error) {
-      console.error('Error unmarking movie as watched:', error);
-      toast.error('Failed to unmark as watched');
-    }
   };
 
   const handleCopyInviteLink = () => {

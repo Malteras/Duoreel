@@ -6,6 +6,7 @@ import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useMovieModal } from '../hooks/useMovieModal';
+import { useWatchedActions } from '../hooks/useWatchedActions';
 import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
@@ -36,9 +37,12 @@ export function SavedMoviesTab({
   globalImdbCache,
   setGlobalImdbCache,
 }: SavedMoviesTabProps) {
-  const { watchedMovieIds, toggleWatched, isWatched, watchedLoadingIds } = useUserInteractions();
+  const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
   const { selectedMovie, modalOpen, openMovie, closeMovie, isLoadingDeepLink } = useMovieModal(accessToken);
-  const [partnerLikedMovies, setPartnerLikedMovies] = useState<any[]>([]);
+
+  const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
+
+  const [partnerLikedMovies, setPartnerLikedMovies] = useState<Movie[]>([]);
   const [partnerName, setPartnerName] = useState<string>('');
   const [hasPartner, setHasPartner] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -346,32 +350,6 @@ export function SavedMoviesTab({
     } catch (error) {
       console.error('Error liking movie:', error);
       toast.error('Failed to like movie');
-    }
-  };
-
-  const handleWatched = async (movie: Movie) => {
-    if (!accessToken) {
-      toast.error('Please sign in to mark movies as watched');
-      return;
-    }
-    try {
-      await toggleWatched(movie.id, true, movie);
-      toast.success(`Marked "${movie.title}" as watched`);
-      closeMovie();
-    } catch (error) {
-      console.error('Error marking movie as watched:', error);
-      toast.error('Failed to mark as watched');
-    }
-  };
-
-  const handleUnwatched = async (movieId: number) => {
-    if (!accessToken) return;
-    try {
-      await toggleWatched(movieId, false);
-      toast.success('Removed from watched list');
-    } catch (error) {
-      console.error('Error unmarking movie as watched:', error);
-      toast.error('Failed to unmark as watched');
     }
   };
 
