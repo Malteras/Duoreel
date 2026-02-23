@@ -417,7 +417,6 @@ export function ProfilePage() {
                         Connected
                       </div>
                       <p className="text-white font-semibold">{partner.name || 'Partner'}</p>
-                      <p className="text-slate-400 text-sm">{partner.email}</p>
                     </div>
                   </div>
                   <Button

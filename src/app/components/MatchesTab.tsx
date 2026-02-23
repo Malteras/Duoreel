@@ -395,7 +395,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             <Heart className="size-3.5 text-pink-500 fill-pink-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
               <span className="text-white text-sm font-medium truncate">{partner.name || 'Partner'}</span>
-              <span className="text-slate-500 text-xs ml-2 hidden sm:inline truncate">{partner.email}</span>
             </div>
             <Button
               onClick={handleRemovePartner}
