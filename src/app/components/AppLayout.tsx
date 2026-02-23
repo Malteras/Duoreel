@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router';
-import { Film, Bookmark, Users } from 'lucide-react';
+import { Film, Bookmark, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '../context/AuthContext';
 import { UserInteractionsProvider, useUserInteractions } from './UserInteractionsContext';
@@ -147,7 +147,7 @@ function AppLayoutContent({
               </NavLink>
 
               <NavLink to="/matches" onClick={handleMatchesClick} className={matchTabCls}>
-                <Users className="size-4" />
+                <Heart className="size-4" />
                 Matches
                 {matchNotificationCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center animate-pulse">
@@ -203,7 +203,7 @@ function AppLayoutContent({
               }`
             }
           >
-            <Users className="size-6" />
+            <Heart className="size-6" />
             <span>Matches</span>
             {matchNotificationCount > 0 && (
               <span className="absolute top-0 right-2 bg-red-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center animate-pulse">
