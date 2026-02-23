@@ -1359,21 +1359,21 @@ export function MoviesTab({
           setPage(1);
           setIsSearchMode(false);
           setSearchQuery("");
-          setModalOpen(false);
+          closeMovie();
         }}
         onDirectorClick={(director) => {
           setFilters({ ...filters, director });
           setPage(1);
           setIsSearchMode(false);
           setSearchQuery("");
-          setModalOpen(false);
+          closeMovie();
         }}
         onActorClick={(actor) => {
           setFilters({ ...filters, actor });
           setPage(1);
           setIsSearchMode(false);
           setSearchQuery("");
-          setModalOpen(false);
+          closeMovie();
         }}
         onLanguageClick={() => {}}
         projectId={projectId}
