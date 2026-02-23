@@ -810,7 +810,8 @@ export function MoviesTab({
           hasMore &&
           !loadingMore &&
           !loading &&
-          !isSearchMode
+          !isSearchMode &&
+          pendingRemovals.size === 0
         ) {
           const nextPage = page + 1;
           setPage(nextPage);
@@ -829,6 +830,7 @@ export function MoviesTab({
     isSearchMode,
     page,
     fetchMovies,
+    pendingRemovals,
   ]);
 
   // ──────────────── Filter handlers ────────────────
