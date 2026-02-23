@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
 import { STREAMING_SERVICES } from '../../constants/streaming';
 import { Button } from './ui/button';
@@ -35,9 +36,9 @@ interface MatchesTabProps {
 export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter }: MatchesTabProps) {
   const { watchedMovieIds, toggleWatched, isWatched, watchedLoadingIds } = useUserInteractions();
   const [partner, setPartner] = useState<any>(null);
-  const [matchedMovies, setMatchedMovies] = useState<any[]>([]);
-  const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
-  const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]);
+  const [matchedMovies, setMatchedMovies] = useState<Movie[]>([]);
+  const [incomingRequests, setIncomingRequests] = useState<any[]>([]); // partner request objects, not movies
+  const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]); // partner request objects, not movies
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [partnerEmail, setPartnerEmail] = useState('');

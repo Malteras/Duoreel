@@ -6,6 +6,7 @@ import {
   useMemo,
 } from "react";
 import { API_BASE_URL } from "../../utils/api";
+import type { Movie } from "../../types/movie";
 import { MovieCard } from "./MovieCard";
 import { MovieDetailModal } from "./MovieDetailModal";
 import { MovieCardSkeletonGrid } from "./MovieCardSkeleton";
@@ -53,34 +54,8 @@ interface MoviesTabProps {
   setGlobalImdbCache: React.Dispatch<
     React.SetStateAction<Map<string, string>>
   >;
-  likedMovies: any[];
-  setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
-}
-
-interface MovieWithDetails {
-  id: number;
-  title: string;
-  poster_path?: string;
-  backdrop_path?: string;
-  overview: string;
-  release_date?: string;
-  vote_average: number;
-  vote_count?: number;
-  genre_ids?: number[];
-  genres?: { id: number; name: string }[];
-  director?: string;
-  actors?: string[];
-  runtime?: number;
-  external_ids?: { imdb_id?: string };
-  "watch/providers"?: any;
-  tagline?: string;
-  budget?: number;
-  revenue?: number;
-  original_language?: string;
-  status?: string;
-  homepage?: string;
-  popularity?: number;
-  imdbRating?: string;
+  likedMovies: Movie[];
+  setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
 }
 
 const SORT_OPTIONS = [
@@ -135,7 +110,7 @@ export function MoviesTab({
   setLikedMovies,
 }: MoviesTabProps) {
   // Core state
-  const [movies, setMovies] = useState<MovieWithDetails[]>([]);
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(1);
@@ -612,7 +587,7 @@ export function MoviesTab({
   };
 
   // ──────────────── Like / Unlike ────────────────
-  const handleLike = async (movie: MovieWithDetails) => {
+  const handleLike = async (movie: Movie) => {
     if (!accessToken) return;
 
     setIsLikeLoading(true);
@@ -702,7 +677,7 @@ export function MoviesTab({
   };
 
   // ──────────────── Watched / Unwatched (via context) ────────────────
-  const handleWatched = async (movie: MovieWithDetails) => {
+  const handleWatched = async (movie: Movie) => {
     if (!accessToken) {
       toast.error("Please sign in to mark movies as watched");
       return;

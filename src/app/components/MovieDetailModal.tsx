@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
@@ -8,7 +9,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
-  movie: any;
+  movie: Movie;
   isOpen: boolean;
   onClose: () => void;
   isLiked: boolean;
@@ -290,7 +291,7 @@ export function MovieDetailModal({
               {/* Genres */}
               {movie.genres && movie.genres.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {movie.genres.map((genre: any) => (
+                  {movie.genres.map((genre) => (
                     <Badge 
                       key={genre.id} 
                       variant="secondary" 
@@ -453,7 +454,7 @@ export function MovieDetailModal({
                 <>
                   <h4 className="text-sm font-semibold text-slate-400 mb-3">Watch on:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {movie['watch/providers'].results.US.flatrate.map((provider: any) => {
+                    {movie['watch/providers'].results.US.flatrate.map((provider) => {
                       const providerUrl = getProviderUrl(provider.provider_name, movie.title, movie.homepage);
                       
                       return (

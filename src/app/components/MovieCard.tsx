@@ -1,34 +1,12 @@
 import { Heart, Bookmark, Ban, Star, Calendar, User, ChevronDown, ChevronUp, Film, Users, Tag, Clock, Loader2, Eye, ExternalLink } from 'lucide-react';
+import type { Movie } from '../../types/movie';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { useState, useEffect } from 'react';
 
 interface MovieCardProps {
-  movie: {
-    id: number;
-    title: string;
-    poster_path?: string;
-    vote_average: number;
-    release_date?: string;
-    overview: string;
-    director?: string;
-    actors?: string[];
-    genres?: { id: number; name: string }[];
-    external_ids?: { imdb_id?: string };
-    runtime?: number;
-    'watch/providers'?: {
-      results?: {
-        US?: {
-          flatrate?: Array<{
-            provider_id: number;
-            provider_name: string;
-            logo_path: string;
-          }>;
-        };
-      };
-    };
-  };
+  movie: Movie;
   isLiked?: boolean;
   isMatch?: boolean; // New prop for match badge
   isWatched?: boolean; // New prop for watched status

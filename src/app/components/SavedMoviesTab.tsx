@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
 import { MovieCard } from './MovieCard';
 import { MovieDetailModal } from './MovieDetailModal';
@@ -19,8 +20,8 @@ interface SavedMoviesTabProps {
   projectId: string;
   publicAnonKey: string;
   navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year', value: string | number) => void;
-  likedMovies: any[];
-  setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
+  likedMovies: Movie[];
+  setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
 }
