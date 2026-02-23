@@ -425,12 +425,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                  <AlertDialogCancel className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white cursor-pointer">
                     Cancel
                   </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleRemovePartner}
-                    className="bg-red-600 text-white hover:bg-red-700"
+                    className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
                   >
                     Disconnect
                   </AlertDialogAction>

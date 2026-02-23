@@ -445,7 +445,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
-        <button className="relative size-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors">
+        <button className="relative size-10 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer">
           <Bell className="size-5 text-slate-300" />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center animate-pulse">
@@ -465,7 +465,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+              className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
             >
               Mark all read
             </button>
@@ -500,7 +500,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           <div className="border-t border-slate-700 p-2">
             <button
               onClick={handleClearAll}
-              className="w-full flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-red-400 py-1.5 rounded transition-colors hover:bg-red-950/20"
+              className="w-full flex items-center justify-center gap-1.5 text-xs text-slate-500 hover:text-red-400 py-1.5 rounded transition-colors hover:bg-red-950/20 cursor-pointer"
             >
               <Trash2 className="size-3" />
               Clear all notifications

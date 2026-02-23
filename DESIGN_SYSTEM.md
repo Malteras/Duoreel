@@ -56,7 +56,7 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 **Primary (CTA):**
 
 ```tsx
-<Button className="bg-pink-600 hover:bg-pink-700 text-white font-semibold">
+<Button className="bg-pink-600 hover:bg-pink-700 text-white font-semibold cursor-pointer">
   Get Started
 </Button>
 ```
@@ -66,7 +66,7 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 ```tsx
 <Button
   variant="outline"
-  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white cursor-pointer"
 >
   Button Text
 </Button>
@@ -77,7 +77,7 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 ```tsx
 <Button
   variant="ghost"
-  className="text-slate-400 hover:bg-slate-700 hover:text-white"
+  className="text-slate-400 hover:bg-slate-700 hover:text-white cursor-pointer"
 >
   Button Text
 </Button>
@@ -89,7 +89,7 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 <Button
   size="icon"
   variant="secondary"
-  className="rounded-full bg-slate-800/90 hover:bg-slate-700"
+  className="rounded-full bg-slate-800/90 hover:bg-slate-700 cursor-pointer"
 >
   <Icon className="size-5 text-white" />
 </Button>
@@ -101,13 +101,15 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 <Button
   size="icon"
   variant="default"
-  className="rounded-full bg-green-500 hover:bg-green-600"
+  className="rounded-full bg-green-500 hover:bg-green-600 cursor-pointer"
 >
   <Bookmark className="size-5 fill-white text-white" />
 </Button>
 ```
 
 Never mix button variants outside these patterns. Always use `transition-all` or `transition-colors` for hover states.
+
+**IMPORTANT:** All buttons (including native `<button>` elements) must have `cursor-pointer` class. Buttons should feel clickable on hover.
 
 ### Navigation Tabs
 
