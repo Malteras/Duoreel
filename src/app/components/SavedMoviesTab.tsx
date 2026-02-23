@@ -661,6 +661,7 @@ export function SavedMoviesTab({
                     key={movie.id}
                     movie={movie}
                     isLiked={likedMovies.some(m => m.id === movie.id)}
+                    isWatched={watchedMovieIds.has(movie.id)}
                     onLike={() => handleLike(movie)}
                     onUnlike={() => handleUnlike(movie.id)}
                     onClick={() => openMovie(movie)}
