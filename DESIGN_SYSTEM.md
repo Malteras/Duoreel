@@ -107,6 +107,30 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 </Button>
 ```
 
+**Destructive/Error (ghost red, for negative actions):**
+
+```tsx
+<Button
+  variant="ghost"
+  className="text-slate-500 hover:text-red-400 hover:bg-red-950/30 cursor-pointer"
+>
+  <Trash2 className="size-4 mr-2" />
+  Delete Item
+</Button>
+```
+
+**Destructive/Error (outline, for critical negative actions like Sign Out or Disconnect Partner):**
+
+```tsx
+<Button
+  variant="outline"
+  className="bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800 cursor-pointer"
+>
+  <LogOut className="size-4 mr-2" />
+  Sign Out
+</Button>
+```
+
 Never mix button variants outside these patterns. Always use `transition-all` or `transition-colors` for hover states.
 
 **IMPORTANT:** All buttons (including native `<button>` elements) must have `cursor-pointer` class. Buttons should feel clickable on hover.

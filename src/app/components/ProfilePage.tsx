@@ -20,7 +20,7 @@ import {
 } from './ui/alert-dialog';
 import {
   Mail, Bookmark, Upload, Link as LinkIcon, Loader2,
-  RefreshCw, LogOut, Minimize2, Maximize2, Copy, RotateCcw
+  RefreshCw, LogOut, Minimize2, Maximize2, Copy, RotateCcw, Unlink
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
@@ -515,9 +515,9 @@ export function ProfilePage() {
                         disabled={disconnecting}
                         variant="outline"
                         size="sm"
-                        className="text-red-400 border-red-900/30 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
+                        className="bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800 cursor-pointer"
                       >
-                        {disconnecting ? <Loader2 className="size-3.5 mr-2 animate-spin" /> : null}
+                        {disconnecting ? <Loader2 className="size-3.5 mr-2 animate-spin" /> : <Unlink className="size-3.5 mr-2" />}
                         Disconnect Partner
                       </Button>
                     </AlertDialogTrigger>
