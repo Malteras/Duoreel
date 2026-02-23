@@ -6,6 +6,6 @@ export const STREAMING_SERVICES = [
   { label: 'Apple TV+',        value: '350', logo: 'https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg' },
   { label: 'Hulu',             value: '15',  logo: 'https://image.tmdb.org/t/p/original/zxrVdFjIjLqkfnwyghnfywTn3Lh.jpg' },
   { label: 'Paramount+',       value: '531', logo: 'https://image.tmdb.org/t/p/original/xbhHHa1YgtpwhC8lb1NQ3ACVcLd.jpg' },
-  { label: 'Peacock',          value: '387', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/NBCUniversal_Peacock_Logo.svg/1920px-NBCUniversal_Peacock_Logo.svg.png' },
+  { label: 'Peacock',          value: '387', logo: 'https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/svg/peacock.svg' },
   { label: 'Criterion Channel', value: '258', logo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/The_Criterion_Collection_Logo.svg/250px-The_Criterion_Collection_Logo.svg.png' },
 ];
