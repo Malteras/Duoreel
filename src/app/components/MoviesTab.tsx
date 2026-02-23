@@ -315,8 +315,8 @@ export function MoviesTab({
 
         if (data.results) {
           // Also filter out liked movies from discover (they already saved them)
-          const newMovies = data.results.filter(
-            (m: any) =>
+          const newMovies = (data.results as Movie[]).filter(
+            (m) =>
               !likedMovieIdsRef.current.has(m.id) &&
               !pendingRemovalsRef.current.has(m.id),
           );
@@ -327,7 +327,7 @@ export function MoviesTab({
                 prev.map((m) => m.id),
               );
               const deduped = newMovies.filter(
-                (m: any) => !existingIds.has(m.id),
+                (m) => !existingIds.has(m.id),
               );
               return [...prev, ...deduped];
             });
@@ -423,11 +423,11 @@ export function MoviesTab({
             if (!detail) return movie;
 
             const director = detail.credits?.crew?.find(
-              (c: any) => c.job === "Director",
+              (c) => c.job === "Director",
             )?.name;
             const actors = detail.credits?.cast
               ?.slice(0, 5)
-              .map((a: any) => a.name);
+              .map((a) => a.name);
 
             return {
               ...movie,

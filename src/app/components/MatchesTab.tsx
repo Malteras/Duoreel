@@ -85,7 +85,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
       const matchesData = await matchesRes.json();
       if (matchesData.movies) {
         setMatchedMovies(matchesData.movies);
-        setLikedMovies(new Set(matchesData.movies.map((m: any) => m.id)));
+        setLikedMovies(new Set(matchesData.movies.map((m: Movie) => m.id)));
         setEnrichedIds(new Set());
         enrichingRef.current = new Set();
       }
@@ -166,8 +166,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           return {
             ...movie,
             runtime:           d.runtime           || movie.runtime,
-            director:          d.credits?.crew?.find((c: any) => c.job === 'Director')?.name || movie.director,
-            actors:            d.credits?.cast?.slice(0, 5).map((a: any) => a.name)           || movie.actors,
+            director:          d.credits?.crew?.find((c) => c.job === 'Director')?.name || movie.director,
+            actors:            d.credits?.cast?.slice(0, 5).map((a) => a.name)           || movie.actors,
             genres:            d.genres             || movie.genres,
             'watch/providers': d['watch/providers'] || movie['watch/providers'],
           };
@@ -192,8 +192,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
     if (selectedService !== 'all') {
       movies = movies.filter(movie => {
-        const flatrate: any[] = movie['watch/providers']?.results?.US?.flatrate || [];
-        return flatrate.some((p: any) => String(p.provider_id) === selectedService);
+        const flatrate = movie['watch/providers']?.results?.US?.flatrate || [];
+        return flatrate.some((p) => String(p.provider_id) === selectedService);
       });
     }
 
@@ -315,14 +315,14 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     } catch { toast.error('Failed to dislike movie'); }
   };
 
-  const handleWatched = async (movie: any) => {
+  const handleWatched = async (movie: Movie) => {
     if (!accessToken) {
       toast.error('Please sign in to mark movies as watched');
       return;
     }
     try {
       await toggleWatched(movie.id, true, movie);
-      toast.success(`Marked "${movie.title}" as watched`);
+      toast.success(`Marked \"${movie.title}\" as watched`);
       closeMovie();
     } catch (error) {
       console.error('Error marking movie as watched:', error);

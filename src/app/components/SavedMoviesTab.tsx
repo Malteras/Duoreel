@@ -153,8 +153,8 @@ export function SavedMoviesTab({
           const d = result.value;
           updates.set(movie.id, {
             runtime: d.runtime || movie.runtime,
-            director: d.credits?.crew?.find((c: any) => c.job === 'Director')?.name || movie.director,
-            actors: d.credits?.cast?.slice(0, 5).map((a: any) => a.name) || movie.actors,
+            director: d.credits?.crew?.find((c) => c.job === 'Director')?.name || movie.director,
+            actors: d.credits?.cast?.slice(0, 5).map((a) => a.name) || movie.actors,
             genres: d.genres || movie.genres,
             external_ids: d.external_ids || movie.external_ids,
             homepage: d.homepage || movie.homepage,
@@ -163,7 +163,7 @@ export function SavedMoviesTab({
         });
 
         if (updates.size > 0) {
-          setLikedMovies((prev: any[]) =>
+          setLikedMovies((prev) =>
             prev.map((movie) => {
               const enriched = updates.get(movie.id);
               return enriched ? { ...movie, ...enriched } : movie;
@@ -224,8 +224,8 @@ export function SavedMoviesTab({
           const d = result.value;
           updates.set(movie.id, {
             runtime: d.runtime || movie.runtime,
-            director: d.credits?.crew?.find((c: any) => c.job === 'Director')?.name || movie.director,
-            actors: d.credits?.cast?.slice(0, 5).map((a: any) => a.name) || movie.actors,
+            director: d.credits?.crew?.find((c) => c.job === 'Director')?.name || movie.director,
+            actors: d.credits?.cast?.slice(0, 5).map((a) => a.name) || movie.actors,
             genres: d.genres || movie.genres,
             external_ids: d.external_ids || movie.external_ids,
             homepage: d.homepage || movie.homepage,
@@ -331,7 +331,7 @@ export function SavedMoviesTab({
     }
   };
 
-  const handleLike = async (movie: any) => {
+  const handleLike = async (movie: Movie) => {
     if (!accessToken) return;
     try {
       const response = await fetch(`${baseUrl}/movies/like`, {
@@ -349,7 +349,7 @@ export function SavedMoviesTab({
     }
   };
 
-  const handleWatched = async (movie: any) => {
+  const handleWatched = async (movie: Movie) => {
     if (!accessToken) {
       toast.error('Please sign in to mark movies as watched');
       return;
@@ -376,7 +376,7 @@ export function SavedMoviesTab({
   };
 
   // Sort movies based on current sort option
-  const getSortedMovies = (movies: any[]) => {
+  const getSortedMovies = (movies: Movie[]) => {
     const sortedMovies = [...movies];
     switch (sortBy) {
       case 'newest':   return sortedMovies.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
@@ -390,7 +390,7 @@ export function SavedMoviesTab({
   };
 
   // Filter movies based on watched status
-  const getFilteredMovies = (movies: any[]) => {
+  const getFilteredMovies = (movies: Movie[]) => {
     switch (filterBy) {
       case 'watched':   return movies.filter(movie => watchedMovieIds.has(movie.id));
       case 'unwatched': return movies.filter(movie => !watchedMovieIds.has(movie.id));
