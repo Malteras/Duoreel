@@ -216,7 +216,7 @@ export function useCSVImport({
       if (totalFailed > 0) {
         toast.error(`Could not find ${totalFailed} movies on TMDb`);
         if (failedMovies.length > 0) {
-          console.log('Failed movies:', failedMovies);
+          console.warn('Failed movies:', failedMovies);
         }
       }
 

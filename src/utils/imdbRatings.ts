@@ -93,7 +93,7 @@ export async function fetchAndStoreRating(
 
     if (!response.ok) {
       if (response.status === 429) {
-        console.log(`Rate limited or retry later for movie ${movie.id}`);
+        console.error(`Rate limited or retry later for movie ${movie.id}`);
       }
       return null;
     }
@@ -151,8 +151,6 @@ export async function fetchMissingRatings(
   // Prioritize
   const prioritized = prioritizeMovies(moviesNeedingRatings, visibleMovieIds);
   
-  console.log(`Starting background fetch for ${prioritized.length} movies`);
-  
   for (let i = 0; i < prioritized.length; i += BATCH_SIZE) {
     const batch = prioritized.slice(i, i + BATCH_SIZE);
     
@@ -161,13 +159,9 @@ export async function fetchMissingRatings(
       batch.map(movie => fetchAndStoreRating(movie, projectId, publicAnonKey))
     );
     
-    console.log(`Fetched batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(prioritized.length / BATCH_SIZE)}`);
-    
     // Wait before next batch (unless it's the last batch)
     if (i + BATCH_SIZE < prioritized.length) {
       await new Promise(resolve => setTimeout(resolve, DELAY));
     }
   }
-  
-  console.log('Background IMDb rating fetch complete');
 }

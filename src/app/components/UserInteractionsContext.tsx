@@ -59,7 +59,6 @@ export function UserInteractionsProvider({
     // Skip if a fetch is already in flight — the concurrent call will complete shortly
     // and its finally{} will set isInitialLoading=false.
     if (refreshInFlightRef.current) {
-      console.log('refreshInteractions: skipping duplicate concurrent call');
       return;
     }
 
@@ -79,7 +78,6 @@ export function UserInteractionsProvider({
           }
         });
         setInteractions(map);
-        console.log(`Loaded ${map.size} user interactions`);
       } else {
         console.error('refreshInteractions: unexpected response shape', data);
       }

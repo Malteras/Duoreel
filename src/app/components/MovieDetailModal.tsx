@@ -93,7 +93,7 @@ export function MovieDetailModal({
         .then(async res => {
           // Check if response is OK
           if (!res.ok) {
-            console.log(`IMDb rating fetch failed: ${res.status}`);
+            console.error(`IMDb rating fetch failed: ${res.status}`);
             return null;
           }
 
@@ -109,7 +109,6 @@ export function MovieDetailModal({
         })
         .then(data => {
           if (data && !data.error) {
-            console.log(`Fetched and caching IMDb rating for ${imdbId}:`, data);
             // Add to cache
             const newCache = new Map(globalImdbCache);
             newCache.set(imdbId, data.imdbRating);

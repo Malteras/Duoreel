@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const code = url.searchParams.get('code');
 
         if (code) {
-          console.log('PKCE auth code found in URL, exchanging for session...');
+          console.warn('PKCE auth code found in URL, exchanging for session...');
 
           // Exchange the auth code for a session
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (error) {
             console.error('Failed to exchange code for session:', error);
           } else if (data.session) {
-            console.log('PKCE session established:', data.session.user?.email);
+            console.warn('PKCE session established:', data.session.user?.email);
             setAccessToken(data.session.access_token);
             setUserEmail(data.session.user?.email ?? null);
             setUserId(data.session.user?.id ?? null);
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) {
           console.error('Error getting session:', error);
         } else if (session?.access_token) {
-          console.log('Session restored from storage:', {
+          console.warn('Session restored from storage:', {
             email: session.user?.email,
             expiresAt: new Date(session.expires_at! * 1000).toISOString()
           });
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserEmail(session.user?.email ?? null);
           setUserId(session.user?.id ?? null);
         } else {
-          console.log('No active session found');
+          console.warn('No active session found');
         }
       } catch (e) {
         console.error('Auth initialization error:', e);
@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Keep auth state in sync for token refresh, sign-out, etc.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+      console.warn('Auth state changed:', event, session?.user?.email);
 
       if (session?.access_token) {
         setAccessToken(session.access_token);
