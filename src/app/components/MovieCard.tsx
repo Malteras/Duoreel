@@ -200,45 +200,60 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
           </div>
         )}
         
-        {/* TMDb Rating Badge - shown at bottom right */}
+        {/* Rating Badges - bottom right of poster */}
         {movie.vote_average > 0 && (
           <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
-            {/* TMDb Rating */}
+            {/* TMDB Rating Badge */}
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                  <Star className="size-3 fill-white text-white" />
+                  <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
                   <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
                 </div>
               </TooltipTrigger>
               <TooltipContent className="bg-slate-800 text-white border-slate-700">
-                <p>TMDb Rating</p>
+                <p>TMDB community rating</p>
               </TooltipContent>
             </Tooltip>
-            
-            {/* IMDb Rating - Always shown, with loading state */}
+
+            {/* IMDb Rating Badge — always a link when imdb_id exists */}
             <Tooltip>
               <TooltipTrigger asChild>
-                {displayImdbRating && displayImdbRating !== 'N/A' ? (
+                {hasImdbId ? (
                   <a
-                    href={hasImdbId ? `https://www.imdb.com/title/${hasImdbId}` : '#'}
+                    href={`https://www.imdb.com/title/${hasImdbId}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-[#F5C518] backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg hover:bg-[#F5C518]/90 transition-colors"
+                    className={`backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                      displayImdbRating && displayImdbRating !== 'N/A'
+                        ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
+                        : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
+                    }`}
                   >
-                    <Star className="size-3 fill-black text-black" />
-                    <span className="text-xs font-bold text-black">{displayImdbRating}</span>
+                    <span className={`text-[9px] font-bold uppercase tracking-wide ${
+                      displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
+                    }`}>IMDb</span>
+                    {displayImdbRating && displayImdbRating !== 'N/A' ? (
+                      <span className="text-xs font-bold text-black">{displayImdbRating}</span>
+                    ) : (
+                      <Loader2 className="size-3 text-black/50 animate-spin" />
+                    )}
                   </a>
                 ) : (
-                  <div className="bg-[#F5C518]/50 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                    <Loader2 className="size-3 text-black/60 animate-spin" />
-                    <span className="text-xs font-bold text-black/60">...</span>
+                  <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                    <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                    <Loader2 className="size-3 text-black/40 animate-spin" />
                   </div>
                 )}
               </TooltipTrigger>
               <TooltipContent className="bg-slate-800 text-white border-slate-700">
-                <p>{displayImdbRating && displayImdbRating !== 'N/A' ? 'IMDb Rating - Click to view on IMDb' : 'Loading IMDb rating...'}</p>
+                <p>{hasImdbId
+                  ? (displayImdbRating && displayImdbRating !== 'N/A'
+                    ? 'View on IMDb'
+                    : 'Rating loading — click to view on IMDb')
+                  : 'Fetching IMDb info...'
+                }</p>
               </TooltipContent>
             </Tooltip>
           </div>
