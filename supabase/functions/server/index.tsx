@@ -4,7 +4,6 @@ import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
 import { getByPrefixPaginated, getKeysByPrefixPaginated } from "./kv_paginated.tsx";
 import { createClient } from "npm:@supabase/supabase-js";
-import pMap from "npm:p-map";
 
 const app = new Hono();
 
