@@ -50,6 +50,7 @@ export function SavedMoviesTab({
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
   const [filterBy, setFilterBy] = useState<'all' | 'unwatched' | 'watched'>('unwatched');
+  const [partnerFilterBy, setPartnerFilterBy] = useState<'all' | 'unwatched' | 'watched'>('all');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
@@ -378,17 +379,25 @@ export function SavedMoviesTab({
 
   const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
   const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds]);
-  const sortedPartnerMovies = useMemo(() => getSortedMovies(partnerLikedMovies),  [partnerLikedMovies, sortBy]);
+  const sortedPartnerMovies   = useMemo(() => getSortedMovies(partnerLikedMovies), [partnerLikedMovies, sortBy]);
+  const filteredPartnerMovies = useMemo(() => {
+    switch (partnerFilterBy) {
+      case 'watched':   return sortedPartnerMovies.filter(m => watchedMovieIds.has(m.id));
+      case 'unwatched': return sortedPartnerMovies.filter(m => !watchedMovieIds.has(m.id));
+      default:          return sortedPartnerMovies;
+    }
+  }, [sortedPartnerMovies, partnerFilterBy, watchedMovieIds]);
 
-  const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount), [filteredLikedMovies, visibleCount]);
-  const visiblePartnerMovies = useMemo(() => sortedPartnerMovies.slice(0, visibleCount),  [sortedPartnerMovies, visibleCount]);
-  const hiddenWatchedCount = useMemo(() => likedMovies.filter(m => watchedMovieIds.has(m.id)).length, [likedMovies, watchedMovieIds]);
+  const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount),   [filteredLikedMovies, visibleCount]);
+  const visiblePartnerMovies = useMemo(() => filteredPartnerMovies.slice(0, visibleCount),  [filteredPartnerMovies, visibleCount]);
+  const hiddenWatchedCount        = useMemo(() => likedMovies.filter(m => watchedMovieIds.has(m.id)).length,        [likedMovies, watchedMovieIds]);
+  const hiddenPartnerWatchedCount = useMemo(() => partnerLikedMovies.filter(m => watchedMovieIds.has(m.id)).length, [partnerLikedMovies, watchedMovieIds]);
 
   const hasMoreMovies = viewMode === 'mine'
     ? visibleCount < filteredLikedMovies.length
-    : visibleCount < sortedPartnerMovies.length;
+    : visibleCount < filteredPartnerMovies.length;
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, sortBy, viewMode]);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode]);
 
   // Reset enrichment tracking when movies change significantly (e.g., after import)
   useEffect(() => {
@@ -457,17 +466,22 @@ export function SavedMoviesTab({
             </div>
           </div>
 
-          {/* Sort / Filter — only in "My List" with movies */}
-          {viewMode === 'mine' && likedMovies.length > 0 && (
+          {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
+          {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
             <div className="flex items-center gap-3 md:justify-between">
               <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
                 <label className="text-sm font-medium text-slate-300 hidden md:block">Show:</label>
-                <Select value={filterBy} onValueChange={(value: 'all' | 'unwatched' | 'watched') => setFilterBy(value)}>
+                <Select
+                  value={viewMode === 'mine' ? filterBy : partnerFilterBy}
+                  onValueChange={(value: 'all' | 'unwatched' | 'watched') =>
+                    viewMode === 'mine' ? setFilterBy(value) : setPartnerFilterBy(value)
+                  }
+                >
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white flex-1 md:w-fit">
                     <div className="flex items-center gap-2 truncate md:overflow-visible">
-                      {filterBy === 'unwatched' ? (
+                      {(viewMode === 'mine' ? filterBy : partnerFilterBy) === 'unwatched' ? (
                         <EyeOff className="size-4 flex-shrink-0 text-slate-400" />
-                      ) : filterBy === 'watched' ? (
+                      ) : (viewMode === 'mine' ? filterBy : partnerFilterBy) === 'watched' ? (
                         <Eye className="size-4 flex-shrink-0 text-slate-400" />
                       ) : (
                         <Filter className="size-4 flex-shrink-0 text-slate-400" />
@@ -533,9 +547,31 @@ export function SavedMoviesTab({
               )}
             </p>
           )}
-          {viewMode === 'partner' && sortedPartnerMovies.length > 0 && (
+          {viewMode === 'partner' && filteredPartnerMovies.length > 0 && (
             <p className="text-sm text-slate-500 text-center">
-              Showing {Math.min(visibleCount, sortedPartnerMovies.length)} of {sortedPartnerMovies.length} movies
+              Showing {Math.min(visibleCount, filteredPartnerMovies.length)} of {filteredPartnerMovies.length} movies
+              {partnerFilterBy === 'unwatched' && hiddenPartnerWatchedCount > 0 && (
+                <>
+                  {' · '}
+                  <button
+                    onClick={() => setPartnerFilterBy('all')}
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                  >
+                    {hiddenPartnerWatchedCount} watched {hiddenPartnerWatchedCount === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
+                  </button>
+                </>
+              )}
+              {partnerFilterBy === 'watched' && (partnerLikedMovies.length - hiddenPartnerWatchedCount) > 0 && (
+                <>
+                  {' · '}
+                  <button
+                    onClick={() => setPartnerFilterBy('all')}
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                  >
+                    {partnerLikedMovies.length - hiddenPartnerWatchedCount} unwatched {(partnerLikedMovies.length - hiddenPartnerWatchedCount) === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
+                  </button>
+                </>
+              )}
             </p>
           )}
         </div>
