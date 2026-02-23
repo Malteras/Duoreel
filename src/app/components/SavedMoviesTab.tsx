@@ -299,7 +299,7 @@ export function SavedMoviesTab({
 
         {/* ── Header ── */}
         <div className="mb-6 space-y-4">
-          <p className="text-slate-300 text-lg text-center max-w-2xl mx-auto">
+          <p className="hidden md:block text-slate-300 text-lg text-center max-w-2xl mx-auto">
             {viewMode === 'mine'
               ? "Your personal movie collection - all the movies you'd love to watch"
               : hasPartner
