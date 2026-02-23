@@ -1,6 +1,13 @@
+import { useState, useEffect, useMemo } from 'react';
+import type { Movie } from '../../types/movie';
+import { API_BASE_URL } from '../../utils/api';
+import { MovieCard } from './MovieCard';
+import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
+import { MovieDetailModal } from './MovieDetailModal';
 import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
+import { useUserInteractions } from './UserInteractionsContext';
 import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
