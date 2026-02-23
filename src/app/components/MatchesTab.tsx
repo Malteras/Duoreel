@@ -4,6 +4,17 @@ import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
 import { Heart, Loader2, Users, X, Check, UserX, Bell, Filter, ArrowUpDown, Tv } from 'lucide-react';
 import { toast } from 'sonner';
 import { MovieCard } from './MovieCard';
@@ -265,7 +276,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   const handleRemovePartner = async () => {
     if (!accessToken) return;
-    if (!confirm('Are you sure you want to remove your partner connection?')) return;
     try {
       const res = await fetch(`${baseUrl}/partner/remove`, {
         method: 'POST',
@@ -396,15 +406,37 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             <div className="flex-1 min-w-0">
               <span className="text-white text-sm font-medium truncate">{partner.name || 'Partner'}</span>
             </div>
-            <Button
-              onClick={handleRemovePartner}
-              variant="ghost"
-              size="sm"
-              className="flex-shrink-0 text-slate-500 hover:text-red-400 hover:bg-red-950/30 text-xs h-7 px-2"
-            >
-              <UserX className="size-3.5 mr-1" />
-              <span className="hidden sm:inline">Remove</span>
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-shrink-0 text-slate-500 hover:text-red-400 hover:bg-red-950/30 text-xs h-7 px-2"
+                >
+                  <UserX className="size-3.5 mr-1" />
+                  <span className="hidden sm:inline">Disconnect</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-slate-900 border-slate-700">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-white">Disconnect partner?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-slate-400">
+                    This will remove your connection with {partner.name || 'your partner'}. You'll lose all your movie matches and will need to reconnect to find matches again.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleRemovePartner}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Disconnect
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         ) : (
           /* ── Full connection card (no partner) ── */

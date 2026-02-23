@@ -8,6 +8,17 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
+import {
   Mail, Bookmark, Upload, Link as LinkIcon, Loader2,
   RefreshCw, LogOut, Minimize2, Maximize2, Copy, RotateCcw
 } from 'lucide-react';
@@ -419,16 +430,38 @@ export function ProfilePage() {
                       <p className="text-white font-semibold">{partner.name || 'Partner'}</p>
                     </div>
                   </div>
-                  <Button
-                    onClick={handleDisconnectPartner}
-                    disabled={disconnecting}
-                    variant="outline"
-                    size="sm"
-                    className="text-red-400 border-red-900/30 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
-                  >
-                    {disconnecting ? <Loader2 className="size-3.5 mr-2 animate-spin" /> : null}
-                    Disconnect Partner
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        disabled={disconnecting}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-400 border-red-900/30 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
+                      >
+                        {disconnecting ? <Loader2 className="size-3.5 mr-2 animate-spin" /> : null}
+                        Disconnect Partner
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-slate-900 border-slate-700">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-white">Disconnect partner?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-slate-400">
+                          This will remove your connection with {partner.name || 'your partner'}. You'll lose all your movie matches and will need to reconnect to find matches again.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-slate-800 border-slate-700 text-white hover:bg-slate-700">
+                          Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDisconnectPartner}
+                          className="bg-red-600 text-white hover:bg-red-700"
+                        >
+                          Disconnect
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ) : (
                 <div className="space-y-4">
