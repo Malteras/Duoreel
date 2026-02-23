@@ -58,6 +58,9 @@ export function MovieDetailModal({
 }: MovieDetailModalProps) {
   const [loadingImdb, setLoadingImdb] = useState(false);
 
+  // Strip wrapping quotes from TMDB titles (e.g., "\"Wuthering Heights\"" → "Wuthering Heights")
+  const cleanTitle = (title: string) => title.replace(/^["']+|["']+$/g, '').trim();
+
   // Fetch IMDb rating when modal opens - check cache first
   useEffect(() => {
     const imdbId = movie?.external_ids?.imdb_id;
@@ -167,14 +170,14 @@ export function MovieDetailModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90dvh] p-0 bg-slate-900 border-slate-700 overflow-hidden" aria-describedby={undefined}>
         <DialogHeader className="sr-only">
-          <DialogTitle>{movie.title}</DialogTitle>
+          <DialogTitle>{cleanTitle(movie.title)}</DialogTitle>
         </DialogHeader>
         <ScrollArea className="max-h-[90dvh]">
           {/* Backdrop Image */}
           <div className="relative h-64 md:h-80 overflow-hidden">
             <img 
               src={backdropUrl} 
-              alt={movie.title}
+              alt={cleanTitle(movie.title)}
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
@@ -248,7 +251,7 @@ export function MovieDetailModal({
             {/* Title and Meta */}
             <div>
               <DialogTitle className="text-3xl font-bold text-white mb-3">
-                {movie.title}
+                {cleanTitle(movie.title)}
               </DialogTitle>
               
               <div className="flex flex-wrap items-center gap-4 text-slate-300 mb-4">

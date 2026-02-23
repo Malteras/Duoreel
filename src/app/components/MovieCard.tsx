@@ -63,6 +63,9 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
   const displayImdbRating = imdbRating || (movie as any).imdbRating;
   const hasImdbId = (movie as any).external_ids?.imdb_id;
 
+  // Strip wrapping quotes from TMDB titles (e.g., "\"Wuthering Heights\"" → "Wuthering Heights")
+  const cleanTitle = (title: string) => title.replace(/^["']+|["']+$/g, '').trim();
+
   // Reset loading state when isLiked changes (meaning the API call completed)
   useEffect(() => {
     setIsLikeLoading(false);
@@ -123,7 +126,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
       <div className="relative aspect-[2/3] overflow-hidden">
         <img 
           src={posterUrl} 
-          alt={movie.title}
+          alt={cleanTitle(movie.title)}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
@@ -287,7 +290,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
       {/* Movie Info */}
       <div className="p-6 space-y-4">
         <div>
-          <h3 className="text-2xl font-bold text-white mb-2 line-clamp-2">{movie.title}</h3>
+          <h3 className="text-2xl font-bold text-white mb-2 line-clamp-2">{cleanTitle(movie.title)}</h3>
           
           {/* Year & Runtime */}
           <div className="flex items-center gap-2 text-sm text-slate-300 mb-3">
