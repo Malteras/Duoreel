@@ -38,6 +38,18 @@ export function ProfilePage() {
   const [name, setName] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
 
+  const [showCustomUrl, setShowCustomUrl] = useState(false);
+
+  // Gradient avatar presets — stored as gradient strings, rendered via inline styles
+  const avatarPresets = [
+    { id: 'blue', gradient: 'linear-gradient(135deg, #3b82f6, #8b5cf6)' },
+    { id: 'pink', gradient: 'linear-gradient(135deg, #ec4899, #f43f5e)' },
+    { id: 'green', gradient: 'linear-gradient(135deg, #10b981, #14b8a6)' },
+    { id: 'orange', gradient: 'linear-gradient(135deg, #f97316, #eab308)' },
+    { id: 'cyan', gradient: 'linear-gradient(135deg, #06b6d4, #3b82f6)' },
+    { id: 'purple', gradient: 'linear-gradient(135deg, #8b5cf6, #d946ef)' },
+  ];
+
   // Partner state
   const [partner, setPartner] = useState<any>(null);
   const [partnerEmail, setPartnerEmail] = useState('');
@@ -350,22 +362,89 @@ export function ProfilePage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex items-center gap-5">
-                <Avatar className="size-20">
-                  <AvatarImage src={photoUrl} />
-                  <AvatarFallback className="bg-blue-600 text-white text-2xl">
-                    {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-1">
-                  <Label htmlFor="photoUrl" className="text-white text-sm">Photo URL</Label>
-                  <Input
-                    id="photoUrl"
-                    value={photoUrl}
-                    onChange={(e) => setPhotoUrl(e.target.value)}
-                    placeholder="https://example.com/photo.jpg"
-                    className="bg-slate-900 border-slate-700 text-white"
-                  />
+              <div className="space-y-4">
+                {/* Current avatar display */}
+                <div className="flex items-center gap-5">
+                  {photoUrl && !photoUrl.startsWith('linear-gradient') ? (
+                    <Avatar className="size-20">
+                      <AvatarImage src={photoUrl} />
+                      <AvatarFallback className="bg-blue-600 text-white text-2xl">
+                        {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div
+                      className="size-20 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
+                      style={{ background: photoUrl?.startsWith('linear-gradient') ? photoUrl : 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
+                    >
+                      {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{name || 'Your avatar'}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">Choose a style below or add a custom image</p>
+                  </div>
+                </div>
+
+                {/* Gradient presets */}
+                <div>
+                  <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 block">Choose an avatar</label>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {avatarPresets.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => { setPhotoUrl(preset.gradient); setShowCustomUrl(false); }}
+                        className={`size-10 rounded-full flex items-center justify-center text-white text-sm font-bold transition-all hover:scale-110 ${
+                          photoUrl === preset.gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''
+                        }`}
+                        style={{ background: preset.gradient }}
+                      >
+                        {name ? name[0]?.toUpperCase() : '?'}
+                      </button>
+                    ))}
+                    {/* Remove photo option — reverts to plain initial */}
+                    <button
+                      onClick={() => { setPhotoUrl(''); setShowCustomUrl(false); }}
+                      className={`size-10 rounded-full flex items-center justify-center text-slate-400 text-xs font-medium border border-slate-600 border-dashed transition-all hover:scale-110 hover:border-slate-400 ${
+                        !photoUrl ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''
+                      }`}
+                    >
+                      None
+                    </button>
+                  </div>
+                </div>
+
+                {/* Custom URL — collapsed by default */}
+                <div>
+                  {!showCustomUrl ? (
+                    <button
+                      onClick={() => setShowCustomUrl(true)}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      Use a custom image URL instead
+                    </button>
+                  ) : (
+                    <div className="space-y-1">
+                      <Label htmlFor="photoUrl" className="text-slate-400 text-xs">Custom image URL</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="photoUrl"
+                          value={photoUrl?.startsWith('linear-gradient') ? '' : photoUrl}
+                          onChange={(e) => setPhotoUrl(e.target.value)}
+                          placeholder="https://example.com/photo.jpg"
+                          className="bg-slate-900 border-slate-700 text-white text-sm"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowCustomUrl(false)}
+                          className="text-slate-400 hover:bg-slate-700 hover:text-white flex-shrink-0"
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

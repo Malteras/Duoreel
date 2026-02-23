@@ -34,29 +34,43 @@ export function ProfileDropdown({ accessToken, userEmail, onSignOut }: ProfileDr
 
   const displayName = profile?.name || userEmail || 'User';
   const initial = displayName[0]?.toUpperCase() || 'U';
+  const photoUrl = profile?.photoUrl;
+
+  // Helper to render avatar (handles gradients and image URLs)
+  const renderAvatar = (sizeClass: string, textSizeClass: string) => {
+    if (photoUrl && !photoUrl.startsWith('linear-gradient')) {
+      return (
+        <Avatar className={sizeClass}>
+          <AvatarImage src={photoUrl} />
+          <AvatarFallback className={`bg-blue-600 text-white ${textSizeClass}`}>
+            {initial}
+          </AvatarFallback>
+        </Avatar>
+      );
+    } else {
+      return (
+        <div
+          className={`${sizeClass} rounded-full flex items-center justify-center text-white ${textSizeClass} font-semibold`}
+          style={{ background: photoUrl?.startsWith('linear-gradient') ? photoUrl : 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
+        >
+          {initial}
+        </div>
+      );
+    }
+  };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer">
-          <Avatar className="size-9">
-            <AvatarImage src={profile?.photoUrl} />
-            <AvatarFallback className="bg-blue-600 text-white font-semibold">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
+          {renderAvatar('size-9', 'font-semibold')}
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-64 bg-slate-800 border-slate-700 text-white">
         {/* User info header */}
         <div className="flex items-center gap-3 px-2 py-3">
-          <Avatar className="size-11">
-            <AvatarImage src={profile?.photoUrl} />
-            <AvatarFallback className="bg-blue-600 text-white text-lg font-semibold">
-              {initial}
-            </AvatarFallback>
-          </Avatar>
+          {renderAvatar('size-11', 'text-lg font-semibold')}
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-white truncate">{displayName}</p>
             <p className="text-xs text-slate-400 truncate">{userEmail}</p>

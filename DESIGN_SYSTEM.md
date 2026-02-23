@@ -72,6 +72,17 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 </Button>
 ```
 
+**Ghost (text only, minimal):**
+
+```tsx
+<Button
+  variant="ghost"
+  className="text-slate-400 hover:bg-slate-700 hover:text-white"
+>
+  Button Text
+</Button>
+```
+
 **Icon button (overlay on card):**
 
 ```tsx
