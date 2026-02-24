@@ -395,21 +395,17 @@ export function MoviesTab({
       if (initialDirector) newFilters.director = initialDirector;
       if (initialActor) newFilters.actor = initialActor;
       if (initialYear) newFilters.year = initialYear.toString();
-      // Reset all cached state so we start fresh with only the new filter.
-      // Call fetchMovies directly instead of relying on the [filters] dep effect,
-      // because skipNextFetchRef may still be true from cache restore and would
-      // swallow the triggered fetch.
+      // Clear cache and skip guard so the [filters] fetch effect fires fresh.
+      // Do NOT call fetchMovies directly — it closes over stale filters.
+      // Setting skipNextFetchRef=false + setFilters lets the fetch effect
+      // run with the correct new filters in scope.
       setDiscoverCache(null);
       skipNextFetchRef.current = false;
-      setPage(1);
-      setEnrichedIds(new Set());
-      enrichingRef.current = new Set();
-      setImdbRatings(new Map());
       setFilters(newFilters);
-      fetchMovies(1, false);
       onFiltersApplied?.();
     }
-  }, [initialGenre, initialDirector, initialActor, initialYear, fetchMovies, onFiltersApplied]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialGenre, initialDirector, initialActor, initialYear]);
 
   // ──────────────── Fetch when filters/sort/showWatched change ────────────────
   // Note: We include `showWatchedMovies` in the dependency array so that when the
