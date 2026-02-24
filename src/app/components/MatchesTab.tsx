@@ -38,6 +38,7 @@ import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched } from '..
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useWatchedActions } from '../hooks/useWatchedActions';
+import { MatchesCache } from '../hooks/useTabCache';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -46,12 +47,15 @@ interface MatchesTabProps {
   navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year', value: string | number) => void;
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  matchesCache: MatchesCache | null;
+  setMatchesCache: React.Dispatch<React.SetStateAction<MatchesCache | null>>;
+  matchNotificationCount: number;
 }
 
-export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter, globalImdbCache, setGlobalImdbCache }: MatchesTabProps) {
+export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter, globalImdbCache, setGlobalImdbCache, matchesCache, setMatchesCache, matchNotificationCount }: MatchesTabProps) {
   const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
-  const [partner, setPartner] = useState<any>(null);
-  const [matchedMovies, setMatchedMovies] = useState<Movie[]>([]);
+  const [partner, setPartner] = useState<any>(matchesCache?.partner ?? null);
+  const [matchedMovies, setMatchedMovies] = useState<Movie[]>(matchesCache?.matchedMovies ?? []);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]); // partner request objects, not movies
   const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]); // partner request objects, not movies
   const [loading, setLoading] = useState(false);
@@ -110,6 +114,14 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
       const inviteData = await inviteCodeRes.json();
       if (inviteData.code) setInviteCode(inviteData.code);
 
+      // Write cache — next visit skips fetch unless new match notifications arrive
+      setMatchesCache({
+        matchedMovies: matchesData.movies || [],
+        partner: partnerData.partner || null,
+        inviteCode: inviteData.code || '',
+        matchCountAtLoad: matchNotificationCount,
+      });
+
       await fetch(`${baseUrl}/notifications/matches/seen`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -123,8 +135,15 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   useEffect(() => {
     if (!accessToken) return;
+
+    // Skip fetch if cache exists and no new matches have appeared since last load.
+    // matchNotificationCount > matchCountAtLoad means new matches → must re-fetch.
+    if (matchesCache && matchNotificationCount <= matchesCache.matchCountAtLoad) {
+      return;
+    }
+
     fetchData();
-  }, [accessToken, fetchData]);
+  }, [accessToken, fetchData, matchesCache, matchNotificationCount]);
 
   // ── IMDb ratings — uses shared cache (same pattern as MoviesTab) ───────────
   useEffect(() => {

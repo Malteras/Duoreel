@@ -26,6 +26,8 @@ interface SavedMoviesTabProps {
   setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+  savedCache: import('../hooks/useTabCache').SavedCache | null;
+  setSavedCache: React.Dispatch<React.SetStateAction<import('../hooks/useTabCache').SavedCache | null>>;
 }
 
 export function SavedMoviesTab({
@@ -37,15 +39,17 @@ export function SavedMoviesTab({
   setLikedMovies,
   globalImdbCache,
   setGlobalImdbCache,
+  savedCache,
+  setSavedCache,
 }: SavedMoviesTabProps) {
   const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
   const { selectedMovie, modalOpen, openMovie, closeMovie, isLoadingDeepLink } = useMovieModal(accessToken);
 
   const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
 
-  const [partnerLikedMovies, setPartnerLikedMovies] = useState<Movie[]>([]);
-  const [partnerName, setPartnerName] = useState<string>('');
-  const [hasPartner, setHasPartner] = useState(false);
+  const [partnerLikedMovies, setPartnerLikedMovies] = useState<Movie[]>(savedCache?.partnerLikedMovies ?? []);
+  const [partnerName, setPartnerName] = useState<string>(savedCache?.partnerName ?? '');
+  const [hasPartner, setHasPartner] = useState(savedCache?.hasPartner ?? false);
   const [loading, setLoading] = useState(false);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
@@ -74,8 +78,22 @@ export function SavedMoviesTab({
   useEffect(() => {
     if (!accessToken) return;
 
+    // Skip fetch if cache is valid: likedMovies hasn't grown since last Saved load.
+    // Case 1 (no new saves): return immediately and show cached data.
+    // Case 2 (user saved movies in Discover): likedMovies.length grew → re-fetch.
+    // viewMode change always re-fetches regardless of cache.
+    if (savedCache && savedCache.likedMoviesLengthAtLoad === likedMovies.length) {
+      return;
+    }
+
     const fetchPartnerData = async () => {
       setLoading(true);
+      let fetchedPartnerLikedMovies: Movie[] = [];
+      let fetchedPartnerName = '';
+      let fetchedHasPartner = false;
+      let fetchedInviteCode = '';
+      let fetchedOutgoingRequests: any[] = [];
+
       try {
         const [partnerRes, outgoingRes, inviteCodeRes] = await Promise.all([
           fetch(`${baseUrl}/partner`, { headers: { Authorization: `Bearer ${accessToken}` } }),
@@ -85,15 +103,18 @@ export function SavedMoviesTab({
 
         const partnerData = await partnerRes.json();
         if (partnerData.partner) {
+          fetchedHasPartner = true;
+          fetchedPartnerName = partnerData.partner.name || partnerData.partner.email;
           setHasPartner(true);
-          setPartnerName(partnerData.partner.name || partnerData.partner.email);
+          setPartnerName(fetchedPartnerName);
 
           const partnerLikedResponse = await fetch(`${baseUrl}/movies/partner-liked`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
           const partnerLikedData = await partnerLikedResponse.json();
           if (!partnerLikedData.error) {
-            setPartnerLikedMovies(partnerLikedData.movies || []);
+            fetchedPartnerLikedMovies = partnerLikedData.movies || [];
+            setPartnerLikedMovies(fetchedPartnerLikedMovies);
           }
         } else {
           setHasPartner(false);
@@ -102,10 +123,24 @@ export function SavedMoviesTab({
         }
 
         const outgoingData = await outgoingRes.json();
-        setOutgoingRequests(outgoingData.requests || []);
+        fetchedOutgoingRequests = outgoingData.requests || [];
+        setOutgoingRequests(fetchedOutgoingRequests);
 
         const inviteData = await inviteCodeRes.json();
-        if (inviteData.code) setInviteCode(inviteData.code);
+        if (inviteData.code) {
+          fetchedInviteCode = inviteData.code;
+          setInviteCode(fetchedInviteCode);
+        }
+
+        // Write cache so the next visit can skip this fetch
+        setSavedCache({
+          partnerLikedMovies: fetchedPartnerLikedMovies,
+          partnerName: fetchedPartnerName,
+          hasPartner: fetchedHasPartner,
+          inviteCode: fetchedInviteCode,
+          outgoingRequests: fetchedOutgoingRequests,
+          likedMoviesLengthAtLoad: likedMovies.length,
+        });
       } catch (error) {
         console.error('Error fetching partner data:', error);
       } finally {
@@ -114,7 +149,7 @@ export function SavedMoviesTab({
     };
 
     fetchPartnerData();
-  }, [accessToken, viewMode]);
+  }, [accessToken, viewMode, likedMovies.length]);
 
   // ── Enrich movies missing detail data ──
   useEnrichMovies({
