@@ -12,6 +12,9 @@ export function MatchesPage() {
       navigateToDiscoverWithFilter={ctx.navigateToDiscoverWithFilter}
       globalImdbCache={ctx.globalImdbCache}
       setGlobalImdbCache={ctx.setGlobalImdbCache}
+      matchesCache={ctx.matchesCache}
+      setMatchesCache={ctx.setMatchesCache}
+      matchNotificationCount={ctx.matchNotificationCount}
     />
   );
 }

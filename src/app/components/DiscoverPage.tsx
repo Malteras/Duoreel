@@ -38,6 +38,8 @@ export function DiscoverPage() {
       setGlobalImdbCache={ctx.setGlobalImdbCache}
       likedMovies={ctx.likedMovies}
       setLikedMovies={ctx.setLikedMovies}
+      discoverCache={ctx.discoverCache}
+      setDiscoverCache={ctx.setDiscoverCache}
     />
   );
 }

@@ -57,6 +57,8 @@ interface MoviesTabProps {
   >;
   likedMovies: Movie[];
   setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
+  discoverCache: import('../hooks/useTabCache').DiscoverCache | null;
+  setDiscoverCache: React.Dispatch<React.SetStateAction<import('../hooks/useTabCache').DiscoverCache | null>>;
 }
 
 const SORT_OPTIONS = [
@@ -109,22 +111,24 @@ export function MoviesTab({
   setGlobalImdbCache,
   likedMovies,
   setLikedMovies,
+  discoverCache,
+  setDiscoverCache,
 }: MoviesTabProps) {
-  // Core state
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Core state — restored from cache if available
+  const [movies, setMovies] = useState<Movie[]>(discoverCache?.movies ?? []);
+  const [loading, setLoading] = useState(!discoverCache);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(discoverCache?.page ?? 1);
   const [hasMore, setHasMore] = useState(true);
   const [genres, setGenres] = useState<
     { id: number; name: string }[]
   >([]);
 
-  // Filter state
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  const [sortBy, setSortBy] = useState("popularity");
+  // Filter state — restored from cache if available
+  const [filters, setFilters] = useState(discoverCache?.filters ?? DEFAULT_FILTERS);
+  const [sortBy, setSortBy] = useState(discoverCache?.sortBy ?? "popularity");
   const [showWatchedMovies, setShowWatchedMovies] =
-    useState(false);
+    useState(discoverCache?.showWatchedMovies ?? false);
   const [showFiltersModal, setShowFiltersModal] =
     useState(false);
 
@@ -152,10 +156,10 @@ export function MoviesTab({
     onWatchedLoading: (loading) => setIsWatchedLoading(loading),
   });
 
-  // IMDb ratings local state (keyed by TMDb ID)
+  // IMDb ratings local state (keyed by TMDb ID) — restored from cache if available
   const [imdbRatings, setImdbRatings] = useState<
     Map<number, string>
-  >(new Map());
+  >(discoverCache?.imdbRatings ?? new Map());
 
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
@@ -172,11 +176,15 @@ export function MoviesTab({
     pendingRemovalsRef.current = pendingRemovals;
   }, [pendingRemovals]);
 
-  // Movie details enrichment tracking
+  // Movie details enrichment tracking — restored from cache if available
   const [enrichedIds, setEnrichedIds] = useState<Set<number>>(
-    new Set(),
+    discoverCache?.enrichedIds ?? new Set(),
   );
-  const enrichingRef = useRef<Set<number>>(new Set());
+  const enrichingRef = useRef<Set<number>>(discoverCache?.enrichedIds ? new Set(discoverCache.enrichedIds) : new Set());
+
+  // Skip the initial fetch if we restored from cache. Set to true when cache is
+  // present; cleared to false on the first user-triggered filter/sort change.
+  const skipNextFetchRef = useRef(!!discoverCache);
 
   // Infinite scroll sentinel ref
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -476,7 +484,7 @@ export function MoviesTab({
     enrichMovies();
   }, [movies.length, enrichedIds.size]);
 
-  // ──────────────── Fetch IMDb ratings ────────────────
+  // ───────────��──── Fetch IMDb ratings ────────────────
   useEffect(() => {
     if (movies.length === 0) return;
 

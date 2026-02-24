@@ -12,6 +12,7 @@ import { NotificationBell } from './NotificationBell';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import { API_BASE_URL } from '../../utils/api';
 import duoReelLogo from 'figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
+import { useTabCache, type DiscoverCache, type SavedCache, type MatchesCache } from '../hooks/useTabCache';
 
 export interface AppLayoutContext {
   accessToken: string;
@@ -27,6 +28,14 @@ export interface AppLayoutContext {
     value: string | number
   ) => void;
   onSignOut: () => Promise<void>;
+  // Tab caches
+  discoverCache: DiscoverCache | null;
+  setDiscoverCache: React.Dispatch<React.SetStateAction<DiscoverCache | null>>;
+  savedCache: SavedCache | null;
+  setSavedCache: React.Dispatch<React.SetStateAction<SavedCache | null>>;
+  matchesCache: MatchesCache | null;
+  setMatchesCache: React.Dispatch<React.SetStateAction<MatchesCache | null>>;
+  matchNotificationCount: number;
 }
 
 export function useAppLayoutContext() {
@@ -287,6 +296,8 @@ export function AppLayout() {
     navigate('/discover', { state: { filterType, filterValue: value } });
   };
 
+  const { discoverCache, setDiscoverCache, savedCache, setSavedCache, matchesCache, setMatchesCache } = useTabCache();
+
   const context: AppLayoutContext = {
     accessToken: accessToken!,
     userEmail,
@@ -298,6 +309,14 @@ export function AppLayout() {
     setGlobalImdbCache,
     navigateToDiscoverWithFilter,
     onSignOut: handleSignOut,
+    // Tab caches
+    discoverCache,
+    setDiscoverCache,
+    savedCache,
+    setSavedCache,
+    matchesCache,
+    setMatchesCache,
+    matchNotificationCount,
   };
 
   return (

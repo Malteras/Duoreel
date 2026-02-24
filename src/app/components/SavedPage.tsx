@@ -14,6 +14,8 @@ export function SavedPage() {
       setLikedMovies={ctx.setLikedMovies}
       globalImdbCache={ctx.globalImdbCache}
       setGlobalImdbCache={ctx.setGlobalImdbCache}
+      savedCache={ctx.savedCache}
+      setSavedCache={ctx.setSavedCache}
     />
   );
 }
