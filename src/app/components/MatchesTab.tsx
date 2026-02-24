@@ -34,6 +34,7 @@ import {
 import { toast } from 'sonner';
 import { useMovieModal } from '../hooks/useMovieModal';
 import { STREAMING_SERVICES } from '../../constants/streaming';
+import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched } from '../../utils/imdbRatings';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useWatchedActions } from '../hooks/useWatchedActions';
@@ -124,32 +125,50 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     fetchData();
   }, [accessToken, fetchData]);
 
-  // ── IMDb ratings ───────────────────────────────────────────────────────────
+  // ── IMDb ratings — uses shared cache (same pattern as MoviesTab) ───────────
   useEffect(() => {
-    if (!accessToken || matchedMovies.length === 0) return;
-    const fetchImdbRatings = async () => {
-      const tmdbIds = matchedMovies.filter(m => !m.imdbRating).map(m => m.id);
-      if (tmdbIds.length === 0) return;
-      try {
-        const res = await fetch(`${baseUrl}/imdb-ratings/bulk`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tmdbIds }),
+    if (matchedMovies.length === 0) return;
+
+    const fetchRatings = async () => {
+      const tmdbIds = matchedMovies.map(m => m.id);
+
+      // Step 1: fetch whatever is already cached in the DB
+      const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
+
+      if (cached.size > 0) {
+        setGlobalImdbCache(prev => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            const imdbId = matchedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+            if (imdbId && value.rating) updated.set(imdbId, value.rating);
+          });
+          return updated;
         });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.ratings) {
-          setMatchedMovies(prev => prev.map(movie => {
-            const rating = data.ratings[movie.id];
-            return rating && rating !== 'N/A' && !movie.imdbRating ? { ...movie, imdbRating: rating } : movie;
-          }));
-        }
-      } catch (err) {
-        console.error('Error fetching IMDb ratings:', err);
+      }
+
+      // Step 2: background-fetch ratings not yet in the cache
+      const moviesWithImdbIds = matchedMovies.filter(
+        m => m.external_ids?.imdb_id && !cached.has(m.id)
+      );
+      if (moviesWithImdbIds.length > 0) {
+        const visibleIds = new Set(matchedMovies.slice(0, 8).map(m => m.id));
+        fetchMissingRatings(moviesWithImdbIds, visibleIds, projectId, publicAnonKey);
       }
     };
-    fetchImdbRatings();
-  }, [matchedMovies.length, accessToken]);
+
+    fetchRatings();
+  }, [matchedMovies.length, publicAnonKey]);
+
+  // Listen for background fetch updates from fetchMissingRatings
+  useEffect(() => {
+    const unsubscribe = onRatingFetched((tmdbId, rating) => {
+      const imdbId = matchedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+      if (imdbId) {
+        setGlobalImdbCache(prev => new Map(prev).set(imdbId, rating));
+      }
+    });
+    return unsubscribe;
+  }, [matchedMovies]);
 
   // ── Provider enrichment ────────────────────────────────────────────────────
   useEffect(() => {
@@ -618,7 +637,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}
         setGlobalImdbCache={setGlobalImdbCache}
-        imdbRatingFromCard={selectedMovie ? ((selectedMovie as any).imdbRating || null) : null}
+        imdbRatingFromCard={selectedMovie?.external_ids?.imdb_id
+          ? (globalImdbCache.get(selectedMovie.external_ids.imdb_id) || null)
+          : null}
       />
     </div>
   );
