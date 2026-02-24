@@ -186,6 +186,10 @@ export function MoviesTab({
   // present; cleared to false on the first user-triggered filter/sort change.
   const skipNextFetchRef = useRef(!!discoverCache);
 
+  // Skip the IMDb ratings fetch if we restored ratings from cache. Ratings are
+  // already in imdbRatings state — no need to re-fetch from the DB.
+  const skipRatingsFetchRef = useRef(!!discoverCache);
+
   // Infinite scroll sentinel ref
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
@@ -513,6 +517,12 @@ export function MoviesTab({
   useEffect(() => {
     if (movies.length === 0) return;
 
+    // Skip if we restored ratings from cache — they're already in imdbRatings state.
+    if (skipRatingsFetchRef.current) {
+      skipRatingsFetchRef.current = false;
+      return;
+    }
+
     const fetchRatings = async () => {
       // Get TMDb IDs for bulk fetch
       const tmdbIds = movies.map((m) => m.id);
@@ -576,17 +586,21 @@ export function MoviesTab({
     return unsubscribe;
   }, [movies]);
 
-  // Keep discoverCache.imdbRatings in sync as background fetches complete
+  // Keep discoverCache.imdbRatings in sync as background fetches complete.
+  // Note: discoverCache intentionally omitted from deps — including it creates
+  // an infinite loop (setDiscoverCache produces a new object → dep changes → re-fires).
+  // The updater function `c => ...` safely handles the null check without it.
   useEffect(() => {
-    if (!discoverCache) return;
     setDiscoverCache(c => c ? { ...c, imdbRatings } : null);
-  }, [imdbRatings, discoverCache, setDiscoverCache]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [imdbRatings]);
 
-  // Keep discoverCache.enrichedIds in sync as enrichment completes
+  // Keep discoverCache.enrichedIds in sync as enrichment completes.
+  // Same reasoning — discoverCache intentionally omitted from deps.
   useEffect(() => {
-    if (!discoverCache) return;
     setDiscoverCache(c => c ? { ...c, enrichedIds } : null);
-  }, [enrichedIds, discoverCache, setDiscoverCache]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enrichedIds]);
 
   // ──────────────── Search movies ────────────────
   const handleSearch = useCallback(
@@ -858,7 +872,7 @@ export function MoviesTab({
   };
 
   const handleRefresh = () => {
-    setDiscoverCache(null); // Invalidate — next mount will fetch fresh
+    setDiscoverCache(null); // Invalidate  next mount will fetch fresh
     skipNextFetchRef.current = false;
     setPage(1);
     setEnrichedIds(new Set());
