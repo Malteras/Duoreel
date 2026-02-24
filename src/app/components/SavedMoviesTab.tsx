@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
+import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched } from '../../utils/imdbRatings';
 import { MovieCard } from './MovieCard';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
 import { MovieDetailModal } from './MovieDetailModal';
@@ -48,6 +49,7 @@ export function SavedMoviesTab({
   const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
 
   const [partnerLikedMovies, setPartnerLikedMovies] = useState<Movie[]>(savedCache?.partnerLikedMovies ?? []);
+  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(new Map());
   const [partnerName, setPartnerName] = useState<string>(savedCache?.partnerName ?? '');
   const [hasPartner, setHasPartner] = useState(savedCache?.hasPartner ?? false);
   const [loading, setLoading] = useState(false);
@@ -165,6 +167,55 @@ export function SavedMoviesTab({
     publicAnonKey,
     baseUrl,
   });
+
+  // Fetch IMDb ratings for saved movies
+  useEffect(() => {
+    if (likedMovies.length === 0) return;
+
+    const fetchRatings = async () => {
+      const tmdbIds = likedMovies.map(m => m.id);
+      const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
+
+      if (cached.size > 0) {
+        setImdbRatings(prev => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            if (value.rating) updated.set(tmdbId, value.rating);
+          });
+          return updated;
+        });
+        setGlobalImdbCache(prev => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            const imdbId = likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+            if (imdbId && value.rating) updated.set(imdbId, value.rating);
+          });
+          return updated;
+        });
+      }
+
+      const moviesNeedingRatings = likedMovies.filter(
+        m => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id)
+      );
+
+      if (moviesNeedingRatings.length > 0) {
+        const visibleIds = new Set(likedMovies.slice(0, 8).map(m => m.id));
+        fetchMissingRatings(moviesNeedingRatings, visibleIds, projectId, publicAnonKey);
+      }
+    };
+
+    fetchRatings();
+  }, [likedMovies.length]);
+
+  // Listen for individual rating updates
+  useEffect(() => {
+    const unsubscribe = onRatingFetched((tmdbId, rating) => {
+      setImdbRatings(prev => new Map(prev).set(tmdbId, rating));
+      const imdbId = likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+      if (imdbId) setGlobalImdbCache(prev => new Map(prev).set(imdbId, rating));
+    });
+    return unsubscribe;
+  }, [likedMovies]);
 
   // ── Partner connection helpers ─────────────────────────────
   const handleCopyInviteLink = () => {
@@ -544,6 +595,7 @@ export function SavedMoviesTab({
                     projectId={projectId}
                     publicAnonKey={publicAnonKey}
                     globalImdbCache={globalImdbCache}
+                    imdbRating={imdbRatings.get(movie.id)}
                   />
                 ))}
               </div>
@@ -606,6 +658,7 @@ export function SavedMoviesTab({
                     projectId={projectId}
                     publicAnonKey={publicAnonKey}
                     globalImdbCache={globalImdbCache}
+                    imdbRating={imdbRatings.get(movie.id)}
                   />
                 ))}
               </div>
