@@ -351,7 +351,7 @@ export function MoviesTab({
                 filters,
                 sortBy,
                 showWatchedMovies,
-                imdbRatings: c?.imdbRatings ?? new Map(),
+                imdbRatings,
                 enrichedIds: c?.enrichedIds ?? new Set(),
               }));
               return next;
@@ -365,7 +365,7 @@ export function MoviesTab({
               filters,
               sortBy,
               showWatchedMovies,
-              imdbRatings: c?.imdbRatings ?? new Map(),
+              imdbRatings,
               enrichedIds: c?.enrichedIds ?? new Set(),
             }));
           }
