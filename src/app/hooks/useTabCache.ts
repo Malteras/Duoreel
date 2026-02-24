@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Movie } from '../../types/movie';
+import type { Filters } from '../../utils/filters';
 
 // ── Discover cache ────────────────────────────────────────────────────────────
 // Stores the full browse state so returning to Discover restores exactly where
@@ -7,17 +8,7 @@ import type { Movie } from '../../types/movie';
 export interface DiscoverCache {
   movies: Movie[];
   page: number;
-  filters: {
-    genre: string;
-    decade: string;
-    rating: string;
-    year: string;
-    director: string | null;
-    actor: string | null;
-    language: string | null;
-    duration: string;
-    streamingServices: string[];
-  };
+  filters: Filters;
   sortBy: string;
   showWatchedMovies: boolean;
   imdbRatings: Map<number, string>;

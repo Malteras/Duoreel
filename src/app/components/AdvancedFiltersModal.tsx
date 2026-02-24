@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../utils/api';
+import { type Filters, DEFAULT_FILTERS } from '../../utils/filters';
 import { STREAMING_SERVICES } from '../../constants/streaming';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
@@ -12,28 +13,8 @@ import { Search, Loader2, Eye, EyeOff, Clock } from 'lucide-react';
 interface AdvancedFiltersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentFilters: {
-    genre: string;
-    decade: string;
-    rating: string;
-    year: string;
-    director: string | null;
-    actor: string | null;
-    language: string | null;
-    duration: string;
-    streamingServices: string[];
-  };
-  onApplyFilters: (filters: {
-    genre: string;
-    decade: string;
-    rating: string;
-    year: string;
-    director: string | null;
-    actor: string | null;
-    language: string | null;
-    duration: string;
-    streamingServices: string[];
-  }) => void;
+  currentFilters: Filters;
+  onApplyFilters: (filters: Filters) => void;
   genres: any[];
   projectId: string;
   publicAnonKey: string;
@@ -165,20 +146,9 @@ export function AdvancedFiltersModal({
   };
 
   const handleClear = () => {
-    const clearedFilters = {
-      genre: 'all',
-      decade: 'all',
-      rating: 'all',
-      year: 'all',
-      director: null,
-      actor: null,
-      language: null,
-      duration: 'all',
-      streamingServices: []
-    };
-    setFilters(clearedFilters);
+    setFilters(DEFAULT_FILTERS);
     setLocalShowWatched(false);
-    onApplyFilters(clearedFilters);
+    onApplyFilters(DEFAULT_FILTERS);
     onShowWatchedMoviesChange(false);
     onClose();
   };

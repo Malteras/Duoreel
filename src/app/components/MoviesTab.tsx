@@ -1,11 +1,5 @@
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
 import { API_BASE_URL } from "../../utils/api";
+import { type Filters, DEFAULT_FILTERS } from "../../utils/filters";
 import type { Movie } from "../../types/movie";
 import { MovieCard } from "./MovieCard";
 import { MovieDetailModal } from "./MovieDetailModal";
@@ -85,18 +79,6 @@ const RATING_OPTIONS = [
   { label: "6.0+", value: "6" },
   { label: "5.0+", value: "5" },
 ];
-
-const DEFAULT_FILTERS = {
-  genre: "all",
-  decade: "all",
-  rating: "all",
-  year: "all",
-  director: null as string | null,
-  actor: null as string | null,
-  language: null as string | null,
-  duration: "all",
-  streamingServices: [] as string[],
-};
 
 export function MoviesTab({
   accessToken,
