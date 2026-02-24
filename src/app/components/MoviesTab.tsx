@@ -115,8 +115,11 @@ export function MoviesTab({
   setDiscoverCache,
 }: MoviesTabProps) {
   // Core state — restored from cache if available
-  const [movies, setMovies] = useState<Movie[]>(discoverCache?.movies ?? []);
-  const [loading, setLoading] = useState(!discoverCache);
+  // When arriving via cross-tab navigation (initial* filter props), don't restore
+  // movies or filters from cache — we need a fresh fetch with the new filter.
+  const hasCrossTabFilter = !!(initialGenre || initialDirector || initialActor || initialYear);
+  const [movies, setMovies] = useState<Movie[]>(hasCrossTabFilter ? [] : (discoverCache?.movies ?? []));
+  const [loading, setLoading] = useState(hasCrossTabFilter ? true : !discoverCache);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(discoverCache?.page ?? 1);
   const [hasMore, setHasMore] = useState(true);
@@ -125,7 +128,7 @@ export function MoviesTab({
   >([]);
 
   // Filter state — restored from cache if available
-  const [filters, setFilters] = useState(discoverCache?.filters ?? DEFAULT_FILTERS);
+  const [filters, setFilters] = useState(hasCrossTabFilter ? DEFAULT_FILTERS : (discoverCache?.filters ?? DEFAULT_FILTERS));
   const [sortBy, setSortBy] = useState(discoverCache?.sortBy ?? "popularity");
   const [showWatchedMovies, setShowWatchedMovies] =
     useState(discoverCache?.showWatchedMovies ?? false);
