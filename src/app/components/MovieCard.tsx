@@ -233,7 +233,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className={`backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
-                      displayImdbRating && displayImdbRating !== 'N/A'
+                      displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
                         ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
                         : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
                     }`}
@@ -241,8 +241,10 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                     <span className={`text-[9px] font-bold uppercase tracking-wide ${
                       displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
                     }`}>IMDb</span>
-                    {displayImdbRating && displayImdbRating !== 'N/A' ? (
+                    {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
                       <span className="text-xs font-bold text-black">{displayImdbRating}</span>
+                    ) : displayImdbRating === 'NOT_FOUND' ? (
+                      <span className="text-xs font-bold text-black/40">—</span>
                     ) : (
                       <Loader2 className="size-3 text-black/50 animate-spin" />
                     )}
@@ -256,8 +258,10 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
               </TooltipTrigger>
               <TooltipContent className="bg-slate-800 text-white border-slate-700">
                 <p>{hasImdbId
-                  ? (displayImdbRating && displayImdbRating !== 'N/A'
+                  ? (displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
                     ? 'View on IMDb'
+                    : displayImdbRating === 'NOT_FOUND'
+                    ? 'Rating unavailable — click to view on IMDb'
                     : 'Rating loading — click to view on IMDb')
                   : 'Fetching IMDb info...'
                 }</p>

@@ -154,9 +154,16 @@ export async function fetchMissingRatings(
   for (let i = 0; i < prioritized.length; i += BATCH_SIZE) {
     const batch = prioritized.slice(i, i + BATCH_SIZE);
     
-    // Fetch batch in parallel
+    // Fetch batch in parallel — emit sentinel for failures so MovieCard stops spinning
     await Promise.all(
-      batch.map(movie => fetchAndStoreRating(movie, projectId, publicAnonKey))
+      batch.map(async movie => {
+        const result = await fetchAndStoreRating(movie, projectId, publicAnonKey);
+        if (!result || !result.rating) {
+          // 404, not in OMDb, or rate limited — emit sentinel so the card shows a
+          // static dash instead of spinning forever. Also prevents retry on next fetch.
+          emitRatingUpdate(movie.id, 'NOT_FOUND');
+        }
+      })
     );
     
     // Wait before next batch (unless it's the last batch)
