@@ -469,8 +469,8 @@ export function MoviesTab({
           }),
         );
 
-        setMovies((prev) =>
-          prev.map((movie) => {
+        setMovies((prev) => {
+          const enriched = prev.map((movie) => {
             const detail = results.find(
               (r) => r && r.id === movie.id,
             );
@@ -504,8 +504,12 @@ export function MoviesTab({
               homepage: detail.homepage,
               vote_count: detail.vote_count || movie.vote_count,
             };
-          }),
-        );
+          });
+          // Keep cache in sync with enriched data so returning to Discover
+          // restores director, actors, genres, external_ids, watch/providers.
+          setDiscoverCache(c => c ? { ...c, movies: enriched } : null);
+          return enriched;
+        });
 
         // Track enriched
         batch.forEach((m) => {
@@ -551,6 +555,9 @@ export function MoviesTab({
           cached.forEach((value, tmdbId) => {
             if (value.rating) updated.set(tmdbId, value.rating);
           });
+          // Write directly to discoverCache here too — don't rely solely on the
+          // [imdbRatings] sync effect, which won't fire if component unmounts mid-fetch.
+          setDiscoverCache(c => c ? { ...c, imdbRatings: updated } : null);
           return updated;
         });
 
@@ -588,16 +595,23 @@ export function MoviesTab({
     fetchRatings();
   }, [movies, enrichedIds.size]);
 
-  // Listen for individual rating updates from background fetch
+  // Listen for individual rating updates from background fetch.
+  // Uses moviesRef (not movies state) so this effect never re-runs mid-fetch —
+  // re-subscribing during fetchMissingRatings would drop emissions in the gap.
   useEffect(() => {
     const unsubscribe = onRatingFetched((tmdbId, rating) => {
-      setImdbRatings((prev) => new Map(prev).set(tmdbId, rating));
+      setImdbRatings((prev) => {
+        const updated = new Map(prev).set(tmdbId, rating);
+        // Write directly to cache — don't rely on sync effect which won't fire post-unmount.
+        setDiscoverCache(c => c ? { ...c, imdbRatings: updated } : null);
+        return updated;
+      });
       // Also write into globalImdbCache so other tabs get the rating immediately
       const imdbId = moviesRef.current.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
       if (imdbId) setGlobalImdbCache((prev) => new Map(prev).set(imdbId, rating));
     });
     return unsubscribe;
-  }, []);
+  }, []); // Empty deps — subscribe once, use moviesRef for current data
 
   // Keep discoverCache.imdbRatings in sync as background fetches complete.
   // Note: discoverCache intentionally omitted from deps — including it creates
