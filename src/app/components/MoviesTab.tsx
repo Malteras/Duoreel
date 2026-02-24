@@ -262,30 +262,6 @@ export function MoviesTab({
     fetchGenres();
   }, []);
 
-  // ──────────────── Apply initial filters from cross-tab navigation ────────────────
-  useEffect(() => {
-    if (initialGenre || initialDirector || initialActor || initialYear) {
-      const newFilters = { ...DEFAULT_FILTERS };
-      if (initialGenre) newFilters.genre = initialGenre;
-      if (initialDirector) newFilters.director = initialDirector;
-      if (initialActor) newFilters.actor = initialActor;
-      if (initialYear) newFilters.year = initialYear.toString();
-      // Reset all cached state so we start fresh with only the new filter.
-      // Call fetchMovies directly instead of relying on the [filters] dep effect,
-      // because skipNextFetchRef may still be true from cache restore and would
-      // swallow the triggered fetch.
-      setDiscoverCache(null);
-      skipNextFetchRef.current = false;
-      setPage(1);
-      setEnrichedIds(new Set());
-      enrichingRef.current = new Set();
-      setImdbRatings(new Map());
-      setFilters(newFilters);
-      fetchMovies(1, false);
-      onFiltersApplied?.();
-    }
-  }, [initialGenre, initialDirector, initialActor, initialYear, fetchMovies, onFiltersApplied]);
-
   // ──────────────── Fetch movies (discover) ────────────────
   const fetchMovies = useCallback(
     async (pageNum: number, append = false) => {
@@ -410,6 +386,30 @@ export function MoviesTab({
       baseUrl,
     ],
   );
+
+  // ──────────────── Apply initial filters from cross-tab navigation ────────────────
+  useEffect(() => {
+    if (initialGenre || initialDirector || initialActor || initialYear) {
+      const newFilters = { ...DEFAULT_FILTERS };
+      if (initialGenre) newFilters.genre = initialGenre;
+      if (initialDirector) newFilters.director = initialDirector;
+      if (initialActor) newFilters.actor = initialActor;
+      if (initialYear) newFilters.year = initialYear.toString();
+      // Reset all cached state so we start fresh with only the new filter.
+      // Call fetchMovies directly instead of relying on the [filters] dep effect,
+      // because skipNextFetchRef may still be true from cache restore and would
+      // swallow the triggered fetch.
+      setDiscoverCache(null);
+      skipNextFetchRef.current = false;
+      setPage(1);
+      setEnrichedIds(new Set());
+      enrichingRef.current = new Set();
+      setImdbRatings(new Map());
+      setFilters(newFilters);
+      fetchMovies(1, false);
+      onFiltersApplied?.();
+    }
+  }, [initialGenre, initialDirector, initialActor, initialYear, fetchMovies, onFiltersApplied]);
 
   // ──────────────── Fetch when filters/sort/showWatched change ────────────────
   // Note: We include `showWatchedMovies` in the dependency array so that when the
