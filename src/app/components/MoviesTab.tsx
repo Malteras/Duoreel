@@ -264,16 +264,20 @@ export function MoviesTab({
 
   // ──────────────── Apply initial filters from cross-tab navigation ────────────────
   useEffect(() => {
-    if (initialDirector || initialActor || initialYear) {
-      const newFilters = { ...filters };
-      if (initialDirector)
-        newFilters.director = initialDirector;
+    if (initialGenre || initialDirector || initialActor || initialYear) {
+      const newFilters = { ...DEFAULT_FILTERS };
+      if (initialGenre) newFilters.genre = initialGenre;
+      if (initialDirector) newFilters.director = initialDirector;
       if (initialActor) newFilters.actor = initialActor;
       if (initialYear) newFilters.year = initialYear.toString();
+      // Bust cache so the fetch effect fires fresh with the new filter
+      // instead of being skipped by the skipNextFetchRef guard.
+      skipNextFetchRef.current = false;
+      setDiscoverCache(null);
       setFilters(newFilters);
       onFiltersApplied?.();
     }
-  }, [initialDirector, initialActor, initialYear]);
+  }, [initialGenre, initialDirector, initialActor, initialYear]);
 
   // ──────────────── Fetch movies (discover) ────────────────
   const fetchMovies = useCallback(
@@ -931,7 +935,7 @@ export function MoviesTab({
     ],
   );
 
-  // ──────────────── Genre name helper ────────────────
+  // ───────────────�� Genre name helper ────────────────
   const getGenreName = (genreId: string) => {
     const genre = genres.find(
       (g) => g.id.toString() === genreId,
