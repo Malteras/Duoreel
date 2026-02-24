@@ -270,14 +270,21 @@ export function MoviesTab({
       if (initialDirector) newFilters.director = initialDirector;
       if (initialActor) newFilters.actor = initialActor;
       if (initialYear) newFilters.year = initialYear.toString();
-      // Bust cache so the fetch effect fires fresh with the new filter
-      // instead of being skipped by the skipNextFetchRef guard.
-      skipNextFetchRef.current = false;
+      // Reset all cached state so we start fresh with only the new filter.
+      // Call fetchMovies directly instead of relying on the [filters] dep effect,
+      // because skipNextFetchRef may still be true from cache restore and would
+      // swallow the triggered fetch.
       setDiscoverCache(null);
+      skipNextFetchRef.current = false;
+      setPage(1);
+      setEnrichedIds(new Set());
+      enrichingRef.current = new Set();
+      setImdbRatings(new Map());
       setFilters(newFilters);
+      fetchMovies(1, false);
       onFiltersApplied?.();
     }
-  }, [initialGenre, initialDirector, initialActor, initialYear]);
+  }, [initialGenre, initialDirector, initialActor, initialYear, fetchMovies, onFiltersApplied]);
 
   // ──────────────── Fetch movies (discover) ────────────────
   const fetchMovies = useCallback(
@@ -935,7 +942,7 @@ export function MoviesTab({
     ],
   );
 
-  // ───────────────�� Genre name helper ────────────────
+  // ─────────────── Genre name helper ────────────────
   const getGenreName = (genreId: string) => {
     const genre = genres.find(
       (g) => g.id.toString() === genreId,
