@@ -337,16 +337,33 @@ export function MoviesTab({
 
           if (append) {
             setMovies((prev) => {
-              const existingIds = new Set(
-                prev.map((m) => m.id),
-              );
-              const deduped = newMovies.filter(
-                (m) => !existingIds.has(m.id),
-              );
-              return [...prev, ...deduped];
+              const existingIds = new Set(prev.map((m) => m.id));
+              const deduped = newMovies.filter((m) => !existingIds.has(m.id));
+              const next = [...prev, ...deduped];
+              // Write cache with the merged list
+              setDiscoverCache(c => ({
+                movies: next,
+                page: pageNum,
+                filters,
+                sortBy,
+                showWatchedMovies,
+                imdbRatings: c?.imdbRatings ?? new Map(),
+                enrichedIds: c?.enrichedIds ?? new Set(),
+              }));
+              return next;
             });
           } else {
             setMovies(newMovies);
+            // Write cache with the fresh list
+            setDiscoverCache(c => ({
+              movies: newMovies,
+              page: pageNum,
+              filters,
+              sortBy,
+              showWatchedMovies,
+              imdbRatings: c?.imdbRatings ?? new Map(),
+              enrichedIds: c?.enrichedIds ?? new Set(),
+            }));
           }
 
           setHasMore(newMovies.length >= 10);
@@ -374,6 +391,14 @@ export function MoviesTab({
   // param is sent to the server.
   useEffect(() => {
     if (contextLoading) return; // Wait for interactions to load first
+
+    // If we just restored from cache, skip this initial fetch. The ref is cleared
+    // so the next filter/sort/showWatched change fetches normally.
+    if (skipNextFetchRef.current) {
+      skipNextFetchRef.current = false;
+      return;
+    }
+
     setPage(1);
     setEnrichedIds(new Set());
     enrichingRef.current = new Set();
@@ -484,7 +509,7 @@ export function MoviesTab({
     enrichMovies();
   }, [movies.length, enrichedIds.size]);
 
-  // ───────────��──── Fetch IMDb ratings ────────────────
+  // ─────────────── Fetch IMDb ratings ────────────────
   useEffect(() => {
     if (movies.length === 0) return;
 
@@ -550,6 +575,18 @@ export function MoviesTab({
     });
     return unsubscribe;
   }, [movies]);
+
+  // Keep discoverCache.imdbRatings in sync as background fetches complete
+  useEffect(() => {
+    if (!discoverCache) return;
+    setDiscoverCache(c => c ? { ...c, imdbRatings } : null);
+  }, [imdbRatings, discoverCache, setDiscoverCache]);
+
+  // Keep discoverCache.enrichedIds in sync as enrichment completes
+  useEffect(() => {
+    if (!discoverCache) return;
+    setDiscoverCache(c => c ? { ...c, enrichedIds } : null);
+  }, [enrichedIds, discoverCache, setDiscoverCache]);
 
   // ──────────────── Search movies ────────────────
   const handleSearch = useCallback(
@@ -821,6 +858,8 @@ export function MoviesTab({
   };
 
   const handleRefresh = () => {
+    setDiscoverCache(null); // Invalidate — next mount will fetch fresh
+    skipNextFetchRef.current = false;
     setPage(1);
     setEnrichedIds(new Set());
     enrichingRef.current = new Set();
