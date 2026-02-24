@@ -205,6 +205,9 @@ export function MoviesTab({
   // Skip the IMDb ratings fetch if we restored ratings from cache. Ratings are
   // already in imdbRatings state — no need to re-fetch from the DB.
   const skipRatingsFetchRef = useRef(!!discoverCache);
+  // Prevents re-entrant calls to bulkFetchCachedRatings when enrichedIds.size
+  // changes mid-fetch (enrichment fires setEnrichedIds once per batch of 5).
+  const fetchingRatingsRef = useRef(false);
 
   // Infinite scroll sentinel ref
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -548,62 +551,73 @@ export function MoviesTab({
       return;
     }
 
+    // Skip if a fetch is already in flight — enrichment fires setEnrichedIds once
+    // per batch of 5, which would re-trigger this effect 4 extra times otherwise.
+    if (fetchingRatingsRef.current) return;
+
     const fetchRatings = async () => {
-      // Get TMDb IDs for bulk fetch
-      const tmdbIds = movies.map((m) => m.id);
+      fetchingRatingsRef.current = true;
+      try {
+        // Get TMDb IDs for bulk fetch
+        const tmdbIds = movies.map((m) => m.id);
 
-      // Bulk fetch cached ratings
-      const cached = await bulkFetchCachedRatings(
-        tmdbIds,
-        projectId,
-        publicAnonKey,
-      );
-
-      if (cached.size > 0) {
-        setImdbRatings((prev) => {
-          const updated = new Map(prev);
-          cached.forEach((value, tmdbId) => {
-            if (value.rating) updated.set(tmdbId, value.rating);
-          });
-          // Write directly to discoverCache here too — don't rely solely on the
-          // [imdbRatings] sync effect, which won't fire if component unmounts mid-fetch.
-          setDiscoverCache(c => c ? { ...c, imdbRatings: updated } : null);
-          return updated;
-        });
-
-        // Also write into globalImdbCache (keyed by IMDb ID) so Saved and Matches tabs benefit
-        setGlobalImdbCache((prev) => {
-          const updated = new Map(prev);
-          cached.forEach((value, tmdbId) => {
-            const imdbId = movies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
-            if (imdbId && value.rating) updated.set(imdbId, value.rating);
-          });
-          return updated;
-        });
-      }
-
-      // Background fetch missing ratings for movies with IMDb IDs.
-      // Also skip movies whose rating is already in local imdbRatings state —
-      // they were fetched on a previous visit and don't need another OMDb call.
-      const moviesWithImdbIds = movies.filter(
-        (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
-      );
-
-      if (moviesWithImdbIds.length > 0) {
-        const visibleIds = new Set(
-          movies.slice(0, 8).map((m) => m.id),
-        );
-        fetchMissingRatings(
-          moviesWithImdbIds,
-          visibleIds,
+        // Bulk fetch cached ratings
+        const cached = await bulkFetchCachedRatings(
+          tmdbIds,
           projectId,
           publicAnonKey,
         );
+
+        if (cached.size > 0) {
+          setImdbRatings((prev) => {
+            const updated = new Map(prev);
+            cached.forEach((value, tmdbId) => {
+              if (value.rating) updated.set(tmdbId, value.rating);
+            });
+            // Write directly to discoverCache here too — don't rely solely on the
+            // [imdbRatings] sync effect, which won't fire if component unmounts mid-fetch.
+            setDiscoverCache(c => c ? { ...c, imdbRatings: updated } : null);
+            return updated;
+          });
+
+          // Also write into globalImdbCache (keyed by IMDb ID) so Saved and Matches tabs benefit
+          setGlobalImdbCache((prev) => {
+            const updated = new Map(prev);
+            cached.forEach((value, tmdbId) => {
+              const imdbId = movies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+              if (imdbId && value.rating) updated.set(imdbId, value.rating);
+            });
+            return updated;
+          });
+        }
+
+        // Background fetch missing ratings for movies with IMDb IDs.
+        // Also skip movies whose rating is already in local imdbRatings state —
+        // they were fetched on a previous visit and don't need another OMDb call.
+        const moviesWithImdbIds = movies.filter(
+          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
+        );
+
+        if (moviesWithImdbIds.length > 0) {
+          const visibleIds = new Set(
+            movies.slice(0, 8).map((m) => m.id),
+          );
+          fetchMissingRatings(
+            moviesWithImdbIds,
+            visibleIds,
+            projectId,
+            publicAnonKey,
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching IMDb ratings:", error);
+      } finally {
+        fetchingRatingsRef.current = false;
       }
     };
 
     fetchRatings();
-  }, [movies, enrichedIds.size]);
+  }, [movies]);
 
   // Listen for individual rating updates from background fetch.
   // Uses moviesRef (not movies state) so this effect never re-runs mid-fetch —
