@@ -1,3 +1,10 @@
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { API_BASE_URL } from "../../utils/api";
 import { type Filters, DEFAULT_FILTERS } from "../../utils/filters";
 import type { Movie } from "../../types/movie";
