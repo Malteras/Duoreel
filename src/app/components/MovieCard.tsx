@@ -30,8 +30,7 @@ interface MovieCardProps {
 export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike, onDislike, onNotInterested, isNotInterestedLoading, onClick, showActions = true, onDirectorClick, onGenreClick, onYearClick, onActorClick, imdbRating, projectId, publicAnonKey, globalImdbCache }: MovieCardProps) {
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : '/placeholder-movie.png'
-;
+    : '';
 
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
@@ -104,11 +103,25 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
     >
       {/* Poster Image */}
       <div className="relative aspect-[2/3] overflow-hidden">
-        <img 
-          src={posterUrl} 
-          alt={cleanTitle(movie.title)}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-        />
+        {posterUrl ? (
+          <img 
+            src={posterUrl} 
+            alt={cleanTitle(movie.title)}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onError={(e) => {
+              const target = e.currentTarget;
+              target.style.display = 'none';
+              const fallback = target.nextElementSibling as HTMLElement;
+              if (fallback) fallback.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        <div
+          className="w-full h-full bg-slate-800 items-center justify-center"
+          style={{ display: posterUrl ? 'none' : 'flex' }}
+        >
+          <Film className="size-16 text-slate-600" />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
         
         {/* Status Badges - top right: Match and/or Watched */}

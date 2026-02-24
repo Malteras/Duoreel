@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink } from 'lucide-react';
+import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
@@ -124,8 +124,8 @@ export function MovieDetailModal({
 
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : '/placeholder-movie.png';
-
+    : '';
+  
   const backdropUrl = movie.backdrop_path
     ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
     : posterUrl;
@@ -187,11 +187,25 @@ export function MovieDetailModal({
         <div className="max-h-[90dvh] overflow-y-auto">
           {/* Backdrop Image */}
           <div className="relative h-64 md:h-80 overflow-hidden">
-            <img 
-              src={backdropUrl} 
-              alt={cleanTitle(movie.title)}
-              className="w-full h-full object-cover"
-            />
+            {backdropUrl ? (
+              <img 
+                src={backdropUrl} 
+                alt={cleanTitle(movie.title)}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div
+              className="w-full h-full bg-slate-800 items-center justify-center"
+              style={{ display: backdropUrl ? 'none' : 'flex' }}
+            >
+              <Film className="size-20 text-slate-600" />
+            </div>
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
             
             {/* Rating Badges - Bottom Right */}
