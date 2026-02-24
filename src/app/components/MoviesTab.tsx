@@ -161,6 +161,11 @@ export function MoviesTab({
     Map<number, string>
   >(discoverCache?.imdbRatings ?? new Map());
 
+  // Keep a ref to movies so the onRatingFetched listener can look up IMDb IDs
+  // without needing movies in its dep array (which would cause resubscription
+  // mid-fetch and lose rating emissions).
+  const moviesRef = useRef<typeof movies>(movies);
+
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
     Set<number>
@@ -175,6 +180,12 @@ export function MoviesTab({
   useEffect(() => {
     pendingRemovalsRef.current = pendingRemovals;
   }, [pendingRemovals]);
+
+  // Keep moviesRef in sync so onRatingFetched listener can look up IMDb IDs
+  // without movies being in its dep array.
+  useEffect(() => {
+    moviesRef.current = movies;
+  }, [movies]);
 
   // Movie details enrichment tracking — restored from cache if available
   const [enrichedIds, setEnrichedIds] = useState<Set<number>>(
@@ -582,11 +593,11 @@ export function MoviesTab({
     const unsubscribe = onRatingFetched((tmdbId, rating) => {
       setImdbRatings((prev) => new Map(prev).set(tmdbId, rating));
       // Also write into globalImdbCache so other tabs get the rating immediately
-      const imdbId = movies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+      const imdbId = moviesRef.current.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
       if (imdbId) setGlobalImdbCache((prev) => new Map(prev).set(imdbId, rating));
     });
     return unsubscribe;
-  }, [movies]);
+  }, []);
 
   // Keep discoverCache.imdbRatings in sync as background fetches complete.
   // Note: discoverCache intentionally omitted from deps — including it creates
