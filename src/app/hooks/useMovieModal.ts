@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router';
 import { publicAnonKey } from '/utils/supabase/info';
 import { API_BASE_URL } from '../../utils/api';
@@ -16,6 +16,10 @@ export function useMovieModal(accessToken?: string | null) {
   const [modalOpen, setModalOpen] = useState(false);
   const [isLoadingDeepLink, setIsLoadingDeepLink] = useState(false);
 
+  // Tracks whether the modal was opened via openMovie() vs a direct URL load.
+  // Prevents the deep-link effect from firing an API fetch on normal card clicks.
+  const openedViaClickRef = useRef(false);
+
   const movieIdParam = searchParams.get('movie');
 
   // Sync modal state with URL: close modal when ?movie= param is removed (e.g., back button)
@@ -26,9 +30,19 @@ export function useMovieModal(accessToken?: string | null) {
     }
   }, [movieIdParam, modalOpen]);
 
-  // Deep-link: if ?movie=id is present but we have no loaded movie, fetch it
+  // Deep-link: if ?movie=id is present but we have no loaded movie, fetch it.
+  // Skipped when the modal was opened via openMovie() — the movie data is already in state.
   useEffect(() => {
-    if (!movieIdParam || selectedMovie || isLoadingDeepLink) return;
+    if (!movieIdParam || isLoadingDeepLink) return;
+
+    // Card click path: movie data already provided via openMovie(), skip fetch
+    if (openedViaClickRef.current) {
+      openedViaClickRef.current = false;
+      return;
+    }
+
+    // Direct URL load path: no movie in state, need to fetch
+    if (selectedMovie) return;
 
     setIsLoadingDeepLink(true);
     const authHeader = accessToken ? `Bearer ${accessToken}` : `Bearer ${publicAnonKey}`;
@@ -49,7 +63,6 @@ export function useMovieModal(accessToken?: string | null) {
       })
       .catch(err => {
         console.error('Failed to load movie from URL param:', err);
-        // Remove the bad param so the page isn't stuck
         setSearchParams(prev => {
           const next = new URLSearchParams(prev);
           next.delete('movie');
@@ -60,20 +73,19 @@ export function useMovieModal(accessToken?: string | null) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [movieIdParam]);
 
-  /** Open a movie card — sets the movie and updates the URL. */
+  /** Open a movie card — sets the movie immediately and updates the URL. */
   const openMovie = (movie: any) => {
+    openedViaClickRef.current = true;
     setSelectedMovie(movie);
     setModalOpen(true);
-    setTimeout(() => {
-      setSearchParams(
-        prev => {
-          const next = new URLSearchParams(prev);
-          next.set('movie', String(movie.id));
-          return next;
-        },
-        { replace: false }
-      );
-    }, 0);
+    setSearchParams(
+      prev => {
+        const next = new URLSearchParams(prev);
+        next.set('movie', String(movie.id));
+        return next;
+      },
+      { replace: false }
+    );
   };
 
   /** Close the modal and remove ?movie= from the URL. */
