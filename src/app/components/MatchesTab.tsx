@@ -71,7 +71,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const enrichingRef = useRef<Set<number>>(new Set());
 
   // Invite code state
-  const [inviteCode, setInviteCode] = useState('');
+  const [inviteCode, setInviteCode] = useState(matchesCache?.inviteCode ?? '');
   const [regeneratingCode, setRegeneratingCode] = useState(false);
 
   const { selectedMovie, modalOpen, openMovie, closeMovie } = useMovieModal(accessToken);
@@ -438,7 +438,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         )}
 
         {/* Partner Connection */}
-        {partner ? (
+        {loading && !partner ? null : partner ? (
           /* ── Compact connected strip ── */
           <div className="flex items-center gap-3 px-4 py-2.5 mb-6 bg-slate-800/40 border border-slate-700/60 rounded-xl">
             <Avatar className="size-8 ring-2 ring-pink-500/40 flex-shrink-0">
@@ -483,7 +483,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </AlertDialogContent>
             </AlertDialog>
           </div>
-        ) : (
+        ) : !loading ? (
           /* ── Full connection card (no partner) ── */
           <Card className="bg-slate-800/50 border-slate-700 mb-8">
             <CardHeader>
@@ -509,7 +509,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               />
             </CardContent>
           </Card>
-        )}
+        ) : null}
 
         {/* Matched Movies heading */}
         <div className="mb-6">

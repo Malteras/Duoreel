@@ -220,23 +220,23 @@ export function MovieDetailModal({
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
-                        ((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A'))
+                        ((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A' && globalImdbCache.get(movie.external_ids.imdb_id) !== 'NOT_FOUND'))
                           ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
                           : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
                       }`}
                     >
                       <span className={`text-[9px] font-bold uppercase tracking-wide ${
-                        ((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A'))
+                        ((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A' && globalImdbCache.get(movie.external_ids.imdb_id) !== 'NOT_FOUND'))
                           ? 'text-black/70'
                           : 'text-black/40'
                       }`}>IMDb</span>
-                      {((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A')) ? (
-                        <span className="text-xs font-bold text-black">
-                          {(movie as any).imdbRating || globalImdbCache?.get(movie.external_ids.imdb_id)}
-                        </span>
-                      ) : (
-                        <Loader2 className="size-3 text-black/50 animate-spin" />
-                      )}
+                      {(() => {
+                        const cachedVal = globalImdbCache?.get(movie.external_ids.imdb_id);
+                        const rating = (movie as any).imdbRating || (cachedVal !== 'N/A' && cachedVal !== 'NOT_FOUND' ? cachedVal : null);
+                        if (rating) return <span className="text-xs font-bold text-black">{rating}</span>;
+                        if (cachedVal === 'NOT_FOUND') return <span className="text-xs font-bold text-black/40">—</span>;
+                        return <Loader2 className="size-3 text-black/50 animate-spin" />;
+                      })()}
                     </a>
                   ) : (
                     <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
@@ -247,9 +247,12 @@ export function MovieDetailModal({
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 text-white border-slate-700">
                   <p>{movie.external_ids?.imdb_id
-                    ? (((movie as any).imdbRating || (globalImdbCache?.has(movie.external_ids.imdb_id) && globalImdbCache.get(movie.external_ids.imdb_id) !== 'N/A'))
-                      ? 'View on IMDb'
-                      : 'Rating loading — click to view on IMDb')
+                    ? (() => {
+                        const cachedVal = globalImdbCache?.get(movie.external_ids!.imdb_id);
+                        if ((movie as any).imdbRating || (cachedVal && cachedVal !== 'N/A' && cachedVal !== 'NOT_FOUND')) return 'View on IMDb';
+                        if (cachedVal === 'NOT_FOUND') return 'Not rated on IMDb — click to view page';
+                        return 'Rating loading — click to view on IMDb';
+                      })()
                     : 'Fetching IMDb info...'
                   }</p>
                 </TooltipContent>
