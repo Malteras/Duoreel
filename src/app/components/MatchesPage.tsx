@@ -10,6 +10,8 @@ export function MatchesPage() {
       projectId={ctx.projectId}
       publicAnonKey={ctx.publicAnonKey}
       navigateToDiscoverWithFilter={ctx.navigateToDiscoverWithFilter}
+      globalImdbCache={ctx.globalImdbCache}
+      setGlobalImdbCache={ctx.setGlobalImdbCache}
     />
   );
 }

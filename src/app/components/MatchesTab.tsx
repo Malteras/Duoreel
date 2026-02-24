@@ -44,9 +44,11 @@ interface MatchesTabProps {
   projectId: string;
   publicAnonKey: string;
   navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year', value: string | number) => void;
+  globalImdbCache: Map<string, string>;
+  setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
 }
 
-export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter }: MatchesTabProps) {
+export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter, globalImdbCache, setGlobalImdbCache }: MatchesTabProps) {
   const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
   const [partner, setPartner] = useState<any>(null);
   const [matchedMovies, setMatchedMovies] = useState<Movie[]>([]);
@@ -73,7 +75,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
 
   const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
-  const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(new Map());
 
   const baseUrl = API_BASE_URL;
 

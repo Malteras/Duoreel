@@ -495,9 +495,17 @@ export function MoviesTab({
         setImdbRatings((prev) => {
           const updated = new Map(prev);
           cached.forEach((value, tmdbId) => {
-            if (value.rating) {
-              updated.set(tmdbId, value.rating);
-            }
+            if (value.rating) updated.set(tmdbId, value.rating);
+          });
+          return updated;
+        });
+
+        // Also write into globalImdbCache (keyed by IMDb ID) so Saved and Matches tabs benefit
+        setGlobalImdbCache((prev) => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            const imdbId = movies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+            if (imdbId && value.rating) updated.set(imdbId, value.rating);
           });
           return updated;
         });
@@ -527,12 +535,13 @@ export function MoviesTab({
   // Listen for individual rating updates from background fetch
   useEffect(() => {
     const unsubscribe = onRatingFetched((tmdbId, rating) => {
-      setImdbRatings((prev) =>
-        new Map(prev).set(tmdbId, rating),
-      );
+      setImdbRatings((prev) => new Map(prev).set(tmdbId, rating));
+      // Also write into globalImdbCache so other tabs get the rating immediately
+      const imdbId = movies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+      if (imdbId) setGlobalImdbCache((prev) => new Map(prev).set(imdbId, rating));
     });
     return unsubscribe;
-  }, []);
+  }, [movies]);
 
   // ──────────────── Search movies ────────────────
   const handleSearch = useCallback(
