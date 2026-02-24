@@ -195,7 +195,9 @@ export function MoviesTab({
 
   // Skip the initial fetch if we restored from cache. Set to true when cache is
   // present; cleared to false on the first user-triggered filter/sort change.
-  const skipNextFetchRef = useRef(!!discoverCache);
+  // If arriving via cross-tab navigation (initial* filter props set), don't skip
+  // the initial fetch — we need fresh results for the new filter, not cached ones.
+  const skipNextFetchRef = useRef(!!discoverCache && !initialGenre && !initialDirector && !initialActor && !initialYear);
 
   // Skip the IMDb ratings fetch if we restored ratings from cache. Ratings are
   // already in imdbRatings state — no need to re-fetch from the DB.
@@ -395,12 +397,10 @@ export function MoviesTab({
       if (initialDirector) newFilters.director = initialDirector;
       if (initialActor) newFilters.actor = initialActor;
       if (initialYear) newFilters.year = initialYear.toString();
-      // Clear cache and skip guard so the [filters] fetch effect fires fresh.
-      // Do NOT call fetchMovies directly — it closes over stale filters.
-      // Setting skipNextFetchRef=false + setFilters lets the fetch effect
-      // run with the correct new filters in scope.
+      // Bust cache so next mount doesn't restore stale filtered results.
+      // skipNextFetchRef is already false at mount when initial* props are set,
+      // so the [filters] fetch effect will fire normally with the new filters.
       setDiscoverCache(null);
-      skipNextFetchRef.current = false;
       setFilters(newFilters);
       onFiltersApplied?.();
     }
