@@ -64,14 +64,16 @@ export function useMovieModal(accessToken?: string | null) {
   const openMovie = (movie: any) => {
     setSelectedMovie(movie);
     setModalOpen(true);
-    setSearchParams(
-      prev => {
-        const next = new URLSearchParams(prev);
-        next.set('movie', String(movie.id));
-        return next;
-      },
-      { replace: false }
-    );
+    setTimeout(() => {
+      setSearchParams(
+        prev => {
+          const next = new URLSearchParams(prev);
+          next.set('movie', String(movie.id));
+          return next;
+        },
+        { replace: false }
+      );
+    }, 0);
   };
 
   /** Close the modal and remove ?movie= from the URL. */
