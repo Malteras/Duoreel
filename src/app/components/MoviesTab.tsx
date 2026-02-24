@@ -554,9 +554,11 @@ export function MoviesTab({
         });
       }
 
-      // Background fetch missing ratings for movies with IMDb IDs
+      // Background fetch missing ratings for movies with IMDb IDs.
+      // Also skip movies whose rating is already in local imdbRatings state —
+      // they were fetched on a previous visit and don't need another OMDb call.
       const moviesWithImdbIds = movies.filter(
-        (m) => m.external_ids?.imdb_id && !cached.has(m.id),
+        (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
       );
 
       if (moviesWithImdbIds.length > 0) {
