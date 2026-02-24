@@ -5,7 +5,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink } from 'lucide-react';
-import { ScrollArea } from './ui/scroll-area';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
@@ -181,11 +180,11 @@ export function MovieDetailModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90dvh] p-0 bg-slate-900 border-slate-700 overflow-hidden" aria-describedby={undefined}>
+      <DialogContent className="max-w-4xl max-h-[90dvh] p-0 bg-slate-900 border-slate-700 overflow-hidden duration-100" aria-describedby={undefined}>
         <DialogHeader className="sr-only">
           <DialogTitle>{cleanTitle(movie.title)}</DialogTitle>
         </DialogHeader>
-        <ScrollArea className="max-h-[90dvh]">
+        <div className="max-h-[90dvh] overflow-y-auto">
           {/* Backdrop Image */}
           <div className="relative h-64 md:h-80 overflow-hidden">
             <img 
@@ -490,7 +489,7 @@ export function MovieDetailModal({
               )}
             </div>
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
