@@ -877,16 +877,13 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
             // Check if already watched - skip TMDB fetch if so (optimization)
             const existing = await kv.get(`watched:${user.id}:${item.tmdbMovieId}`);
             if (existing) {
-              // Just update the rating and watched date
+              // Silently update rating and watched date — don't count as new sync
               await kv.set(`watched:${user.id}:${item.tmdbMovieId}`, {
                 ...existing,
                 rating: item.rating,
                 letterboxdWatchedDate: item.watchedDate,
                 timestamp: Date.now(),
               });
-              synced++;
-              syncedTitles.push(existing.title || `Movie ${item.tmdbMovieId}`);
-              syncedMovieIds.push(item.tmdbMovieId);
               return;
             }
 
