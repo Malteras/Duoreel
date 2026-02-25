@@ -916,13 +916,19 @@ export function ProfilePage() {
             </CardHeader>
             <CardContent className="space-y-6">
 
-              {/* ── Letterboxd section ── */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-base">🎬</span>
+              {/* ── Letterboxd group — inner container ── */}
+              <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-5">
+                {/* Letterboxd branded header */}
+                <div className="flex items-center gap-2.5">
+                  <svg className="size-5 flex-shrink-0" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="150" cy="250" r="120" fill="#FF8000"/>
+                    <circle cx="250" cy="250" r="120" fill="#00E054" fillOpacity="0.75"/>
+                    <circle cx="350" cy="250" r="120" fill="#40BCF4" fillOpacity="0.75"/>
+                  </svg>
                   <h3 className="text-white font-semibold text-sm">Letterboxd</h3>
                 </div>
 
+                {/* Auto-sync section */}
                 {letterboxdUsername ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
@@ -1017,44 +1023,43 @@ export function ProfilePage() {
                     </div>
                   </div>
                 )}
+
+                {/* Light divider within the Letterboxd group */}
+                <div className="border-t border-emerald-500/15" />
+
+                {/* CSV Import — inside the Letterboxd group */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Upload className="size-3.5 text-slate-400" />
+                    <h4 className="text-slate-300 font-medium text-xs uppercase tracking-wide">CSV Import</h4>
+                  </div>
+                  <p className="text-slate-500 text-xs mb-3">
+                    For full history, export your Letterboxd data as CSV and import here.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-slate-800/80 border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 hover:text-white"
+                      onClick={() => watchlist.setDialogOpen(true)}
+                    >
+                      <Upload className="size-3.5 mr-2" />
+                      Import Watchlist
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="bg-slate-800/80 border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 hover:text-white"
+                      onClick={() => watched.setDialogOpen(true)}
+                    >
+                      <Upload className="size-3.5 mr-2" />
+                      Import Watched Movies
+                    </Button>
+                  </div>
+                </div>
               </div>
 
-              {/* Divider */}
-              <div className="border-t border-slate-700" />
-
-              {/* ── CSV Import section ── */}
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <Upload className="size-4 text-blue-400" />
-                  <h3 className="text-white font-semibold text-sm">CSV Import</h3>
-                </div>
-                <p className="text-slate-400 text-sm mb-3">
-                  Import your full Letterboxd history via CSV export files.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant="outline"
-                    className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                    onClick={() => watchlist.setDialogOpen(true)}
-                  >
-                    <Upload className="size-4 mr-2" />
-                    Import Watchlist
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                    onClick={() => watched.setDialogOpen(true)}
-                  >
-                    <Upload className="size-4 mr-2" />
-                    Import Watched Movies
-                  </Button>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-slate-700" />
-
-              {/* ── Data Management section ── */}
+              {/* ── Data Management — outside the Letterboxd group ── */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
                   <RefreshCw className="size-4 text-amber-400" />
