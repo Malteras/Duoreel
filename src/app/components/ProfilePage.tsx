@@ -19,8 +19,9 @@ import {
   AlertDialogTrigger,
 } from './ui/alert-dialog';
 import {
-  Mail, Bookmark, Upload, Link as LinkIcon, Loader2,
-  RefreshCw, LogOut, Minimize2, Maximize2, Copy, RotateCcw, Unlink
+  Mail, Upload, Link as LinkIcon, Loader2,
+  RefreshCw, LogOut, Copy, RotateCcw, Unlink,
+  CheckCircle2, Bookmark, Film, Heart, Eye
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
@@ -70,6 +71,23 @@ export function ProfilePage() {
   const [letterboxdLastSynced, setLetterboxdLastSynced] = useState<Date | null>(null);
   const [letterboxdConnecting, setLetterboxdConnecting] = useState(false);
   const [letterboxdLastError, setLetterboxdLastError] = useState<string | null>(null);
+
+  // Stats state
+  const [stats, setStats] = useState<{
+    saved: number;
+    matches: number;
+    watched: number;
+  } | null>(null);
+
+  // Partner activity state
+  const [partnerStats, setPartnerStats] = useState<{
+    savedCount: number;
+  } | null>(null);
+
+  // Dirty tracking for profile form
+  const [originalName, setOriginalName] = useState('');
+  const [originalPhotoUrl, setOriginalPhotoUrl] = useState('');
+  const isDirty = name !== originalName || photoUrl !== originalPhotoUrl;
 
   const baseUrl = API_BASE_URL;
 
@@ -630,7 +648,7 @@ export function ProfilePage() {
 
               <Button
                 onClick={handleSaveProfile}
-                disabled={saving}
+                disabled={saving || !isDirty}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
