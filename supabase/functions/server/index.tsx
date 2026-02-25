@@ -30,6 +30,7 @@ async function createNotification(
     totalCount?: number;
     syncedCount?: number;
     movieTitles?: string[];
+    movieIds?: number[];
   }
 ) {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -860,6 +861,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
       const tmdbApiKey = Deno.env.get('TMDB_API_KEY');
       let synced = 0;
       const syncedTitles: string[] = [];
+      const syncedMovieIds: number[] = [];
       const failed: number[] = [];
 
       // Process in batches of 10 for performance
@@ -884,6 +886,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
               });
               synced++;
               syncedTitles.push(existing.title || `Movie ${item.tmdbMovieId}`);
+              syncedMovieIds.push(item.tmdbMovieId);
               return;
             }
 
@@ -926,6 +929,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
 
             synced++;
             syncedTitles.push(tmdbMovie.title || `Movie ${item.tmdbMovieId}`);
+            syncedMovieIds.push(item.tmdbMovieId);
           } catch (err) {
             console.error(`Failed to sync TMDB movie ${item.tmdbMovieId}:`, err);
             failed.push(item.tmdbMovieId);
@@ -946,6 +950,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
         await createNotification(user.id, 'letterboxd_sync', {
           syncedCount: synced,
           movieTitles: syncedTitles.slice(0, 3),
+          movieIds: syncedMovieIds.slice(0, 3),
         });
       }
 

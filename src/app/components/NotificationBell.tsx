@@ -32,6 +32,7 @@ interface Notification {
     totalCount?: number;
     syncedCount?: number;
     movieTitles?: string[];
+    movieIds?: number[];
   };
 }
 
@@ -261,6 +262,12 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
     } else if (notification.type === 'import_complete') {
       setIsOpen(false);
       navigate(notification.data.importType === 'watched' ? '/discover' : '/saved');
+    } else if (notification.type === 'letterboxd_sync') {
+      setIsOpen(false);
+      const firstMovieId = notification.data.movieIds?.[0];
+      if (firstMovieId) {
+        navigate(`/discover?movie=${firstMovieId}`);
+      }
     }
   };
 
