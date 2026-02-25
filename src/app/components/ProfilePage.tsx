@@ -920,11 +920,7 @@ export function ProfilePage() {
               <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-4 space-y-5">
                 {/* Letterboxd branded header */}
                 <div className="flex items-center gap-2.5">
-                  <svg className="size-5 flex-shrink-0" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="150" cy="250" r="120" fill="#FF8000"/>
-                    <circle cx="250" cy="250" r="120" fill="#00E054" fillOpacity="0.75"/>
-                    <circle cx="350" cy="250" r="120" fill="#40BCF4" fillOpacity="0.75"/>
-                  </svg>
+                  <img src="https://a.ltrbxd.com/logos/letterboxd-decal-dots-pos-rgb-500px.png" alt="Letterboxd" className="h-4 flex-shrink-0" />
                   <h3 className="text-white font-semibold text-sm">Letterboxd</h3>
                 </div>
 
