@@ -16,7 +16,7 @@ interface NotificationBellProps {
 
 interface Notification {
   id: string;
-  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete';
+  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete' | 'letterboxd_sync';
   read: boolean;
   createdAt: number;
   data: {
@@ -30,6 +30,8 @@ interface Notification {
     importedCount?: number;
     failedCount?: number;
     totalCount?: number;
+    syncedCount?: number;
+    movieTitles?: string[];
   };
 }
 
@@ -366,6 +368,30 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           <>
             <strong className="text-emerald-400">Import complete!</strong>{' '}
             All {data.importedCount} {importLabel} imported successfully!
+          </>
+        );
+        break;
+
+      case 'letterboxd_sync':
+        icon = (
+          <div className="size-10 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+            <Check className="size-5 text-emerald-400" />
+          </div>
+        );
+        const titles = data.movieTitles || [];
+        const remaining = (data.syncedCount || 0) - titles.length;
+        message = (
+          <>
+            <strong className="text-emerald-400">Letterboxd synced!</strong>{' '}
+            {titles.length > 0 ? (
+              <>
+                <strong className="text-white">{titles.join(', ')}</strong>
+                {remaining > 0 && <> and {remaining} more</>}
+                {' '}marked as watched
+              </>
+            ) : (
+              <>{data.syncedCount} movie{data.syncedCount === 1 ? '' : 's'} marked as watched</>
+            )}
           </>
         );
         break;

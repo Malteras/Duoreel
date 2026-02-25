@@ -16,7 +16,7 @@ const supabase = createClient(
 // Helper function to create notifications
 async function createNotification(
   userId: string,
-  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete',
+  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete' | 'letterboxd_sync',
   data: {
     fromUserId?: string;
     fromName?: string;
@@ -28,6 +28,8 @@ async function createNotification(
     importedCount?: number;
     failedCount?: number;
     totalCount?: number;
+    syncedCount?: number;
+    movieTitles?: string[];
   }
 ) {
   const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -857,6 +859,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
 
       const tmdbApiKey = Deno.env.get('TMDB_API_KEY');
       let synced = 0;
+      const syncedTitles: string[] = [];
       const failed: number[] = [];
 
       // Process in batches of 10 for performance
@@ -880,6 +883,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
                 timestamp: Date.now(),
               });
               synced++;
+              syncedTitles.push(existing.title || `Movie ${item.tmdbMovieId}`);
               return;
             }
 
@@ -921,6 +925,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
             });
 
             synced++;
+            syncedTitles.push(tmdbMovie.title || `Movie ${item.tmdbMovieId}`);
           } catch (err) {
             console.error(`Failed to sync TMDB movie ${item.tmdbMovieId}:`, err);
             failed.push(item.tmdbMovieId);
@@ -935,6 +940,13 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
           letterboxdLastSyncGuid: newItems[0].guid,
         };
         await kv.set(`user:${user.id}`, updatedProfile);
+      }
+
+      if (synced > 0) {
+        await createNotification(user.id, 'letterboxd_sync', {
+          syncedCount: synced,
+          movieTitles: syncedTitles.slice(0, 3),
+        });
       }
 
       console.log(`Letterboxd sync for user ${user.id}: ${synced} synced, ${failed.length} failed`);
