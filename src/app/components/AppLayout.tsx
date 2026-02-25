@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router';
 import { Film, Bookmark, Heart } from 'lucide-react';
 import { toast } from 'sonner';
@@ -264,6 +264,29 @@ export function AppLayout() {
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30_000);
     return () => clearInterval(interval);
+  }, [accessToken]);
+
+  // ─── Auto-sync Letterboxd on app load ────────────────────────────────────
+  const hasAutoSyncedLetterboxd = useRef(false);
+  useEffect(() => {
+    if (!accessToken || hasAutoSyncedLetterboxd.current) return;
+    hasAutoSyncedLetterboxd.current = true;
+
+    // Fire-and-forget: silently sync Letterboxd if user has it connected
+    fetch(`${API_BASE_URL}/letterboxd/sync`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.synced > 0) {
+          toast.success(`✅ Synced ${data.synced} new movie${data.synced === 1 ? '' : 's'} from Letterboxd`);
+        }
+        // If synced === 0 or user has no Letterboxd connected, do nothing (fully silent)
+      })
+      .catch(() => {
+        // Silently ignore — don't bother user with sync errors on app load
+      });
   }, [accessToken]);
 
   const handleSignOut = async () => {

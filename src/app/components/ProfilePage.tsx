@@ -508,14 +508,6 @@ export function ProfilePage() {
     }
   };
 
-  // ─── Auto-sync Letterboxd on load ──────────────────────────────────────────
-  const hasAutoSynced = useRef(false);
-  useEffect(() => {
-    if (!accessToken || !letterboxdUsername || hasAutoSynced.current) return;
-    hasAutoSynced.current = true;
-    handleLetterboxdSync(true); // true = silent mode (no toast if 0 new movies)
-  }, [letterboxdUsername, accessToken]);
-
   // ─── Format relative time helper ───────────────────────────────────────────
   const formatRelativeTime = (date: Date): string => {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
