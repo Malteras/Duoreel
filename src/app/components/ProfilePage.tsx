@@ -958,7 +958,7 @@ export function ProfilePage() {
                         disabled={letterboxdSyncing}
                         variant="outline"
                         size="sm"
-                        className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+                        className="bg-slate-800/80 border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 hover:text-white"
                       >
                         {letterboxdSyncing
                           ? <Loader2 className="size-3.5 mr-2 animate-spin" />
@@ -1065,9 +1065,10 @@ export function ProfilePage() {
                   onClick={handleUpdateImdbRatings}
                   disabled={updatingImdb}
                   variant="outline"
-                  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+                  size="sm"
+                  className="bg-slate-800/80 border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 hover:text-white"
                 >
-                  {updatingImdb ? <Loader2 className="size-4 mr-2 animate-spin" /> : <RefreshCw className="size-4 mr-2" />}
+                  {updatingImdb ? <Loader2 className="size-3.5 mr-2 animate-spin" /> : <RefreshCw className="size-3.5 mr-2" />}
                   Refresh IMDb Ratings
                 </Button>
                 <p className="text-slate-500 text-xs mt-2">
