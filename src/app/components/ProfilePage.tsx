@@ -91,7 +91,7 @@ export function ProfilePage() {
 
   const baseUrl = API_BASE_URL;
 
-  // ─── Fetch profile + partner on mount ───────────────────────────
+  // ─── Fetch profile + partner + stats on mount ──────────────────
   useEffect(() => {
     if (!accessToken) return;
 
@@ -114,6 +114,8 @@ export function ProfilePage() {
         setProfile(profileData);
         setName(profileData.name || '');
         setPhotoUrl(profileData.photoUrl || '');
+        setOriginalName(profileData.name || '');
+        setOriginalPhotoUrl(profileData.photoUrl || '');
         if (profileData.letterboxdUsername) {
           setLetterboxdUsername(profileData.letterboxdUsername);
         }
@@ -126,6 +128,48 @@ export function ProfilePage() {
         const inviteData = await inviteCodeRes.json();
         if (inviteData.code) {
           setInviteCode(inviteData.code);
+        }
+
+        // Fetch stats (non-blocking — page works without them)
+        try {
+          const [likedRes, matchesRes, watchedRes] = await Promise.all([
+            fetch(`${baseUrl}/movies/liked`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }),
+            fetch(`${baseUrl}/movies/matches`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }),
+            fetch(`${baseUrl}/movies/watched`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }),
+          ]);
+
+          const likedData = await likedRes.json();
+          const matchesData = await matchesRes.json();
+          const watchedData = await watchedRes.json();
+
+          setStats({
+            saved: likedData.movies?.length || 0,
+            matches: matchesData.movies?.length || 0,
+            watched: watchedData.movies?.length || 0,
+          });
+
+          // If partner connected, get partner's saved count
+          if (partnerData.partner) {
+            try {
+              const partnerLikedRes = await fetch(`${baseUrl}/movies/partner-liked`, {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              });
+              const partnerLikedData = await partnerLikedRes.json();
+              setPartnerStats({
+                savedCount: partnerLikedData.movies?.length || 0,
+              });
+            } catch {
+              // Non-critical
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching stats:', error);
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
@@ -155,6 +199,8 @@ export function ProfilePage() {
       const data = await response.json();
       if (data.success) {
         setProfile({ ...profile, ...data.profile });
+        setOriginalName(name);
+        setOriginalPhotoUrl(photoUrl);
         toast.success('Profile updated successfully');
       }
     } catch (error) {
@@ -482,7 +528,6 @@ export function ProfilePage() {
   };
 
   // ─── Sign out ───────────────────────────────────────────────────
-  // Uses AppLayout's handleSignOut which properly signs out from Supabase + navigates
   const handleSignOutClick = () => onSignOut();
 
   // ─── Progress bar component ─────────────────────────────────────
@@ -519,145 +564,66 @@ export function ProfilePage() {
   return (
     <>
       <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Page header */}
+
+        {/* ══════════════════════════════════════════════════════════
+            PROFILE HERO — Identity + Stats at a glance
+            ══════════════════════════════════════════════════════════ */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">Profile & Settings</h1>
-          <p className="text-slate-400 mt-1">Manage your account, partner connection, and imports</p>
+          <div className="flex items-center gap-5 mb-6">
+            {photoUrl && !photoUrl.startsWith('linear-gradient') ? (
+              <Avatar className="size-20 ring-2 ring-slate-600 ring-offset-2 ring-offset-slate-900">
+                <AvatarImage src={photoUrl} />
+                <AvatarFallback className="bg-blue-600 text-white text-2xl">
+                  {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div
+                className="size-20 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 ring-2 ring-slate-600 ring-offset-2 ring-offset-slate-900"
+                style={{ background: photoUrl?.startsWith('linear-gradient') ? photoUrl : 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
+              >
+                {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl font-bold text-white truncate">{name || 'Movie Lover'}</h1>
+              <p className="text-slate-400 text-sm truncate">{userEmail}</p>
+            </div>
+          </div>
+
+          {/* Stats row */}
+          {stats && (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Bookmark className="size-3.5 text-blue-400" />
+                  <span className="text-xs text-slate-400 font-medium">Saved</span>
+                </div>
+                <p className="text-xl font-bold text-white">{stats.saved}</p>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Heart className="size-3.5 text-pink-400" />
+                  <span className="text-xs text-slate-400 font-medium">Matches</span>
+                </div>
+                <p className="text-xl font-bold text-white">{stats.matches}</p>
+              </div>
+              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1">
+                  <Eye className="size-3.5 text-emerald-400" />
+                  <span className="text-xs text-slate-400 font-medium">Watched</span>
+                </div>
+                <p className="text-xl font-bold text-white">{stats.watched}</p>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="space-y-6">
 
-          {/* ── Card: Your Profile ────────────────────────────── */}
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white">Your Profile</CardTitle>
-              <CardDescription className="text-slate-400">
-                Update your personal information
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="space-y-4">
-                {/* Current avatar display */}
-                <div className="flex items-center gap-5">
-                  {photoUrl && !photoUrl.startsWith('linear-gradient') ? (
-                    <Avatar className="size-20">
-                      <AvatarImage src={photoUrl} />
-                      <AvatarFallback className="bg-blue-600 text-white text-2xl">
-                        {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                  ) : (
-                    <div
-                      className="size-20 rounded-full flex items-center justify-center text-white text-2xl font-bold flex-shrink-0"
-                      style={{ background: photoUrl?.startsWith('linear-gradient') ? photoUrl : 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
-                    >
-                      {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
-                    </div>
-                  )}
-                  <div className="flex-1">
-                    <p className="text-white font-medium">{name || 'Your avatar'}</p>
-                    <p className="text-slate-500 text-xs mt-0.5">Choose a style below or add a custom image</p>
-                  </div>
-                </div>
-
-                {/* Gradient presets */}
-                <div>
-                  <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 block">Choose an avatar</label>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {avatarPresets.map((preset) => (
-                      <button
-                        key={preset.id}
-                        onClick={() => { setPhotoUrl(preset.gradient); setShowCustomUrl(false); }}
-                        className={`size-10 rounded-full flex items-center justify-center text-white text-sm font-bold transition-all hover:scale-110 ${
-                          photoUrl === preset.gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''
-                        }`}
-                        style={{ background: preset.gradient }}
-                      >
-                        {name ? name[0]?.toUpperCase() : '?'}
-                      </button>
-                    ))}
-                    {/* Remove photo option — reverts to plain initial */}
-                    <button
-                      onClick={() => { setPhotoUrl(''); setShowCustomUrl(false); }}
-                      className={`size-10 rounded-full flex items-center justify-center text-slate-400 text-xs font-medium border border-slate-600 border-dashed transition-all hover:scale-110 hover:border-slate-400 ${
-                        !photoUrl ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''
-                      }`}
-                    >
-                      None
-                    </button>
-                  </div>
-                </div>
-
-                {/* Custom URL — collapsed by default */}
-                <div>
-                  {!showCustomUrl ? (
-                    <button
-                      onClick={() => setShowCustomUrl(true)}
-                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
-                    >
-                      Use a custom image URL instead
-                    </button>
-                  ) : (
-                    <div className="space-y-1">
-                      <Label htmlFor="photoUrl" className="text-slate-400 text-xs">Custom image URL</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="photoUrl"
-                          value={photoUrl?.startsWith('linear-gradient') ? '' : photoUrl}
-                          onChange={(e) => setPhotoUrl(e.target.value)}
-                          placeholder="https://example.com/photo.jpg"
-                          className="bg-slate-900 border-slate-700 text-white text-sm"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowCustomUrl(false)}
-                          className="text-slate-400 hover:bg-slate-700 hover:text-white flex-shrink-0"
-                        >
-                          Done
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="email" className="text-white text-sm">Email</Label>
-                <div className="flex items-center gap-2">
-                  <Mail className="size-4 text-slate-500 flex-shrink-0" />
-                  <Input
-                    id="email"
-                    value={userEmail || ''}
-                    disabled
-                    className="bg-slate-900 border-slate-700 text-slate-400"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="name" className="text-white text-sm">Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  className="bg-slate-900 border-slate-700 text-white"
-                />
-              </div>
-
-              <Button
-                onClick={handleSaveProfile}
-                disabled={saving || !isDirty}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
-                Save Profile
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* ── Card: Partner Connection ──────────────────────── */}
+          {/* ══════════════════════════════════════════════════════════
+              CARD 1: PARTNER CONNECTION — Promoted to top
+              ══════════════════════════════════════════════════════════ */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
               <CardTitle className="text-white">Partner Connection</CardTitle>
@@ -669,18 +635,32 @@ export function ProfilePage() {
               {partner ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-4 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-                    <Avatar className="size-14">
-                      <AvatarImage src={partner.photoUrl} />
-                      <AvatarFallback className="bg-green-600 text-white text-xl">
+                    {partner.photoUrl && !partner.photoUrl.startsWith('linear-gradient') ? (
+                      <Avatar className="size-14">
+                        <AvatarImage src={partner.photoUrl} />
+                        <AvatarFallback className="bg-green-600 text-white text-xl">
+                          {partner.name?.[0]?.toUpperCase() || partner.email?.[0]?.toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <div
+                        className="size-14 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
+                        style={{ background: partner.photoUrl?.startsWith('linear-gradient') ? partner.photoUrl : 'linear-gradient(135deg, #22c55e, #14b8a6)' }}
+                      >
                         {partner.name?.[0]?.toUpperCase() || partner.email?.[0]?.toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                      </div>
+                    )}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 text-green-400 font-medium text-sm mb-1">
-                        <Bookmark className="size-3.5 fill-green-400" />
+                        <CheckCircle2 className="size-3.5" />
                         Connected
                       </div>
                       <p className="text-white font-semibold">{partner.name || 'Partner'}</p>
+                      {partnerStats && (
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          {partnerStats.savedCount} movie{partnerStats.savedCount === 1 ? '' : 's'} saved
+                        </p>
+                      )}
                     </div>
                   </div>
                   <AlertDialog>
@@ -805,32 +785,281 @@ export function ProfilePage() {
             </CardContent>
           </Card>
 
-          {/* ── Card: Import & Data ──────────────────────────── */}
+          {/* ══════════════════════════════════════════════════════════
+              CARD 2: EDIT PROFILE — Demoted (set-once content)
+              ══════════════════════════════════════════════════════════ */}
           <Card className="bg-slate-800/50 border-slate-700">
             <CardHeader>
-              <CardTitle className="text-white">Import & Data</CardTitle>
+              <CardTitle className="text-white">Edit Profile</CardTitle>
               <CardDescription className="text-slate-400">
-                Import your movie lists from Letterboxd or refresh cached ratings
+                Update your name and avatar
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  variant="outline"
-                  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                  onClick={() => watchlist.setDialogOpen(true)}
-                >
-                  <Upload className="size-4 mr-2" />
-                  Import Watchlist
-                </Button>
-                <Button
-                  variant="outline"
-                  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                  onClick={() => watched.setDialogOpen(true)}
-                >
-                  <Upload className="size-4 mr-2" />
-                  Import Watched Movies
-                </Button>
+            <CardContent className="space-y-5">
+              <div className="space-y-4">
+                {/* Avatar preview + presets */}
+                <div className="flex items-center gap-5">
+                  {photoUrl && !photoUrl.startsWith('linear-gradient') ? (
+                    <Avatar className="size-16">
+                      <AvatarImage src={photoUrl} />
+                      <AvatarFallback className="bg-blue-600 text-white text-xl">
+                        {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  ) : (
+                    <div
+                      className="size-16 rounded-full flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
+                      style={{ background: photoUrl?.startsWith('linear-gradient') ? photoUrl : 'linear-gradient(135deg, #3b82f6, #8b5cf6)' }}
+                    >
+                      {name ? name[0]?.toUpperCase() : userEmail?.[0]?.toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-white font-medium">{name || 'Your avatar'}</p>
+                    <p className="text-slate-500 text-xs mt-0.5">Choose a style below or add a custom image</p>
+                  </div>
+                </div>
+
+                {/* Gradient presets */}
+                <div>
+                  <label className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-2 block">Choose an avatar</label>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {avatarPresets.map((preset) => (
+                      <button
+                        key={preset.id}
+                        onClick={() => { setPhotoUrl(preset.gradient); setShowCustomUrl(false); }}
+                        className={`size-10 rounded-full flex items-center justify-center text-white text-sm font-bold transition-all hover:scale-110 ${
+                          photoUrl === preset.gradient ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''
+                        }`}
+                        style={{ background: preset.gradient }}
+                      >
+                        {name ? name[0]?.toUpperCase() : '?'}
+                      </button>
+                    ))}
+                    {/* Default option — shows blue initial (replaces confusing "None" dashed circle) */}
+                    <button
+                      onClick={() => { setPhotoUrl(''); setShowCustomUrl(false); }}
+                      className={`size-10 rounded-full flex items-center justify-center text-white text-sm font-bold transition-all hover:scale-110 bg-blue-600 ${
+                        !photoUrl ? 'ring-2 ring-white ring-offset-2 ring-offset-slate-800' : ''
+                      }`}
+                    >
+                      {name ? name[0]?.toUpperCase() : '?'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Custom URL — collapsed by default */}
+                <div>
+                  {!showCustomUrl ? (
+                    <button
+                      onClick={() => setShowCustomUrl(true)}
+                      className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    >
+                      Use a custom image URL instead
+                    </button>
+                  ) : (
+                    <div className="space-y-1">
+                      <Label htmlFor="photoUrl" className="text-slate-400 text-xs">Custom image URL</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          id="photoUrl"
+                          value={photoUrl?.startsWith('linear-gradient') ? '' : photoUrl}
+                          onChange={(e) => setPhotoUrl(e.target.value)}
+                          placeholder="https://example.com/photo.jpg"
+                          className="bg-slate-900 border-slate-700 text-white text-sm"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowCustomUrl(false)}
+                          className="text-slate-400 hover:bg-slate-700 hover:text-white flex-shrink-0"
+                        >
+                          Done
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-white text-sm">Name</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Your name"
+                  className="bg-slate-900 border-slate-700 text-white"
+                />
+              </div>
+
+              <Button
+                onClick={handleSaveProfile}
+                disabled={saving || !isDirty}
+                className={`transition-all ${isDirty ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-700 text-slate-400 cursor-not-allowed'}`}
+              >
+                {saving ? <Loader2 className="size-4 mr-2 animate-spin" /> : null}
+                {isDirty ? 'Save Changes' : 'No Changes'}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* ══════════════════════════════════════════════════════════
+              CARD 3: INTEGRATIONS & IMPORTS — Merged card
+              ══════════════════════════════════════════════════════════ */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white">Integrations & Imports</CardTitle>
+              <CardDescription className="text-slate-400">
+                Connect services and import your movie history
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+
+              {/* ── Letterboxd section ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-base">🎬</span>
+                  <h3 className="text-white font-semibold text-sm">Letterboxd</h3>
+                </div>
+
+                {letterboxdUsername ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                      <div className="size-10 rounded-full bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-sm flex-shrink-0">
+                        LB
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-semibold">@{letterboxdUsername}</p>
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          {letterboxdSyncing
+                            ? 'Syncing...'
+                            : letterboxdLastSynced
+                              ? `Last synced ${formatRelativeTime(letterboxdLastSynced)}`
+                              : 'Syncs automatically on app load'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {letterboxdLastError && (
+                      <div className="flex items-start gap-2 text-amber-400 text-xs p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                        <svg className="size-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        <span>Last sync failed: {letterboxdLastError}</span>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleLetterboxdSync(false)}
+                        disabled={letterboxdSyncing}
+                        variant="outline"
+                        size="sm"
+                        className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+                      >
+                        {letterboxdSyncing
+                          ? <Loader2 className="size-3.5 mr-2 animate-spin" />
+                          : <RefreshCw className="size-3.5 mr-2" />}
+                        Sync Now
+                      </Button>
+                      <Button
+                        onClick={handleLetterboxdReset}
+                        disabled={letterboxdSyncing}
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-400 hover:bg-slate-700/50 hover:text-white cursor-pointer"
+                      >
+                        <RotateCcw className="size-3.5 mr-2" />
+                        Reset & Full Sync
+                      </Button>
+                      <Button
+                        onClick={handleLetterboxdDisconnect}
+                        variant="outline"
+                        size="sm"
+                        className="ml-auto bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
+                      >
+                        <Unlink className="size-3.5 mr-2" />
+                        Disconnect
+                      </Button>
+                    </div>
+
+                    <p className="text-slate-500 text-xs flex items-start gap-1.5">
+                      <svg className="size-3.5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <span>Auto-syncs your ~50 most recent entries. For full history, use CSV import below.</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-slate-400 text-sm">
+                      Connect your Letterboxd account to automatically sync your watch history.
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={letterboxdInput}
+                        onChange={(e) => setLetterboxdInput(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleLetterboxdConnect()}
+                        placeholder="username or letterboxd.com/username"
+                        className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
+                      />
+                      <Button
+                        onClick={handleLetterboxdConnect}
+                        disabled={letterboxdConnecting || !letterboxdInput.trim()}
+                        className="bg-emerald-600 hover:bg-emerald-700 flex-shrink-0"
+                      >
+                        {letterboxdConnecting
+                          ? <Loader2 className="size-4 mr-2 animate-spin" />
+                          : null}
+                        Connect
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-slate-700" />
+
+              {/* ── CSV Import section ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Upload className="size-4 text-blue-400" />
+                  <h3 className="text-white font-semibold text-sm">CSV Import</h3>
+                </div>
+                <p className="text-slate-400 text-sm mb-3">
+                  Import your full Letterboxd history via CSV export files.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant="outline"
+                    className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+                    onClick={() => watchlist.setDialogOpen(true)}
+                  >
+                    <Upload className="size-4 mr-2" />
+                    Import Watchlist
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+                    onClick={() => watched.setDialogOpen(true)}
+                  >
+                    <Upload className="size-4 mr-2" />
+                    Import Watched Movies
+                  </Button>
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="border-t border-slate-700" />
+
+              {/* ── Data Management section ── */}
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <RefreshCw className="size-4 text-amber-400" />
+                  <h3 className="text-white font-semibold text-sm">Data Management</h3>
+                </div>
                 <Button
                   onClick={handleUpdateImdbRatings}
                   disabled={updatingImdb}
@@ -840,138 +1069,30 @@ export function ProfilePage() {
                   {updatingImdb ? <Loader2 className="size-4 mr-2 animate-spin" /> : <RefreshCw className="size-4 mr-2" />}
                   Refresh IMDb Ratings
                 </Button>
+                <p className="text-slate-500 text-xs mt-2">
+                  Re-fetches IMDb ratings for all your saved movies. Useful after bulk imports.
+                </p>
               </div>
             </CardContent>
           </Card>
 
-          {/* ── Card: Letterboxd Sync ────────────────────────────── */}
-          <Card className="bg-slate-800/50 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <span>🎬</span> Letterboxd Sync
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Automatically mark movies as watched when you rate them on Letterboxd
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {letterboxdUsername ? (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                    <div className="size-10 rounded-full bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-sm flex-shrink-0">
-                      LB
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-semibold">@{letterboxdUsername}</p>
-                      <p className="text-slate-400 text-xs mt-0.5">
-                        {letterboxdSyncing
-                          ? 'Syncing...'
-                          : letterboxdLastSynced
-                            ? `Last synced ${formatRelativeTime(letterboxdLastSynced)}`
-                            : 'Syncs automatically on app load'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {letterboxdLastError && (
-                    <div className="flex items-start gap-2 text-amber-400 text-xs p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
-                      <svg className="size-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      <span>Last sync failed: {letterboxdLastError}</span>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleLetterboxdSync(false)}
-                      disabled={letterboxdSyncing}
-                      variant="outline"
-                      size="sm"
-                      className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
-                    >
-                      {letterboxdSyncing
-                        ? <Loader2 className="size-3.5 mr-2 animate-spin" />
-                        : <RefreshCw className="size-3.5 mr-2" />}
-                      Sync Now
-                    </Button>
-                    <Button
-                      onClick={handleLetterboxdReset}
-                      disabled={letterboxdSyncing}
-                      variant="ghost"
-                      size="sm"
-                      className="text-slate-400 hover:bg-slate-700/50 hover:text-white cursor-pointer"
-                    >
-                      <RotateCcw className="size-3.5 mr-2" />
-                      Reset & Full Sync
-                    </Button>
-                    <Button
-                      onClick={handleLetterboxdDisconnect}
-                      variant="outline"
-                      size="sm"
-                      className="ml-auto bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
-                    >
-                      <Unlink className="size-3.5 mr-2" />
-                      Disconnect
-                    </Button>
-                  </div>
-
-                  <p className="text-slate-500 text-xs mt-2 flex items-start gap-1.5">
-                    <svg className="size-3.5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <span>Syncs your ~50 most recent entries. For full history, use CSV import above.</span>
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-slate-400 text-sm">
-                    Enter your Letterboxd username or profile URL. Movies you rate will be
-                    automatically marked as watched in DuoReel.
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      value={letterboxdInput}
-                      onChange={(e) => setLetterboxdInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleLetterboxdConnect()}
-                      placeholder="username or letterboxd.com/username"
-                      className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
-                    />
-                    <Button
-                      onClick={handleLetterboxdConnect}
-                      disabled={letterboxdConnecting || !letterboxdInput.trim()}
-                      className="bg-emerald-600 hover:bg-emerald-700 flex-shrink-0"
-                    >
-                      {letterboxdConnecting
-                        ? <Loader2 className="size-4 mr-2 animate-spin" />
-                        : null}
-                      Connect
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* ── Card: Account ────────────────────────────────── */}
-          <Card className="bg-slate-800/50 border-red-900/30">
-            <CardHeader>
-              <CardTitle className="text-white">Account</CardTitle>
-              <CardDescription className="text-slate-400">
-                Manage your account
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button
-                onClick={handleSignOutClick}
-                variant="outline"
-                className="bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
-              >
-                <LogOut className="size-4 mr-2" />
-                Sign Out
-              </Button>
-            </CardContent>
-          </Card>
+          {/* ══════════════════════════════════════════════════════════
+              FOOTER: Sign Out — replaces the old Account card
+              ══════════════════════════════════════════════════════════ */}
+          <div className="flex items-center justify-between pt-2 pb-8">
+            <p className="text-slate-500 text-xs">
+              Signed in as {userEmail}
+            </p>
+            <Button
+              onClick={handleSignOutClick}
+              variant="ghost"
+              size="sm"
+              className="text-slate-400 hover:text-red-400 hover:bg-transparent"
+            >
+              <LogOut className="size-3.5 mr-2" />
+              Sign Out
+            </Button>
+          </div>
 
         </div>
       </div>
