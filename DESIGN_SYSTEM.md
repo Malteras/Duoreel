@@ -1,5 +1,7 @@
 # DuoReel Guidelines
 
+> **For Figma Make:** This file is the single source of truth for all UI decisions. Before writing any component, button, badge, layout, or color — check here first. If a pattern exists in this document, use it exactly as shown. Do not improvise or introduce new styles.
+
 ## General Guidelines
 
 - Only use absolute positioning when necessary — prefer flexbox and grid for all layouts
@@ -53,7 +55,9 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 
 ### Buttons
 
-**Primary (CTA):**
+There are exactly **6** button patterns in this app. Always use one of these — never invent new variants.
+
+**1. Primary (CTA):**
 
 ```tsx
 <Button className="bg-pink-600 hover:bg-pink-700 text-white font-semibold cursor-pointer">
@@ -61,7 +65,7 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 </Button>
 ```
 
-**Secondary/Outline (slate theme):**
+**2. Secondary/Outline (slate theme) — the default for most actions:**
 
 ```tsx
 <Button
@@ -72,54 +76,22 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 </Button>
 ```
 
-**Ghost (text only, minimal):**
+**3. Ghost (text-only, minimal — for low-priority actions):**
+
+Ghost buttons have NO background and NO border at rest. On hover, they get a subtle slate tint only — never a filled solid background.
 
 ```tsx
 <Button
   variant="ghost"
-  className="text-slate-400 hover:bg-slate-700 hover:text-white cursor-pointer"
+  className="text-slate-400 hover:bg-slate-700/50 hover:text-white cursor-pointer"
 >
   Button Text
 </Button>
 ```
 
-**Icon button (overlay on card):**
+⚠️ **Never** give ghost buttons `bg-slate-800`, `border-*`, or any filled hover background like `hover:bg-slate-700`. The hover must be semi-transparent (`/50`) so the button stays visually light.
 
-```tsx
-<Button
-  size="icon"
-  variant="secondary"
-  className="rounded-full bg-slate-800/90 hover:bg-slate-700 cursor-pointer"
->
-  <Icon className="size-5 text-white" />
-</Button>
-```
-
-**Saved/active icon button:**
-
-```tsx
-<Button
-  size="icon"
-  variant="default"
-  className="rounded-full bg-green-500 hover:bg-green-600 cursor-pointer"
->
-  <Bookmark className="size-5 fill-white text-white" />
-</Button>
-```
-
-**Destructive/Error (ghost red, for negative actions):**
-
-```tsx
-<Button
-  variant="ghost"
-  className="text-slate-500 hover:text-red-400 hover:bg-red-950/30 cursor-pointer"
->
-  <Trash2 className="size-4 mr-2" />
-  Delete Item
-</Button>
-```
-
-**Destructive/Error (outline, for critical negative actions like Sign Out or Disconnect Partner):**
+**4. Destructive/Outline (for critical negative actions like Sign Out, Disconnect):**
 
 ```tsx
 <Button
@@ -131,9 +103,45 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 </Button>
 ```
 
-Never mix button variants outside these patterns. Always use `transition-all` or `transition-colors` for hover states.
+**5. Icon button (overlay on card):**
 
-**IMPORTANT:** All buttons (including native `<button>` elements) must have `cursor-pointer` class. Buttons should feel clickable on hover.
+```tsx
+<Button
+  size="icon"
+  variant="secondary"
+  className="rounded-full bg-slate-800/90 hover:bg-slate-700 cursor-pointer"
+>
+  <Icon className="size-5 text-white" />
+</Button>
+```
+
+**6. Saved/active icon button:**
+
+```tsx
+<Button
+  size="icon"
+  variant="default"
+  className="rounded-full bg-green-500 hover:bg-green-600 cursor-pointer"
+>
+  <Bookmark className="size-5 fill-white text-white" />
+</Button>
+```
+
+**Disabled / loading state** — applies to any button variant:
+
+```tsx
+<Button disabled className="... opacity-50 cursor-not-allowed">
+  <Loader2 className="size-4 mr-2 animate-spin" />
+  Loading...
+</Button>
+```
+
+**Rules:**
+
+- All buttons must have `cursor-pointer` (or `cursor-not-allowed` when disabled)
+- Always include `transition-colors` or `transition-all` for hover states
+- Never mix variants outside these 6 patterns
+- Ghost buttons must never have a solid or opaque hover background
 
 ### Navigation Tabs
 
@@ -223,24 +231,24 @@ Always use `lucide-react`. Icon sizes follow this convention:
 - Standalone/action: `size-5`
 - Large decorative: `size-6` or `size-8`
 
+---
 
-### Viewport Height on Mobile
+## Viewport Height on Mobile
 
-Never use `100vh` or `min-h-screen` alone for full-height layouts. Mobile browsers (Chrome, Brave, Samsung Internet) calculate `100vh` against the total viewport including browser chrome (address bar, tab strip), causing elements to be clipped or pushed off-screen when the browser UI is visible.
+Never use `100vh` or `min-h-screen` alone for full-height layouts. Mobile browsers calculate `100vh` against the total viewport including browser chrome, causing elements to be clipped.
 
 **Always pair `min-h-screen` with a `dvh` style override:**
+
 ```tsx
 <div className="min-h-screen ..." style={{ minHeight: '100dvh' }}>
 ```
 
 **For modals, use `dvh` arbitrary values instead of `vh`:**
+
 ```tsx
 // ✅ correct
 <DialogContent className="max-h-[90dvh] ...">
-<ScrollArea className="max-h-[90dvh]">
 
 // ❌ wrong — clips on mobile browsers
 <DialogContent className="max-h-[90vh] ...">
 ```
-
-`dvh` (dynamic viewport height) updates in real time based on the actually visible viewport. It is supported on all modern mobile browsers and behaves identically to `vh` on desktop.

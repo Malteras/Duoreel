@@ -882,7 +882,7 @@ export function ProfilePage() {
                       disabled={letterboxdSyncing}
                       variant="ghost"
                       size="sm"
-                      className="text-slate-400 hover:text-slate-300"
+                      className="text-slate-400 hover:bg-slate-700/50 hover:text-white cursor-pointer"
                     >
                       <RotateCcw className="size-3.5 mr-2" />
                       Reset & Full Sync
