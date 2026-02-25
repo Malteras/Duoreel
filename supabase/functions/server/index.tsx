@@ -330,7 +330,7 @@ app.post("/make-server-5623fde1/profile", async (c) => {
     }
 
     const body = await c.req.json();
-    const { name, photoUrl, partnerId } = body;
+    const { name, photoUrl, partnerId, letterboxdUsername, letterboxdLastSyncGuid } = body;
 
     const currentProfile = await kv.get(`user:${user.id}`) || {};
     const updatedProfile = {
@@ -338,6 +338,8 @@ app.post("/make-server-5623fde1/profile", async (c) => {
       ...(name !== undefined && { name }),
       ...(photoUrl !== undefined && { photoUrl }),
       ...(partnerId !== undefined && { partnerId }),
+      ...(letterboxdUsername !== undefined && { letterboxdUsername }),
+      ...(letterboxdLastSyncGuid !== undefined && { letterboxdLastSyncGuid }),
     };
 
     await kv.set(`user:${user.id}`, updatedProfile);
@@ -737,6 +739,214 @@ app.post("/make-server-5623fde1/partner/regenerate-invite", async (c) => {
   } catch (error) {
     console.error('Error regenerating invite code:', error);
     return c.json({ error: `Failed to regenerate invite code: ${error}` }, 500);
+  }
+});
+
+// ─── Letterboxd username validation ──────────────────────────────────────────
+app.post("/make-server-5623fde1/letterboxd/validate", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { username } = await c.req.json();
+    if (!username) return c.json({ error: 'Username required' }, 400);
+
+    // SSRF protection: validate username format
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      return c.json({ error: 'Invalid username format' }, 400);
+    }
+
+    const rssUrl = `https://letterboxd.com/${username}/rss/`;
+    const res = await fetch(rssUrl, { method: 'HEAD' });
+
+    if (res.ok) {
+      return c.json({ valid: true });
+    } else {
+      return c.json({ error: 'User not found' }, 404);
+    }
+  } catch (error) {
+    return c.json({ error: `Validation failed: ${error}` }, 502);
+  }
+});
+
+// ─── Letterboxd RSS Sync ──────────────────────────────────────────────────────
+app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
+  try {
+    const accessToken = c.req.header('Authorization')?.split(' ')[1];
+    if (!accessToken) return c.json({ error: 'Unauthorized' }, 401);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) return c.json({ error: 'Unauthorized' }, 401);
+
+    // Check for concurrent sync (prevent race condition)
+    const lockKey = `letterboxd:sync-lock:${user.id}`;
+    const existingLock = await kv.get(lockKey);
+    if (existingLock) {
+      return c.json({ error: 'Sync already in progress' }, 409);
+    }
+
+    // Set lock with 2-minute TTL
+    await kv.set(lockKey, { timestamp: Date.now() });
+    
+    try {
+      const profile = await kv.get(`user:${user.id}`);
+      const letterboxdUsername = profile?.letterboxdUsername;
+
+      if (!letterboxdUsername) {
+        return c.json({ error: 'No Letterboxd username set' }, 400);
+      }
+
+      // Fetch RSS feed (server-side, no CORS issues)
+      const rssUrl = `https://letterboxd.com/${letterboxdUsername}/rss/`;
+      const rssResponse = await fetch(rssUrl);
+      
+      if (rssResponse.status === 429) {
+        return c.json({ 
+          error: 'Letterboxd rate limit exceeded. Try again in a few minutes.' 
+        }, 429);
+      }
+      
+      if (!rssResponse.ok) {
+        return c.json({ error: `Failed to fetch Letterboxd RSS (HTTP ${rssResponse.status})` }, 502);
+      }
+
+      const rssText = await rssResponse.text();
+
+      // Parse RSS entries using regex (no XML lib needed for this structure)
+      const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+      const items: Array<{ guid: string; tmdbMovieId: number; watchedDate: string; rating: number | null }> = [];
+
+      let match;
+      while ((match = itemRegex.exec(rssText)) !== null) {
+        const itemXml = match[1];
+
+        // Only process movie entries (skip TV and lists)
+        const movieIdMatch = itemXml.match(/<tmdb:movieId>(\d+)<\/tmdb:movieId>/);
+        if (!movieIdMatch) continue;
+
+        const guidMatch = itemXml.match(/<guid[^>]*>([\s\S]*?)<\/guid>/);
+        const watchedDateMatch = itemXml.match(/<letterboxd:watchedDate>([\s\S]*?)<\/letterboxd:watchedDate>/);
+        const ratingMatch = itemXml.match(/<letterboxd:memberRating>([\s\S]*?)<\/letterboxd:memberRating>/);
+
+        if (!guidMatch) continue;
+
+        items.push({
+          guid: guidMatch[1].trim(),
+          tmdbMovieId: parseInt(movieIdMatch[1], 10),
+          watchedDate: watchedDateMatch?.[1]?.trim() || '',
+          rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
+        });
+      }
+
+      if (items.length === 0) {
+        return c.json({ synced: 0, message: 'No movie entries found in RSS feed' });
+      }
+
+      // Find new entries since last sync
+      const lastSyncGuid = profile?.letterboxdLastSyncGuid;
+      const lastSyncIndex = lastSyncGuid ? items.findIndex(i => i.guid === lastSyncGuid) : -1;
+      // Items at index 0 are newest; stop before the last-synced item
+      const newItems = lastSyncIndex === -1 ? items : items.slice(0, lastSyncIndex);
+
+      if (newItems.length === 0) {
+        return c.json({ synced: 0, message: 'No new entries since last sync' });
+      }
+
+      const tmdbApiKey = Deno.env.get('TMDB_API_KEY');
+      let synced = 0;
+      const failed: number[] = [];
+
+      // Process in batches of 10 for performance
+      const BATCH_SIZE = 10;
+      const batches = [];
+      for (let i = 0; i < newItems.length; i += BATCH_SIZE) {
+        batches.push(newItems.slice(i, i + BATCH_SIZE));
+      }
+
+      for (const batch of batches) {
+        await Promise.all(batch.map(async (item) => {
+          try {
+            // Check if already watched - skip TMDB fetch if so (optimization)
+            const existing = await kv.get(`watched:${user.id}:${item.tmdbMovieId}`);
+            if (existing) {
+              // Just update the rating and watched date
+              await kv.set(`watched:${user.id}:${item.tmdbMovieId}`, {
+                ...existing,
+                rating: item.rating,
+                letterboxdWatchedDate: item.watchedDate,
+                timestamp: Date.now(),
+              });
+              synced++;
+              return;
+            }
+
+            // Fetch full movie details from TMDB
+            const tmdbRes = await fetch(
+              `https://api.themoviedb.org/3/movie/${item.tmdbMovieId}?api_key=${tmdbApiKey}&append_to_response=credits,external_ids`
+            );
+
+            if (!tmdbRes.ok) {
+              failed.push(item.tmdbMovieId);
+              return;
+            }
+
+            const tmdbMovie = await tmdbRes.json();
+
+            const sanitizedMovie = {
+              id: tmdbMovie.id,
+              title: tmdbMovie.title || '',
+              poster_path: tmdbMovie.poster_path || null,
+              backdrop_path: tmdbMovie.backdrop_path || null,
+              overview: tmdbMovie.overview || '',
+              release_date: tmdbMovie.release_date || null,
+              vote_average: tmdbMovie.vote_average || 0,
+              vote_count: tmdbMovie.vote_count || 0,
+              genre_ids: (tmdbMovie.genres || []).map((g: any) => g.id),
+              genres: tmdbMovie.genres || [],
+              runtime: tmdbMovie.runtime || null,
+              original_language: tmdbMovie.original_language || null,
+              director: tmdbMovie.credits?.crew?.find((c: any) => c.job === 'Director')?.name || null,
+              actors: (tmdbMovie.credits?.cast || []).slice(0, 5).map((a: any) => a.name),
+              external_ids: tmdbMovie.external_ids || {},
+            };
+
+            await kv.set(`watched:${user.id}:${tmdbMovie.id}`, {
+              ...sanitizedMovie,
+              rating: item.rating,               // Letterboxd rating (0.5–5.0)
+              letterboxdWatchedDate: item.watchedDate,
+              timestamp: Date.now(),
+            });
+
+            synced++;
+          } catch (err) {
+            console.error(`Failed to sync TMDB movie ${item.tmdbMovieId}:`, err);
+            failed.push(item.tmdbMovieId);
+          }
+        }));
+      }
+
+      // Update last sync GUID to the newest item processed
+      if (newItems.length > 0) {
+        const updatedProfile = {
+          ...profile,
+          letterboxdLastSyncGuid: newItems[0].guid,
+        };
+        await kv.set(`user:${user.id}`, updatedProfile);
+      }
+
+      console.log(`Letterboxd sync for user ${user.id}: ${synced} synced, ${failed.length} failed`);
+      return c.json({ synced, failed: failed.length, total: newItems.length });
+
+    } finally {
+      // Always release lock
+      await kv.del(lockKey);
+    }
+  } catch (error) {
+    console.error('Letterboxd sync error:', error);
+    return c.json({ error: `Sync failed: ${error}` }, 500);
   }
 });
 

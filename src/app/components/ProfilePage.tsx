@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../../utils/api';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -63,6 +63,14 @@ export function ProfilePage() {
   // IMDb update state
   const [updatingImdb, setUpdatingImdb] = useState(false);
 
+  // Letterboxd sync state
+  const [letterboxdUsername, setLetterboxdUsername] = useState('');
+  const [letterboxdInput, setLetterboxdInput] = useState('');
+  const [letterboxdSyncing, setLetterboxdSyncing] = useState(false);
+  const [letterboxdLastSynced, setLetterboxdLastSynced] = useState<Date | null>(null);
+  const [letterboxdConnecting, setLetterboxdConnecting] = useState(false);
+  const [letterboxdLastError, setLetterboxdLastError] = useState<string | null>(null);
+
   const baseUrl = API_BASE_URL;
 
   // ─── Fetch profile + partner on mount ───────────────────────────
@@ -88,6 +96,9 @@ export function ProfilePage() {
         setProfile(profileData);
         setName(profileData.name || '');
         setPhotoUrl(profileData.photoUrl || '');
+        if (profileData.letterboxdUsername) {
+          setLetterboxdUsername(profileData.letterboxdUsername);
+        }
 
         const partnerData = await partnerRes.json();
         if (partnerData.partner) {
@@ -305,6 +316,151 @@ export function ProfilePage() {
     } finally {
       setRegeneratingCode(false);
     }
+  };
+
+  // ─── Letterboxd connect ─────────────────────────────────────────────────────
+  const handleLetterboxdConnect = async () => {
+    if (!accessToken || !letterboxdInput.trim()) return;
+    setLetterboxdConnecting(true);
+
+    // Normalize: strip https://letterboxd.com/ prefix if pasted as URL
+    const username = letterboxdInput.trim()
+      .replace(/^https?:\/\/letterboxd\.com\//i, '')
+      .replace(/\/$/, '');
+
+    try {
+      // Validate by attempting to fetch the RSS feed
+      const testRes = await fetch(`${baseUrl}/letterboxd/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ username }),
+      });
+
+      if (!testRes.ok) {
+        toast.error(`Couldn't find Letterboxd user "${username}". Check the username and try again.`);
+        return;
+      }
+
+      // Save username to profile
+      await fetch(`${baseUrl}/profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ letterboxdUsername: username }),
+      });
+
+      setLetterboxdUsername(username);
+      setLetterboxdInput('');
+      setLetterboxdLastError(null);
+      toast.success(`Connected to @${username}! Syncing your watch history...`);
+      
+      // Trigger first sync
+      handleLetterboxdSync(false);
+    } catch {
+      toast.error('Failed to connect Letterboxd account');
+    } finally {
+      setLetterboxdConnecting(false);
+    }
+  };
+
+  // ─── Letterboxd disconnect ──────────────────────────────────────────────────
+  const handleLetterboxdDisconnect = async () => {
+    if (!accessToken) return;
+    try {
+      await fetch(`${baseUrl}/profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ letterboxdUsername: '', letterboxdLastSyncGuid: '' }),
+      });
+      setLetterboxdUsername('');
+      setLetterboxdLastSynced(null);
+      setLetterboxdLastError(null);
+      toast.success('Letterboxd account disconnected');
+    } catch {
+      toast.error('Failed to disconnect');
+    }
+  };
+
+  // ─── Letterboxd sync ────────────────────────────────────────────────────────
+  const handleLetterboxdSync = async (silent = false) => {
+    if (!accessToken || !letterboxdUsername || letterboxdSyncing) return;
+    setLetterboxdSyncing(true);
+    setLetterboxdLastError(null);
+
+    try {
+      const res = await fetch(`${baseUrl}/letterboxd/sync`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setLetterboxdLastSynced(new Date());
+        if (!silent || data.synced > 0) {
+          if (data.synced > 0) {
+            toast.success(`✅ Synced ${data.synced} new movie${data.synced === 1 ? '' : 's'} from Letterboxd`);
+          } else if (!silent) {
+            toast.info('Already up to date — no new Letterboxd entries');
+          }
+        }
+      } else {
+        setLetterboxdLastError(data.error || 'Sync failed');
+        if (!silent) toast.error(data.error || 'Sync failed');
+      }
+    } catch (err) {
+      const errorMsg = 'Failed to sync with Letterboxd';
+      setLetterboxdLastError(errorMsg);
+      if (!silent) toast.error(errorMsg);
+    } finally {
+      setLetterboxdSyncing(false);
+    }
+  };
+
+  // ─── Letterboxd reset & full sync ───────────────────────────────────────────
+  const handleLetterboxdReset = async () => {
+    if (!accessToken) return;
+    try {
+      await fetch(`${baseUrl}/profile`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ letterboxdLastSyncGuid: '' }),
+      });
+      toast.info('Resetting sync history...');
+      handleLetterboxdSync(false);
+    } catch {
+      toast.error('Failed to reset sync');
+    }
+  };
+
+  // ─── Auto-sync Letterboxd on load ──────────────────────────────────────────
+  const hasAutoSynced = useRef(false);
+  useEffect(() => {
+    if (!accessToken || !letterboxdUsername || hasAutoSynced.current) return;
+    hasAutoSynced.current = true;
+    handleLetterboxdSync(true); // true = silent mode (no toast if 0 new movies)
+  }, [letterboxdUsername, accessToken]);
+
+  // ─── Format relative time helper ───────────────────────────────────────────
+  const formatRelativeTime = (date: Date): string => {
+    const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+    if (seconds < 60) return 'just now';
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+    return `${Math.floor(hours / 24)} day${Math.floor(hours / 24) === 1 ? '' : 's'} ago`;
   };
 
   // ─── Sign out ───────────────────────────────────────────────────
@@ -667,6 +823,115 @@ export function ProfilePage() {
                   Refresh IMDb Ratings
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Card: Letterboxd Sync ────────────────────────────── */}
+          <Card className="bg-slate-800/50 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <span>🎬</span> Letterboxd Sync
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Automatically mark movies as watched when you rate them on Letterboxd
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {letterboxdUsername ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <div className="size-10 rounded-full bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-sm flex-shrink-0">
+                      LB
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-semibold">@{letterboxdUsername}</p>
+                      <p className="text-slate-400 text-xs mt-0.5">
+                        {letterboxdSyncing
+                          ? 'Syncing...'
+                          : letterboxdLastSynced
+                            ? `Last synced ${formatRelativeTime(letterboxdLastSynced)}`
+                            : 'Syncs automatically on app load'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {letterboxdLastError && (
+                    <div className="flex items-start gap-2 text-amber-400 text-xs p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                      <svg className="size-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      <span>Last sync failed: {letterboxdLastError}</span>
+                    </div>
+                  )}
+
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleLetterboxdSync(false)}
+                      disabled={letterboxdSyncing}
+                      variant="outline"
+                      size="sm"
+                      className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white"
+                    >
+                      {letterboxdSyncing
+                        ? <Loader2 className="size-3.5 mr-2 animate-spin" />
+                        : <RefreshCw className="size-3.5 mr-2" />}
+                      Sync Now
+                    </Button>
+                    <Button
+                      onClick={handleLetterboxdReset}
+                      disabled={letterboxdSyncing}
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-400 hover:text-slate-300"
+                    >
+                      <RotateCcw className="size-3.5 mr-2" />
+                      Reset & Full Sync
+                    </Button>
+                    <Button
+                      onClick={handleLetterboxdDisconnect}
+                      variant="outline"
+                      size="sm"
+                      className="ml-auto bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
+                    >
+                      <Unlink className="size-3.5 mr-2" />
+                      Disconnect
+                    </Button>
+                  </div>
+
+                  <p className="text-slate-500 text-xs mt-2 flex items-start gap-1.5">
+                    <svg className="size-3.5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                    <span>Syncs your ~50 most recent entries. For full history, use CSV import above.</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-slate-400 text-sm">
+                    Enter your Letterboxd username or profile URL. Movies you rate will be
+                    automatically marked as watched in DuoReel.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      value={letterboxdInput}
+                      onChange={(e) => setLetterboxdInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleLetterboxdConnect()}
+                      placeholder="username or letterboxd.com/username"
+                      className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500"
+                    />
+                    <Button
+                      onClick={handleLetterboxdConnect}
+                      disabled={letterboxdConnecting || !letterboxdInput.trim()}
+                      className="bg-emerald-600 hover:bg-emerald-700 flex-shrink-0"
+                    >
+                      {letterboxdConnecting
+                        ? <Loader2 className="size-4 mr-2 animate-spin" />
+                        : null}
+                      Connect
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
