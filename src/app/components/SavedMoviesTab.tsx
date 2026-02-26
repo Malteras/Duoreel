@@ -168,45 +168,6 @@ export function SavedMoviesTab({
     baseUrl,
   });
 
-  // Fetch IMDb ratings for saved movies
-  useEffect(() => {
-    if (likedMovies.length === 0) return;
-
-    const fetchRatings = async () => {
-      const tmdbIds = likedMovies.map(m => m.id);
-      const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
-
-      if (cached.size > 0) {
-        setImdbRatings(prev => {
-          const updated = new Map(prev);
-          cached.forEach((value, tmdbId) => {
-            if (value.rating) updated.set(tmdbId, value.rating);
-          });
-          return updated;
-        });
-        setGlobalImdbCache(prev => {
-          const updated = new Map(prev);
-          cached.forEach((value, tmdbId) => {
-            const imdbId = likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
-            if (imdbId && value.rating) updated.set(imdbId, value.rating);
-          });
-          return updated;
-        });
-      }
-
-      const moviesNeedingRatings = likedMovies.filter(
-        m => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id)
-      );
-
-      if (moviesNeedingRatings.length > 0) {
-        const visibleIds = new Set(likedMovies.slice(0, 8).map(m => m.id));
-        fetchMissingRatings(moviesNeedingRatings, visibleIds, projectId, publicAnonKey);
-      }
-    };
-
-    fetchRatings();
-  }, [likedMovies.length]);
-
   // Listen for individual rating updates
   useEffect(() => {
     const unsubscribe = onRatingFetched((tmdbId, rating) => {
@@ -346,6 +307,68 @@ export function SavedMoviesTab({
   const visiblePartnerMovies = useMemo(() => filteredPartnerMovies.slice(0, visibleCount),  [filteredPartnerMovies, visibleCount]);
   const hiddenWatchedCount        = useMemo(() => likedMovies.filter(m => watchedMovieIds.has(m.id)).length,        [likedMovies, watchedMovieIds]);
   const hiddenPartnerWatchedCount = useMemo(() => partnerLikedMovies.filter(m => watchedMovieIds.has(m.id)).length, [partnerLikedMovies, watchedMovieIds]);
+
+  // Fetch IMDb ratings — scoped to currently visible movies only.
+  // Re-fires when visibleCount grows (infinite scroll loads more pages)
+  // or when the movie list changes.
+  useEffect(() => {
+    if (likedMovies.length === 0) return;
+
+    const fetchRatings = async () => {
+      // Only fetch for the movies currently rendered on screen.
+      // visibleLikedMovies is already computed as filteredLikedMovies.slice(0, visibleCount)
+      // but at this point in the component, we need to derive it from the base list
+      // because visibleLikedMovies is defined below in the render section.
+      // Re-derive it here using the same logic: apply sort → filter → slice.
+      const currentlyVisible = filteredLikedMovies.slice(0, visibleCount);
+
+      if (currentlyVisible.length === 0) return;
+
+      // Only request IDs we don't already have ratings for — avoids re-fetching
+      // on every scroll when most ratings are already loaded.
+      const tmdbIdsToFetch = currentlyVisible
+        .filter(m => !imdbRatings.has(m.id))
+        .map(m => m.id);
+
+      if (tmdbIdsToFetch.length === 0) return; // All visible ratings already loaded
+
+      const cached = await bulkFetchCachedRatings(tmdbIdsToFetch, projectId, publicAnonKey);
+
+      if (cached.size > 0) {
+        setImdbRatings(prev => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            if (value.rating) updated.set(tmdbId, value.rating);
+          });
+          return updated;
+        });
+        setGlobalImdbCache(prev => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            const imdbId = likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+            if (imdbId && value.rating) updated.set(imdbId, value.rating);
+          });
+          return updated;
+        });
+      }
+
+      // Background-fetch any that weren't in the cache
+      const moviesNeedingRatings = currentlyVisible.filter(
+        m => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id)
+      );
+
+      if (moviesNeedingRatings.length > 0) {
+        const visibleIds = new Set(currentlyVisible.slice(0, 8).map(m => m.id));
+        fetchMissingRatings(moviesNeedingRatings, visibleIds, projectId, publicAnonKey);
+      }
+    };
+
+    fetchRatings();
+  }, [likedMovies.length, visibleCount, filterBy, sortBy]);
+  // Dependencies:
+  // - likedMovies.length: new movie added to list
+  // - visibleCount: user scrolled to next page → load ratings for new page
+  // - filterBy / sortBy: visible set changed due to filter/sort change
 
   const hasMoreMovies = viewMode === 'mine'
     ? visibleCount < filteredLikedMovies.length
