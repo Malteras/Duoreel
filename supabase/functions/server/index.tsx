@@ -2306,21 +2306,31 @@ app.post("/make-server-5623fde1/imdb-ratings/fetch-and-store", async (c) => {
     const omdbData = await omdbResponse.json();
 
     if (omdbData.Response === 'False') {
-      console.log(`OMDb error for ${imdbId}: ${omdbData.Error}`);
-      
-      // Store error
-      await kv.set(errorKey, {
-        error: true,
-        errorMessage: omdbData.Error,
-        lastAttempt: new Date().toISOString(),
-        retryAfter: Date.now() + (24 * 60 * 60 * 1000)
-      });
-      
-      return c.json({ error: omdbData.Error || 'IMDb rating not available' }, 404);
+      console.log(`OMDb: no entry for ${imdbId}: ${omdbData.Error}`);
+
+      // Cache the NOT_FOUND result so we don't re-hit OMDb for 30 days
+      const notFoundValue = {
+        imdbId,
+        tmdbId,
+        rating: 'NOT_FOUND',
+        fetchedAt: new Date().toISOString()
+      };
+      await kv.set(cacheKey, notFoundValue);
+
+      return c.json({ ...notFoundValue, fromCache: false });
     }
 
     if (!omdbData.imdbRating || omdbData.imdbRating === 'N/A') {
-      return c.json({ error: 'IMDb rating not available' }, 404);
+      // Movie exists in OMDb but has no public rating — cache as NOT_FOUND
+      const notFoundValue = {
+        imdbId,
+        tmdbId,
+        rating: 'NOT_FOUND',
+        fetchedAt: new Date().toISOString()
+      };
+      await kv.set(cacheKey, notFoundValue);
+
+      return c.json({ ...notFoundValue, fromCache: false });
     }
 
     // Store in cache

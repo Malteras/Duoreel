@@ -265,7 +265,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                 ) : (
                   <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
                     <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
-                    <Loader2 className="size-3 text-black/40 animate-spin" />
+                    <span className="text-xs font-bold text-black/40">—</span>
                   </div>
                 )}
               </TooltipTrigger>
@@ -276,7 +276,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                     : displayImdbRating === 'NOT_FOUND'
                     ? 'Rating unavailable — click to view on IMDb'
                     : 'Rating loading — click to view on IMDb')
-                  : 'Fetching IMDb info...'
+                  : 'No IMDb data available'
                 }</p>
               </TooltipContent>
             </Tooltip>

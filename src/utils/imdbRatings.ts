@@ -100,9 +100,14 @@ export async function fetchAndStoreRating(
 
     const data: ImdbRatingCache = await response.json();
     
-    // Emit update event
+    // Emit update event — includes NOT_FOUND so spinner resolves to dash
     if (data.rating) {
       emitRatingUpdate(movie.id, data.rating);
+    }
+    
+    // If server returned NOT_FOUND, treat as null so callers know to show dash
+    if (data.rating === 'NOT_FOUND') {
+      return null;
     }
     
     return data;
@@ -145,7 +150,14 @@ export async function fetchMissingRatings(
   const BATCH_SIZE = 5; // 5 concurrent requests
   const DELAY = 1200; // 1.2s between batches (safe for 100/min limit)
   
-  // Filter movies that need ratings
+  // Emit NOT_FOUND immediately for movies with no imdb_id — stops their spinner
+  movies.forEach(m => {
+    if (!m.external_ids?.imdb_id) {
+      emitRatingUpdate(m.id, 'NOT_FOUND');
+    }
+  });
+
+  // Only fetch ratings for movies that actually have an IMDb ID
   const moviesNeedingRatings = movies.filter(m => m.external_ids?.imdb_id);
   
   // Prioritize
