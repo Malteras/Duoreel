@@ -70,6 +70,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [enrichedIds, setEnrichedIds] = useState<Set<number>>(new Set());
   const enrichingRef = useRef<Set<number>>(new Set());
 
+  // IMDb ratings keyed by tmdbId to avoid external_ids dependency
+  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(new Map());
+
   // Invite code state
   const [inviteCode, setInviteCode] = useState(matchesCache?.inviteCode ?? '');
   const [regeneratingCode, setRegeneratingCode] = useState(false);
@@ -145,17 +148,28 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     fetchData();
   }, [accessToken, fetchData, matchesCache, matchNotificationCount]);
 
-  // ── IMDb ratings — uses shared cache (same pattern as MoviesTab) ───────────
+  // ── IMDb ratings — keyed by tmdbId to avoid external_ids dependency ────────
   useEffect(() => {
     if (matchedMovies.length === 0) return;
 
     const fetchRatings = async () => {
       const tmdbIds = matchedMovies.map(m => m.id);
 
-      // Step 1: fetch whatever is already cached in the DB
+      // Step 1: bulk-fetch whatever is already in the cache
       const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
       if (cached.size > 0) {
+        // Store by tmdbId — no external_ids lookup needed for card display
+        setImdbRatings(prev => {
+          const updated = new Map(prev);
+          cached.forEach((value, tmdbId) => {
+            if (value.rating) updated.set(tmdbId, value.rating);
+          });
+          return updated;
+        });
+
+        // Also populate globalImdbCache for movies that DO have external_ids
+        // (used by MovieDetailModal's imdbRatingFromCard prop)
         setGlobalImdbCache(prev => {
           const updated = new Map(prev);
           cached.forEach((value, tmdbId) => {
@@ -166,13 +180,15 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         });
       }
 
-      // Step 2: background-fetch ratings not yet in the cache
-      const moviesWithImdbIds = matchedMovies.filter(
-        m => m.external_ids?.imdb_id && !cached.has(m.id)
+      // Step 2: background-fetch ratings not yet in the cache.
+      // Include ALL movies (not just those with external_ids) so uncached
+      // ratings are fetched even when external_ids is missing.
+      const moviesNeedingRatings = matchedMovies.filter(
+        m => !cached.has(m.id) && !imdbRatings.has(m.id)
       );
-      if (moviesWithImdbIds.length > 0) {
+      if (moviesNeedingRatings.length > 0) {
         const visibleIds = new Set(matchedMovies.slice(0, 8).map(m => m.id));
-        fetchMissingRatings(moviesWithImdbIds, visibleIds, projectId, publicAnonKey);
+        fetchMissingRatings(moviesNeedingRatings, visibleIds, projectId, publicAnonKey);
       }
     };
 
@@ -182,6 +198,10 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   // Listen for background fetch updates from fetchMissingRatings
   useEffect(() => {
     const unsubscribe = onRatingFetched((tmdbId, rating) => {
+      // Always store by tmdbId for card display
+      setImdbRatings(prev => new Map(prev).set(tmdbId, rating));
+
+      // Also store by imdbId for modal (only if external_ids available)
       const imdbId = matchedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
       if (imdbId) {
         setGlobalImdbCache(prev => new Map(prev).set(imdbId, rating));
@@ -224,6 +244,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             actors:            d.credits?.cast?.slice(0, 5).map((a) => a.name)           || movie.actors,
             genres:            d.genres             || movie.genres,
             'watch/providers': d['watch/providers'] || movie['watch/providers'],
+            external_ids:      d.external_ids       || (movie as any).external_ids,
           };
         }));
 
@@ -631,6 +652,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 projectId={projectId}
                 publicAnonKey={publicAnonKey}
                 globalImdbCache={globalImdbCache}
+                imdbRating={imdbRatings.get(movie.id)}
               />
             ))}
           </div>
