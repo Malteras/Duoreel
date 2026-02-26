@@ -42,7 +42,8 @@ import {
   X,
   Film,
   LayoutGrid,
-  List,
+  // List, // kept for list view — see commented-out dead code block below the compact grid
+  LayoutList,
 } from "lucide-react";
 
 interface MoviesTabProps {
@@ -1107,8 +1108,20 @@ export function MoviesTab({
               </TooltipContent>
             </Tooltip>
 
-            {/* View mode toggle */}
+            {/* View mode toggle — Large (default) vs Compact grid */}
             <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-md p-0.5 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewMode('grid')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="Large card view"
+                  >
+                    <LayoutList className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border-slate-700"><p>Large cards</p></TooltipContent>
+              </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
@@ -1120,18 +1133,6 @@ export function MoviesTab({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="bg-slate-800 text-white border-slate-700"><p>Compact grid</p></TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => handleViewMode('list')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                    aria-label="List view"
-                  >
-                    <List className="size-3.5" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent className="bg-slate-800 text-white border-slate-700"><p>List view</p></TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -1338,6 +1339,9 @@ export function MoviesTab({
                   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
                   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
                   const imdbRating = imdbRatings.get(movie.id);
+                  const hasImdbId = (movie as any).external_ids?.imdb_id;
+                  const cachedRating = hasImdbId ? globalImdbCache?.get(hasImdbId) : undefined;
+                  const displayImdbRating = imdbRatings.get(movie.id) || (movie as any).imdbRating || (cachedRating && cachedRating !== 'N/A' ? cachedRating : null);
                   const isLiked = likedMovieIds.has(movie.id);
                   const isWatchedMovie = isWatched(movie.id);
                   return (
@@ -1372,17 +1376,64 @@ export function MoviesTab({
                           </button>
                         </div>
                         {movie.vote_average > 0 && (
-                          <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1">
-                            <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                              <span className="text-[8px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
-                              <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
-                            </div>
-                            {imdbRating && imdbRating !== 'N/A' && (
-                              <div className="bg-[#F5C518] backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                                <span className="text-[8px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
-                                <span className="text-[10px] font-bold text-black">{imdbRating}</span>
-                              </div>
-                            )}
+                          <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
+                            {/* TMDB badge */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                                  <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                                  <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                                <p>TMDB community rating</p>
+                              </TooltipContent>
+                            </Tooltip>
+
+                            {/* IMDb badge — mirrors MovieCard.tsx logic exactly */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                {hasImdbId ? (
+                                  <a
+                                    href={`https://www.imdb.com/title/${hasImdbId}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    className={`backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                                      displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
+                                        ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
+                                        : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
+                                    }`}
+                                  >
+                                    <span className={`text-[9px] font-bold uppercase tracking-wide ${
+                                      displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
+                                    }`}>IMDb</span>
+                                    {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
+                                      <span className="text-xs font-bold text-black">{displayImdbRating}</span>
+                                    ) : displayImdbRating === 'NOT_FOUND' ? (
+                                      <span className="text-xs font-bold text-black/40">—</span>
+                                    ) : (
+                                      <Loader2 className="size-3 text-black/50 animate-spin" />
+                                    )}
+                                  </a>
+                                ) : (
+                                  <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
+                                    <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                                    <span className="text-xs font-bold text-black/40">—</span>
+                                  </div>
+                                )}
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-slate-800 text-white border-slate-700">
+                                <p>{hasImdbId
+                                  ? (displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
+                                    ? 'View on IMDb'
+                                    : displayImdbRating === 'NOT_FOUND'
+                                    ? 'Rating unavailable — click to view on IMDb'
+                                    : 'Rating loading — click to view on IMDb')
+                                  : 'No IMDb data available'
+                                }</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
                         )}
                       </div>
@@ -1409,7 +1460,10 @@ export function MoviesTab({
               </div>
             )}
 
-            {/* ── List view ── */}
+            {/* ── List view ── KEPT AS DEAD CODE: list layout is implemented and working
+                but currently not exposed in the UI toggle. Remove the comment wrapper here
+                and add a third button to the toggle (using the List icon from lucide-react)
+                if you want to re-enable it. ──
             {viewMode === 'list' && (
               <div className="space-y-2">
                 {visibleMovies.map((movie) => {
@@ -1467,6 +1521,7 @@ export function MoviesTab({
                 })}
               </div>
             )}
+            ── end of list view dead code ── */}
 
             {/* Infinite scroll sentinel + loading indicator */}
             {!isSearchMode && (
