@@ -21,7 +21,8 @@ import {
 import {
   Mail, Upload, Link as LinkIcon, Loader2,
   RefreshCw, LogOut, Copy, RotateCcw, Unlink,
-  CheckCircle2, Bookmark, Film, Heart, Eye, EyeOff, X
+  CheckCircle2, Bookmark, Film, Heart, Eye, EyeOff, X,
+  ChevronUp, ChevronDown, ChevronsUpDown
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
@@ -79,11 +80,13 @@ export function ProfilePage() {
     watched: number;
   } | null>(null);
 
-  // Watched list modal state
-  const [watchedModalOpen, setWatchedModalOpen] = useState(false);
-  const [watchedMovies, setWatchedMovies] = useState<any[]>([]);
-  const [watchedLoading, setWatchedLoading] = useState(false);
+  // Shared stats modal state
+  type StatsModalType = 'saved' | 'matches' | 'watched' | null;
+  const [statsModal, setStatsModal] = useState<StatsModalType>(null);
+  const [statsModalMovies, setStatsModalMovies] = useState<any[]>([]);
+  const [statsModalLoading, setStatsModalLoading] = useState(false);
   const [removingWatchedId, setRemovingWatchedId] = useState<number | null>(null);
+  const [statsSort, setStatsSort] = useState<{ col: 'title' | 'date'; dir: 'asc' | 'desc' }>({ col: 'date', dir: 'desc' });
 
   // Partner activity state
   const [partnerStats, setPartnerStats] = useState<{
@@ -354,24 +357,30 @@ export function ProfilePage() {
     }
   };
 
-  // ─── Fetch watched movies ───────────────────────────────────────
-  const fetchWatchedMovies = async () => {
-    if (!accessToken) return;
-    setWatchedLoading(true);
+  // ─── Open stats modal (Saved / Matches / Watched) ──────────────
+  const openStatsModal = async (type: StatsModalType) => {
+    if (!accessToken || !type) return;
+    setStatsModal(type);
+    setStatsModalMovies([]);
+    setStatsModalLoading(true);
+    setStatsSort({ col: 'date', dir: 'desc' });
+
+    const endpointMap: Record<string, string> = {
+      saved: `${baseUrl}/movies/liked`,
+      matches: `${baseUrl}/movies/matches`,
+      watched: `${baseUrl}/movies/watched`,
+    };
+
     try {
-      const res = await fetch(`${baseUrl}/movies/watched`, {
+      const res = await fetch(endpointMap[type], {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       const data = await res.json();
-      // Sort most-recently-watched first
-      const sorted = (data.movies || []).sort(
-        (a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)
-      );
-      setWatchedMovies(sorted);
+      setStatsModalMovies(data.movies || []);
     } catch (err) {
-      console.error('Failed to fetch watched movies:', err);
+      console.error(`Failed to fetch ${type} movies:`, err);
     } finally {
-      setWatchedLoading(false);
+      setStatsModalLoading(false);
     }
   };
 
@@ -385,7 +394,7 @@ export function ProfilePage() {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (res.ok) {
-        setWatchedMovies(prev => prev.filter(m => m.id !== movieId));
+        setStatsModalMovies(prev => prev.filter(m => m.id !== movieId));
         // Also decrement the stats counter shown on the profile
         setStats(prev => prev ? { ...prev, watched: Math.max(0, prev.watched - 1) } : null);
         toast.success('Removed from watched list');
@@ -396,6 +405,25 @@ export function ProfilePage() {
     } finally {
       setRemovingWatchedId(null);
     }
+  };
+
+  // ─── Stats modal sort helpers ───────────────────────────────────
+  const sortedStatsMovies = [...statsModalMovies].sort((a, b) => {
+    if (statsSort.col === 'title') {
+      const cmp = (a.title || '').localeCompare(b.title || '');
+      return statsSort.dir === 'asc' ? cmp : -cmp;
+    } else {
+      const cmp = (a.timestamp || 0) - (b.timestamp || 0);
+      return statsSort.dir === 'desc' ? -cmp : cmp;
+    }
+  });
+
+  const toggleStatsSort = (col: 'title' | 'date') => {
+    setStatsSort(prev =>
+      prev.col === col
+        ? { col, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+        : { col, dir: col === 'date' ? 'desc' : 'asc' }
+    );
   };
 
   // ─── Copy invite link ───────────────────────────────────────────
@@ -636,27 +664,40 @@ export function ProfilePage() {
           {/* Stats row */}
           {stats && (
             <div className="grid grid-cols-3 gap-3">
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center">
+
+              <button
+                onClick={() => openStatsModal('saved')}
+                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <Bookmark className="size-3.5 text-blue-400" />
                   <span className="text-xs text-slate-400 font-medium">Saved</span>
                 </div>
                 <p className="text-xl font-bold text-white">{stats.saved}</p>
-              </div>
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center">
+              </button>
+
+              <button
+                onClick={() => openStatsModal('matches')}
+                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <Heart className="size-3.5 text-pink-400" />
                   <span className="text-xs text-slate-400 font-medium">Matches</span>
                 </div>
                 <p className="text-xl font-bold text-white">{stats.matches}</p>
-              </div>
-              <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center">
+              </button>
+
+              <button
+                onClick={() => openStatsModal('watched')}
+                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center justify-center gap-1.5 mb-1">
                   <Eye className="size-3.5 text-emerald-400" />
                   <span className="text-xs text-slate-400 font-medium">Watched</span>
                 </div>
                 <p className="text-xl font-bold text-white">{stats.watched}</p>
-              </div>
+              </button>
+
             </div>
           )}
         </div>
@@ -1119,10 +1160,7 @@ export function ProfilePage() {
 
                 {/* NEW: Watched list button */}
                 <Button
-                  onClick={() => {
-                    setWatchedModalOpen(true);
-                    fetchWatchedMovies();
-                  }}
+                  onClick={() => openStatsModal('watched')}
                   variant="outline"
                   size="sm"
                   className="bg-slate-800/80 border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 hover:text-white mt-3"
@@ -1175,26 +1213,30 @@ export function ProfilePage() {
         progressBarColor="bg-green-600"
       />
 
-      {/* ── Watched List Modal ── */}
-      {watchedModalOpen && (
+      {/* ── Stats List Modal (Saved / Matches / Watched) ── */}
+      {statsModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setWatchedModalOpen(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) setStatsModal(null); }}
         >
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
-            
+
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
               <div>
-                <h2 className="text-white font-semibold text-base">Watched Movies</h2>
-                {!watchedLoading && (
+                <h2 className="text-white font-semibold text-base">
+                  {statsModal === 'saved' && 'Saved Movies'}
+                  {statsModal === 'matches' && 'Matched Movies'}
+                  {statsModal === 'watched' && 'Watched Movies'}
+                </h2>
+                {!statsModalLoading && (
                   <p className="text-slate-400 text-xs mt-0.5">
-                    {watchedMovies.length} {watchedMovies.length === 1 ? 'movie' : 'movies'} · sorted by most recently added
+                    {statsModalMovies.length} {statsModalMovies.length === 1 ? 'movie' : 'movies'}
                   </p>
                 )}
               </div>
               <button
-                onClick={() => setWatchedModalOpen(false)}
+                onClick={() => setStatsModal(null)}
                 className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-700/50"
               >
                 <X className="size-5" />
@@ -1203,104 +1245,126 @@ export function ProfilePage() {
 
             {/* Body */}
             <div className="overflow-y-auto flex-1 px-6 py-4">
-              {watchedLoading ? (
+              {statsModalLoading ? (
                 <div className="flex items-center justify-center py-16">
                   <Loader2 className="size-6 text-pink-400 animate-spin" />
                 </div>
-              ) : watchedMovies.length === 0 ? (
+              ) : statsModalMovies.length === 0 ? (
                 <div className="text-center py-16">
-                  <p className="text-slate-400 text-sm">No watched movies yet.</p>
-                  <p className="text-slate-500 text-xs mt-1">
-                    Mark movies as watched from the Discover, Saved, or Matches tabs.
+                  <p className="text-slate-400 text-sm">
+                    {statsModal === 'saved' && 'No saved movies yet.'}
+                    {statsModal === 'matches' && 'No matches yet.'}
+                    {statsModal === 'watched' && 'No watched movies yet.'}
                   </p>
                 </div>
               ) : (
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-left text-slate-500 text-xs uppercase tracking-wide border-b border-slate-700/50">
-                      <th className="pb-3 font-medium">Title</th>
-                      <th className="pb-3 font-medium w-36">Added</th>
+                      <th className="pb-3 font-medium">
+                        <button
+                          onClick={() => toggleStatsSort('title')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Title
+                          {statsSort.col === 'title' ? (
+                            statsSort.dir === 'asc'
+                              ? <ChevronUp className="size-3" />
+                              : <ChevronDown className="size-3" />
+                          ) : (
+                            <ChevronsUpDown className="size-3 opacity-40" />
+                          )}
+                        </button>
+                      </th>
+                      <th className="pb-3 font-medium w-36">
+                        <button
+                          onClick={() => toggleStatsSort('date')}
+                          className="flex items-center gap-1 hover:text-white transition-colors"
+                        >
+                          Added
+                          {statsSort.col === 'date' ? (
+                            statsSort.dir === 'asc'
+                              ? <ChevronUp className="size-3" />
+                              : <ChevronDown className="size-3" />
+                          ) : (
+                            <ChevronsUpDown className="size-3 opacity-40" />
+                          )}
+                        </button>
+                      </th>
                       <th className="pb-3 font-medium w-20 text-center">Links</th>
-                      <th className="pb-3 w-10"></th>
+                      {statsModal === 'watched' && <th className="pb-3 w-10"></th>}
                     </tr>
                   </thead>
                   <tbody>
-                    {watchedMovies.map((movie, i) => {
+                    {sortedStatsMovies.map((movie, i) => {
                       const year = movie.release_date
                         ? new Date(movie.release_date).getFullYear()
                         : null;
-                      const imdbId = movie.external_ids?.imdb_id || null;
-                      const tmdbId = movie.id;
+                      const imdbSearchUrl = `https://www.imdb.com/find?q=${encodeURIComponent(
+                        movie.title + (year ? ` ${year}` : '')
+                      )}`;
+                      const letterboxdUrl = `https://letterboxd.com/tmdb/${movie.id}`;
 
                       return (
-                      <tr
-                        key={movie.id}
-                        className={`border-b border-slate-800/50 last:border-0 ${
-                          i % 2 === 0 ? '' : 'bg-slate-800/20'
-                        }`}
-                      >
-                        {/* Title + year combined */}
-                        <td className="py-3 pr-4 leading-snug">
-                          <span className="text-white font-medium">{movie.title}</span>
-                          {year && (
-                            <span className="text-slate-500 text-xs ml-1.5">({year})</span>
-                          )}
-                        </td>
-
-                        {/* Added date */}
-                        <td className="py-3 text-slate-400 text-xs">
-                          {movie.timestamp
-                            ? new Date(movie.timestamp).toLocaleDateString('en-GB', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric',
-                              })
-                            : 'N/A'}
-                        </td>
-
-                        {/* IMDb + Letterboxd links */}
-                        <td className="py-3 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            {imdbId ? (
+                        <tr
+                          key={movie.id}
+                          className={`border-b border-slate-800/50 last:border-0 ${
+                            i % 2 === 0 ? '' : 'bg-slate-800/20'
+                          }`}
+                        >
+                          <td className="py-3 pr-4 leading-snug">
+                            <span className="text-white font-medium">{movie.title}</span>
+                            {year && (
+                              <span className="text-slate-500 text-xs ml-1.5">({year})</span>
+                            )}
+                          </td>
+                          <td className="py-3 text-slate-400 text-xs">
+                            {movie.timestamp
+                              ? new Date(movie.timestamp).toLocaleDateString('en-GB', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
+                              : 'N/A'}
+                          </td>
+                          <td className="py-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
                               <a
-                                href={`https://www.imdb.com/title/${imdbId}`}
+                                href={imdbSearchUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-[10px] font-bold bg-[#F5C518] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
-                                title="View on IMDb"
+                                title="Search on IMDb"
                               >
                                 IMDb
                               </a>
-                            ) : (
-                              <span className="text-slate-700 text-[10px]">—</span>
-                            )}
-                            <a
-                              href={`https://letterboxd.com/tmdb/${tmdbId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] font-bold bg-[#00C030] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
-                              title="View on Letterboxd"
-                            >
-                              LB
-                            </a>
-                          </div>
-                        </td>
-
-                        {/* Mark as unwatched */}
-                        <td className="py-3 text-right">
-                          <button
-                            onClick={() => handleRemoveWatched(movie.id)}
-                            disabled={removingWatchedId === movie.id}
-                            className="text-slate-500 hover:text-amber-400 transition-colors disabled:opacity-50 p-1 rounded hover:bg-slate-700/50"
-                            title="Mark as unwatched"
-                          >
-                            {removingWatchedId === movie.id
-                              ? <Loader2 className="size-3.5 animate-spin" />
-                              : <EyeOff className="size-3.5" />
-                            }
-                          </button>
-                        </td>
-                      </tr>
+                              <a
+                                href={letterboxdUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] font-bold bg-[#00C030] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
+                                title="View on Letterboxd"
+                              >
+                                LB
+                              </a>
+                            </div>
+                          </td>
+                          {statsModal === 'watched' && (
+                            <td className="py-3 text-right">
+                              <button
+                                onClick={() => handleRemoveWatched(movie.id)}
+                                disabled={removingWatchedId === movie.id}
+                                className="text-slate-500 hover:text-amber-400 transition-colors disabled:opacity-50 p-1 rounded hover:bg-slate-700/50"
+                                title="Mark as unwatched"
+                              >
+                                {removingWatchedId === movie.id
+                                  ? <Loader2 className="size-3.5 animate-spin" />
+                                  : <EyeOff className="size-3.5" />
+                                }
+                              </button>
+                            </td>
+                          )}
+                        </tr>
                       );
                     })}
                   </tbody>
