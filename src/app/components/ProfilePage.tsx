@@ -21,7 +21,7 @@ import {
 import {
   Mail, Upload, Link as LinkIcon, Loader2,
   RefreshCw, LogOut, Copy, RotateCcw, Unlink,
-  CheckCircle2, Bookmark, Film, Heart, Eye
+  CheckCircle2, Bookmark, Film, Heart, Eye, EyeOff, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
@@ -78,6 +78,12 @@ export function ProfilePage() {
     matches: number;
     watched: number;
   } | null>(null);
+
+  // Watched list modal state
+  const [watchedModalOpen, setWatchedModalOpen] = useState(false);
+  const [watchedMovies, setWatchedMovies] = useState<any[]>([]);
+  const [watchedLoading, setWatchedLoading] = useState(false);
+  const [removingWatchedId, setRemovingWatchedId] = useState<number | null>(null);
 
   // Partner activity state
   const [partnerStats, setPartnerStats] = useState<{
@@ -345,6 +351,50 @@ export function ProfilePage() {
       toast.error('Failed to update IMDb ratings');
     } finally {
       setUpdatingImdb(false);
+    }
+  };
+
+  // ─── Fetch watched movies ───────────────────────────────────────
+  const fetchWatchedMovies = async () => {
+    if (!accessToken) return;
+    setWatchedLoading(true);
+    try {
+      const res = await fetch(`${baseUrl}/movies/watched`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      const data = await res.json();
+      // Sort most-recently-watched first
+      const sorted = (data.movies || []).sort(
+        (a: any, b: any) => (b.timestamp || 0) - (a.timestamp || 0)
+      );
+      setWatchedMovies(sorted);
+    } catch (err) {
+      console.error('Failed to fetch watched movies:', err);
+    } finally {
+      setWatchedLoading(false);
+    }
+  };
+
+  // ─── Remove watched movie ───────────────────────────────────────
+  const handleRemoveWatched = async (movieId: number) => {
+    if (!accessToken) return;
+    setRemovingWatchedId(movieId);
+    try {
+      const res = await fetch(`${baseUrl}/movies/watched/${movieId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        setWatchedMovies(prev => prev.filter(m => m.id !== movieId));
+        // Also decrement the stats counter shown on the profile
+        setStats(prev => prev ? { ...prev, watched: Math.max(0, prev.watched - 1) } : null);
+        toast.success('Removed from watched list');
+      }
+    } catch (err) {
+      console.error('Failed to remove watched movie:', err);
+      toast.error('Failed to remove from watched list');
+    } finally {
+      setRemovingWatchedId(null);
     }
   };
 
@@ -1066,6 +1116,23 @@ export function ProfilePage() {
                 <p className="text-slate-500 text-xs mt-2">
                   Re-fetches IMDb ratings for all your saved movies. Useful after bulk imports.
                 </p>
+
+                {/* NEW: Watched list button */}
+                <Button
+                  onClick={() => {
+                    setWatchedModalOpen(true);
+                    fetchWatchedMovies();
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="bg-slate-800/80 border-slate-600 text-white hover:bg-slate-700 hover:border-slate-500 hover:text-white mt-3"
+                >
+                  <Eye className="size-3.5 mr-2" />
+                  View Watched List
+                </Button>
+                <p className="text-slate-500 text-xs mt-2">
+                  See all movies you've marked as watched. {stats && stats.watched > 0 && `${stats.watched} movies`}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -1107,6 +1174,104 @@ export function ProfilePage() {
         buttonLabel="Import as Watched"
         progressBarColor="bg-green-600"
       />
+
+      {/* ── Watched List Modal ── */}
+      {watchedModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setWatchedModalOpen(false); }}
+        >
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-700/50">
+              <div>
+                <h2 className="text-white font-semibold text-base">Watched Movies</h2>
+                {!watchedLoading && (
+                  <p className="text-slate-400 text-xs mt-0.5">
+                    {watchedMovies.length} {watchedMovies.length === 1 ? 'movie' : 'movies'} · sorted by most recently watched
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => setWatchedModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-slate-700/50"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 px-6 py-4">
+              {watchedLoading ? (
+                <div className="flex items-center justify-center py-16">
+                  <Loader2 className="size-6 text-pink-400 animate-spin" />
+                </div>
+              ) : watchedMovies.length === 0 ? (
+                <div className="text-center py-16">
+                  <p className="text-slate-400 text-sm">No watched movies yet.</p>
+                  <p className="text-slate-500 text-xs mt-1">
+                    Mark movies as watched from the Discover, Saved, or Matches tabs.
+                  </p>
+                </div>
+              ) : (
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-slate-500 text-xs uppercase tracking-wide border-b border-slate-700/50">
+                      <th className="pb-3 font-medium">Title</th>
+                      <th className="pb-3 font-medium w-16 text-center">Year</th>
+                      <th className="pb-3 font-medium w-36">Date Watched</th>
+                      <th className="pb-3 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {watchedMovies.map((movie, i) => (
+                      <tr
+                        key={movie.id}
+                        className={`border-b border-slate-800/50 last:border-0 ${
+                          i % 2 === 0 ? '' : 'bg-slate-800/20'
+                        }`}
+                      >
+                        <td className="py-3 pr-4 text-white font-medium leading-snug">
+                          {movie.title}
+                        </td>
+                        <td className="py-3 text-slate-400 text-center">
+                          {movie.release_date
+                            ? new Date(movie.release_date).getFullYear()
+                            : '—'}
+                        </td>
+                        <td className="py-3 text-slate-400 text-xs">
+                          {movie.timestamp
+                            ? new Date(movie.timestamp).toLocaleDateString('en-GB', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })
+                            : 'N/A'}
+                        </td>
+                        <td className="py-3 text-right">
+                          <button
+                            onClick={() => handleRemoveWatched(movie.id)}
+                            disabled={removingWatchedId === movie.id}
+                            className="text-slate-500 hover:text-amber-400 transition-colors disabled:opacity-50 p-1 rounded hover:bg-slate-700/50"
+                            title="Mark as unwatched"
+                          >
+                            {removingWatchedId === movie.id
+                              ? <Loader2 className="size-3.5 animate-spin" />
+                              : <EyeOff className="size-3.5" />
+                            }
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   );
 }
