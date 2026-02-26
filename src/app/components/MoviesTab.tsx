@@ -41,6 +41,8 @@ import {
   Ban,
   X,
   Film,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 
 interface MoviesTabProps {
@@ -123,6 +125,16 @@ export function MoviesTab({
     useState(discoverCache?.showWatchedMovies ?? false);
   const [showFiltersModal, setShowFiltersModal] =
     useState(false);
+
+  // View mode — persisted per tab
+  const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
+    return (localStorage.getItem('duoreel-viewmode-discover') as 'grid' | 'compact' | 'list') || 'grid';
+  });
+
+  const handleViewMode = (mode: 'grid' | 'compact' | 'list') => {
+    setViewMode(mode);
+    localStorage.setItem('duoreel-viewmode-discover', mode);
+  };
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -1094,6 +1106,34 @@ export function MoviesTab({
                 <p>Refresh movies</p>
               </TooltipContent>
             </Tooltip>
+
+            {/* View mode toggle */}
+            <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-md p-0.5 shrink-0">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewMode('compact')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="Compact grid view"
+                  >
+                    <LayoutGrid className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border-slate-700"><p>Compact grid</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => handleViewMode('list')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'list' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="List view"
+                  >
+                    <List className="size-3.5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-slate-800 text-white border-slate-700"><p>List view</p></TooltipContent>
+              </Tooltip>
+            </div>
           </div>
 
           {/* Row 2: Sort + remaining active filter badges */}
@@ -1259,33 +1299,174 @@ export function MoviesTab({
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {visibleMovies.map((movie) => (
-                <MovieCard
-                  key={movie.id}
-                  movie={movie}
-                  isLiked={likedMovieIds.has(movie.id)}
-                  isWatched={isWatched(movie.id)}
-                  onLike={() => handleLike(movie)}
-                  onUnlike={() => handleUnlike(movie.id)}
-                  onNotInterested={() =>
-                    handleNotInterested(movie.id)
-                  }
-                  isNotInterestedLoading={notInterestedLoadingIds.has(
-                    movie.id,
-                  )}
-                  onClick={() => openMovie(movie)}
-                  onDirectorClick={(director) => updateFilter("director", director)}
-                  onGenreClick={(genreId) => updateFilter("genre", genreId.toString())}
-                  onYearClick={(year) => updateFilter("year", year.toString())}
-                  onActorClick={(actor) => updateFilter("actor", actor)}
-                  imdbRating={imdbRatings.get(movie.id)}
-                  projectId={projectId}
-                  publicAnonKey={publicAnonKey}
-                  globalImdbCache={globalImdbCache}
-                />
-              ))}
-            </div>
+            {/* ── Full grid (default) ── */}
+            {viewMode === 'grid' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {visibleMovies.map((movie) => (
+                  <MovieCard
+                    key={movie.id}
+                    movie={movie}
+                    isLiked={likedMovieIds.has(movie.id)}
+                    isWatched={isWatched(movie.id)}
+                    onLike={() => handleLike(movie)}
+                    onUnlike={() => handleUnlike(movie.id)}
+                    onNotInterested={() =>
+                      handleNotInterested(movie.id)
+                    }
+                    isNotInterestedLoading={notInterestedLoadingIds.has(
+                      movie.id,
+                    )}
+                    onClick={() => openMovie(movie)}
+                    onDirectorClick={(director) => updateFilter("director", director)}
+                    onGenreClick={(genreId) => updateFilter("genre", genreId.toString())}
+                    onYearClick={(year) => updateFilter("year", year.toString())}
+                    onActorClick={(actor) => updateFilter("actor", actor)}
+                    imdbRating={imdbRatings.get(movie.id)}
+                    projectId={projectId}
+                    publicAnonKey={publicAnonKey}
+                    globalImdbCache={globalImdbCache}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* ── Compact grid ── */}
+            {viewMode === 'compact' && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {visibleMovies.map((movie) => {
+                  const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '';
+                  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
+                  const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
+                  const imdbRating = imdbRatings.get(movie.id);
+                  const isLiked = likedMovieIds.has(movie.id);
+                  const isWatchedMovie = isWatched(movie.id);
+                  return (
+                    <div
+                      key={movie.id}
+                      data-movie-id={movie.id}
+                      className={`group relative bg-gradient-to-b from-slate-800/50 to-slate-900/80 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/50 hover:border-slate-600 cursor-pointer ${isWatchedMovie ? 'opacity-60 grayscale-[30%]' : ''}`}
+                      onClick={() => openMovie(movie)}
+                    >
+                      <div className="relative aspect-[2/3] overflow-hidden">
+                        {posterUrl
+                          ? <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          : <div className="w-full h-full bg-slate-800 flex items-center justify-center"><Film className="size-10 text-slate-600" /></div>
+                        }
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
+                        <div className="absolute top-2 left-2">
+                          <button
+                            className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'}`}
+                            onClick={(e) => { e.stopPropagation(); isLiked ? handleUnlike(movie.id) : handleLike(movie); }}
+                            aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
+                          >
+                            <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                          </button>
+                        </div>
+                        <div className="absolute top-2 right-2">
+                          <button
+                            className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors"
+                            onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}
+                            aria-label="Not interested"
+                          >
+                            <Ban className="size-4 text-white" />
+                          </button>
+                        </div>
+                        {movie.vote_average > 0 && (
+                          <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1">
+                            <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                              <span className="text-[8px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                              <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
+                            </div>
+                            {imdbRating && imdbRating !== 'N/A' && (
+                              <div className="bg-[#F5C518] backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                                <span className="text-[8px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
+                                <span className="text-[10px] font-bold text-black">{imdbRating}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3 space-y-1.5">
+                        <h3 className="text-xs font-bold text-white leading-tight line-clamp-2">{movie.title}</h3>
+                        <div className="flex items-center gap-1 text-[10px] text-slate-300">
+                          {year && <span>{year}</span>}
+                          {year && runtime && <span className="text-slate-500">·</span>}
+                          {runtime && <span>{runtime}</span>}
+                        </div>
+                        {movie.genres && movie.genres.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {movie.genres.slice(0, 2).map((genre) => (
+                              <span key={genre.id} className="bg-purple-600/70 text-white border border-purple-500 text-[9px] px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-purple-700" onClick={(e) => { e.stopPropagation(); updateFilter("genre", genre.id.toString()); }}>{genre.name}</span>
+                            ))}
+                          </div>
+                        )}
+                        {movie.overview && <p className="text-slate-300 text-[10px] leading-relaxed line-clamp-2">{movie.overview}</p>}
+                        {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── List view ── */}
+            {viewMode === 'list' && (
+              <div className="space-y-2">
+                {visibleMovies.map((movie) => {
+                  const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : '';
+                  const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
+                  const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
+                  const imdbRating = imdbRatings.get(movie.id);
+                  const isLiked = likedMovieIds.has(movie.id);
+                  const isWatchedMovie = isWatched(movie.id);
+                  return (
+                    <div
+                      key={movie.id}
+                      data-movie-id={movie.id}
+                      className={`group flex gap-3 bg-gradient-to-r from-slate-800/50 to-slate-900/80 border border-slate-700/50 hover:border-slate-600 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isWatchedMovie ? 'opacity-60 grayscale-[30%]' : ''}`}
+                      onClick={() => openMovie(movie)}
+                    >
+                      <div className="relative w-14 flex-shrink-0">
+                        {posterUrl
+                          ? <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          : <div className="w-full h-full bg-slate-800 flex items-center justify-center"><Film className="size-6 text-slate-600" /></div>
+                        }
+                      </div>
+                      <div className="flex-1 py-2.5 min-w-0">
+                        <p className="font-semibold text-white text-sm leading-tight truncate">{movie.title}</p>
+                        <p className="text-slate-400 text-xs mt-0.5">
+                          {[year, runtime, movie.genres?.[0]?.name].filter(Boolean).join(' · ')}
+                        </p>
+                        {movie.director && <p className="text-slate-500 text-xs mt-0.5">Dir: {movie.director}</p>}
+                      </div>
+                      <div className="flex items-center gap-2 pr-3 flex-shrink-0">
+                        {movie.vote_average > 0 && (
+                          <div className="hidden sm:flex items-center gap-1.5">
+                            <div className="bg-blue-600/90 px-2 py-0.5 rounded-full flex items-center gap-1">
+                              <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                              <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
+                            </div>
+                            {imdbRating && imdbRating !== 'N/A' && (
+                              <div className="bg-[#F5C518] px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span className="text-[9px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
+                                <span className="text-xs font-bold text-black">{imdbRating}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        <button
+                          className={`size-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-700 border border-slate-600 hover:bg-slate-600'}`}
+                          onClick={(e) => { e.stopPropagation(); isLiked ? handleUnlike(movie.id) : handleLike(movie); }}
+                          aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
+                        >
+                          <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-white'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Infinite scroll sentinel + loading indicator */}
             {!isSearchMode && (

@@ -22,16 +22,19 @@ import {
   Mail, Upload, Link as LinkIcon, Loader2,
   RefreshCw, LogOut, Copy, RotateCcw, Unlink,
   CheckCircle2, Bookmark, Film, Heart, Eye, EyeOff, X,
-  ChevronUp, ChevronDown, ChevronsUpDown
+  ChevronUp, ChevronDown, ChevronsUpDown, BookmarkX
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
 import { useImportContext } from './ImportContext';
 import { ImportDialog } from './ImportDialog';
+import { MovieDetailModal } from './MovieDetailModal';
+import { useMovieModal } from '../hooks/useMovieModal';
 
 export function ProfilePage() {
   const { accessToken, userEmail, projectId, onSignOut } = useAppLayoutContext();
   const { watchlist, watched } = useImportContext();
+  const { selectedMovie, modalOpen, openMovie, closeMovie } = useMovieModal(accessToken);
 
   // Profile state
   const [profile, setProfile] = useState<any>(null);
@@ -87,6 +90,9 @@ export function ProfilePage() {
   const [statsModalLoading, setStatsModalLoading] = useState(false);
   const [removingWatchedId, setRemovingWatchedId] = useState<number | null>(null);
   const [statsSort, setStatsSort] = useState<{ col: 'title' | 'date'; dir: 'asc' | 'desc' }>({ col: 'date', dir: 'desc' });
+  const [statsModalPage, setStatsModalPage] = useState(1);
+  const STATS_PAGE_SIZE = 50;
+  const [removingSavedId, setRemovingSavedId] = useState<number | null>(null);
 
   // Partner activity state
   const [partnerStats, setPartnerStats] = useState<{
@@ -362,6 +368,7 @@ export function ProfilePage() {
     if (!accessToken || !type) return;
     setStatsModal(type);
     setStatsModalMovies([]);
+    setStatsModalPage(1);
     setStatsModalLoading(true);
     setStatsSort({ col: 'date', dir: 'desc' });
 
@@ -407,6 +414,28 @@ export function ProfilePage() {
     }
   };
 
+  // ─── Unsave movie ────────────────────────────────────────────────
+  const handleUnsave = async (movieId: number) => {
+    if (!accessToken) return;
+    setRemovingSavedId(movieId);
+    try {
+      const res = await fetch(`${baseUrl}/movies/like/${movieId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        setStatsModalMovies(prev => prev.filter(m => m.id !== movieId));
+        setStats(prev => prev ? { ...prev, saved: Math.max(0, prev.saved - 1) } : null);
+        toast.success('Removed from saved list');
+      }
+    } catch (err) {
+      console.error('Failed to unsave movie:', err);
+      toast.error('Failed to remove from saved list');
+    } finally {
+      setRemovingSavedId(null);
+    }
+  };
+
   // ─── Stats modal sort helpers ───────────────────────────────────
   const sortedStatsMovies = [...statsModalMovies].sort((a, b) => {
     if (statsSort.col === 'title') {
@@ -419,6 +448,7 @@ export function ProfilePage() {
   });
 
   const toggleStatsSort = (col: 'title' | 'date') => {
+    setStatsModalPage(1); // reset to first page on sort change
     setStatsSort(prev =>
       prev.col === col
         ? { col, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
@@ -1257,123 +1287,157 @@ export function ProfilePage() {
                     {statsModal === 'watched' && 'No watched movies yet.'}
                   </p>
                 </div>
-              ) : (
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="text-left text-slate-500 text-xs uppercase tracking-wide border-b border-slate-700/50">
-                      <th className="pb-3 font-medium">
-                        <button
-                          onClick={() => toggleStatsSort('title')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Title
-                          {statsSort.col === 'title' ? (
-                            statsSort.dir === 'asc'
-                              ? <ChevronUp className="size-3" />
-                              : <ChevronDown className="size-3" />
-                          ) : (
-                            <ChevronsUpDown className="size-3 opacity-40" />
-                          )}
-                        </button>
-                      </th>
-                      <th className="pb-3 font-medium w-36">
-                        <button
-                          onClick={() => toggleStatsSort('date')}
-                          className="flex items-center gap-1 hover:text-white transition-colors"
-                        >
-                          Added
-                          {statsSort.col === 'date' ? (
-                            statsSort.dir === 'asc'
-                              ? <ChevronUp className="size-3" />
-                              : <ChevronDown className="size-3" />
-                          ) : (
-                            <ChevronsUpDown className="size-3 opacity-40" />
-                          )}
-                        </button>
-                      </th>
-                      <th className="pb-3 font-medium w-20 text-center">Links</th>
-                      {statsModal === 'watched' && <th className="pb-3 w-10"></th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedStatsMovies.map((movie, i) => {
-                      const year = movie.release_date
-                        ? new Date(movie.release_date).getFullYear()
-                        : null;
-                      const imdbSearchUrl = `https://www.imdb.com/find?q=${encodeURIComponent(
-                        movie.title + (year ? ` ${year}` : '')
-                      )}`;
-                      const letterboxdUrl = `https://letterboxd.com/tmdb/${movie.id}`;
+              ) : (() => {
+                // Lazy-loaded slice — first N rows based on current page
+                const visibleMovies = sortedStatsMovies.slice(0, statsModalPage * STATS_PAGE_SIZE);
+                const hasMore = visibleMovies.length < sortedStatsMovies.length;
+                const showActionCol = statsModal === 'watched' || statsModal === 'saved';
 
-                      return (
-                        <tr
-                          key={movie.id}
-                          className={`border-b border-slate-800/50 last:border-0 ${
-                            i % 2 === 0 ? '' : 'bg-slate-800/20'
-                          }`}
-                        >
-                          <td className="py-3 pr-4 leading-snug">
-                            <span className="text-white font-medium">{movie.title}</span>
-                            {year && (
-                              <span className="text-slate-500 text-xs ml-1.5">({year})</span>
-                            )}
-                          </td>
-                          <td className="py-3 text-slate-400 text-xs">
-                            {movie.timestamp
-                              ? new Date(movie.timestamp).toLocaleDateString('en-GB', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })
-                              : 'N/A'}
-                          </td>
-                          <td className="py-3 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <a
-                                href={imdbSearchUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[10px] font-bold bg-[#F5C518] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
-                                title="Search on IMDb"
-                              >
-                                IMDb
-                              </a>
-                              <a
-                                href={letterboxdUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[10px] font-bold bg-[#00C030] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
-                                title="View on Letterboxd"
-                              >
-                                LB
-                              </a>
-                            </div>
-                          </td>
-                          {statsModal === 'watched' && (
-                            <td className="py-3 text-right">
-                              <button
-                                onClick={() => handleRemoveWatched(movie.id)}
-                                disabled={removingWatchedId === movie.id}
-                                className="text-slate-500 hover:text-amber-400 transition-colors disabled:opacity-50 p-1 rounded hover:bg-slate-700/50"
-                                title="Mark as unwatched"
-                              >
-                                {removingWatchedId === movie.id
-                                  ? <Loader2 className="size-3.5 animate-spin" />
-                                  : <EyeOff className="size-3.5" />
-                                }
-                              </button>
-                            </td>
-                          )}
+                return (
+                  <>
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-slate-500 text-xs uppercase tracking-wide border-b border-slate-700/50">
+                          <th className="pb-3 font-medium">
+                            <button
+                              onClick={() => toggleStatsSort('title')}
+                              className="flex items-center gap-1 hover:text-white transition-colors"
+                            >
+                              Title
+                              {statsSort.col === 'title' ? (
+                                statsSort.dir === 'asc'
+                                  ? <ChevronUp className="size-3" />
+                                  : <ChevronDown className="size-3" />
+                              ) : (
+                                <ChevronsUpDown className="size-3 opacity-40" />
+                              )}
+                            </button>
+                          </th>
+                          <th className="pb-3 font-medium w-32">
+                            <button
+                              onClick={() => toggleStatsSort('date')}
+                              className="flex items-center gap-1 hover:text-white transition-colors"
+                            >
+                              Added
+                              {statsSort.col === 'date' ? (
+                                statsSort.dir === 'asc'
+                                  ? <ChevronUp className="size-3" />
+                                  : <ChevronDown className="size-3" />
+                              ) : (
+                                <ChevronsUpDown className="size-3 opacity-40" />
+                              )}
+                            </button>
+                          </th>
+                          {showActionCol && <th className="pb-3 w-12"></th>}
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              )}
+                      </thead>
+                      <tbody>
+                        {visibleMovies.map((movie, i) => {
+                          const year = movie.release_date
+                            ? new Date(movie.release_date).getFullYear()
+                            : null;
+
+                          return (
+                            <tr
+                              key={movie.id}
+                              className={`border-b border-slate-800/50 last:border-0 ${
+                                i % 2 === 0 ? '' : 'bg-slate-800/20'
+                              }`}
+                            >
+                              {/* Clickable title — opens movie preview modal */}
+                              <td className="py-3 pr-4 leading-snug">
+                                <button
+                                  onClick={() => openMovie(movie)}
+                                  className="text-left hover:text-pink-300 transition-colors group"
+                                >
+                                  <span className="text-white font-medium group-hover:underline underline-offset-2">
+                                    {movie.title}
+                                  </span>
+                                  {year && (
+                                    <span className="text-slate-500 text-xs ml-1.5">({year})</span>
+                                  )}
+                                </button>
+                              </td>
+
+                              {/* Added date */}
+                              <td className="py-3 text-slate-400 text-xs">
+                                {movie.timestamp
+                                  ? new Date(movie.timestamp).toLocaleDateString('en-GB', {
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric',
+                                    })
+                                  : 'N/A'}
+                              </td>
+
+                              {/* Action button — Watched: EyeOff, Saved: BookmarkX */}
+                              {showActionCol && (
+                                <td className="py-3 px-3 text-right">
+                                  {statsModal === 'watched' && (
+                                    <button
+                                      onClick={() => handleRemoveWatched(movie.id)}
+                                      disabled={removingWatchedId === movie.id}
+                                      className="text-slate-500 hover:text-amber-400 transition-colors disabled:opacity-50 p-1.5 rounded hover:bg-slate-700/50"
+                                      title="Mark as unwatched"
+                                    >
+                                      {removingWatchedId === movie.id
+                                        ? <Loader2 className="size-4 animate-spin" />
+                                        : <EyeOff className="size-4" />
+                                      }
+                                    </button>
+                                  )}
+                                  {statsModal === 'saved' && (
+                                    <button
+                                      onClick={() => handleUnsave(movie.id)}
+                                      disabled={removingSavedId === movie.id}
+                                      className="text-slate-500 hover:text-red-400 transition-colors disabled:opacity-50 p-1.5 rounded hover:bg-slate-700/50"
+                                      title="Remove from saved"
+                                    >
+                                      {removingSavedId === movie.id
+                                        ? <Loader2 className="size-4 animate-spin" />
+                                        : <BookmarkX className="size-4" />
+                                      }
+                                    </button>
+                                  )}
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+
+                    {/* Load more */}
+                    {hasMore && (
+                      <div className="flex justify-center pt-4 pb-2">
+                        <button
+                          onClick={() => setStatsModalPage(p => p + 1)}
+                          className="text-slate-400 hover:text-white text-xs border border-slate-700 hover:border-slate-500 rounded-lg px-4 py-2 transition-colors"
+                        >
+                          Load more ({sortedStatsMovies.length - visibleMovies.length} remaining)
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
           </div>
         </div>
+      )}
+
+      {/* Movie preview modal — read-only, opened from stats table title click */}
+      {selectedMovie && (
+        <MovieDetailModal
+          movie={selectedMovie}
+          isOpen={modalOpen}
+          onClose={closeMovie}
+          isLiked={false}
+          onLike={() => {}}
+          onUnlike={() => {}}
+          onDislike={() => {}}
+        />
       )}
     </>
   );
