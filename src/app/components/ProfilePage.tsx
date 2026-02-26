@@ -1189,7 +1189,7 @@ export function ProfilePage() {
                 <h2 className="text-white font-semibold text-base">Watched Movies</h2>
                 {!watchedLoading && (
                   <p className="text-slate-400 text-xs mt-0.5">
-                    {watchedMovies.length} {watchedMovies.length === 1 ? 'movie' : 'movies'} · sorted by most recently watched
+                    {watchedMovies.length} {watchedMovies.length === 1 ? 'movie' : 'movies'} · sorted by most recently added
                   </p>
                 )}
               </div>
@@ -1219,27 +1219,35 @@ export function ProfilePage() {
                   <thead>
                     <tr className="text-left text-slate-500 text-xs uppercase tracking-wide border-b border-slate-700/50">
                       <th className="pb-3 font-medium">Title</th>
-                      <th className="pb-3 font-medium w-16 text-center">Year</th>
-                      <th className="pb-3 font-medium w-36">Date Watched</th>
+                      <th className="pb-3 font-medium w-36">Added</th>
+                      <th className="pb-3 font-medium w-20 text-center">Links</th>
                       <th className="pb-3 w-10"></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {watchedMovies.map((movie, i) => (
+                    {watchedMovies.map((movie, i) => {
+                      const year = movie.release_date
+                        ? new Date(movie.release_date).getFullYear()
+                        : null;
+                      const imdbId = movie.external_ids?.imdb_id || null;
+                      const tmdbId = movie.id;
+
+                      return (
                       <tr
                         key={movie.id}
                         className={`border-b border-slate-800/50 last:border-0 ${
                           i % 2 === 0 ? '' : 'bg-slate-800/20'
                         }`}
                       >
-                        <td className="py-3 pr-4 text-white font-medium leading-snug">
-                          {movie.title}
+                        {/* Title + year combined */}
+                        <td className="py-3 pr-4 leading-snug">
+                          <span className="text-white font-medium">{movie.title}</span>
+                          {year && (
+                            <span className="text-slate-500 text-xs ml-1.5">({year})</span>
+                          )}
                         </td>
-                        <td className="py-3 text-slate-400 text-center">
-                          {movie.release_date
-                            ? new Date(movie.release_date).getFullYear()
-                            : '—'}
-                        </td>
+
+                        {/* Added date */}
                         <td className="py-3 text-slate-400 text-xs">
                           {movie.timestamp
                             ? new Date(movie.timestamp).toLocaleDateString('en-GB', {
@@ -1249,6 +1257,36 @@ export function ProfilePage() {
                               })
                             : 'N/A'}
                         </td>
+
+                        {/* IMDb + Letterboxd links */}
+                        <td className="py-3 text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            {imdbId ? (
+                              <a
+                                href={`https://www.imdb.com/title/${imdbId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] font-bold bg-[#F5C518] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
+                                title="View on IMDb"
+                              >
+                                IMDb
+                              </a>
+                            ) : (
+                              <span className="text-slate-700 text-[10px]">—</span>
+                            )}
+                            <a
+                              href={`https://letterboxd.com/tmdb/${tmdbId}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] font-bold bg-[#00C030] text-black px-1.5 py-0.5 rounded hover:opacity-80 transition-opacity"
+                              title="View on Letterboxd"
+                            >
+                              LB
+                            </a>
+                          </div>
+                        </td>
+
+                        {/* Mark as unwatched */}
                         <td className="py-3 text-right">
                           <button
                             onClick={() => handleRemoveWatched(movie.id)}
@@ -1263,7 +1301,8 @@ export function ProfilePage() {
                           </button>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               )}
