@@ -994,7 +994,7 @@ export function ProfilePage() {
                       </div>
                     )}
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         onClick={() => handleLetterboxdSync(false)}
                         disabled={letterboxdSyncing}
@@ -1021,7 +1021,7 @@ export function ProfilePage() {
                         onClick={handleLetterboxdDisconnect}
                         variant="outline"
                         size="sm"
-                        className="ml-auto bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
+                        className="bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800"
                       >
                         <Unlink className="size-3.5 mr-2" />
                         Disconnect
