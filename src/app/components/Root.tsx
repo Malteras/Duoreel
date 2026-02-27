@@ -11,7 +11,10 @@ export function Root() {
         <title>DuoReel</title>
       </Helmet>
       <Outlet />
-      <Toaster />
+      {/* Desktop: bottom-right */}
+      <Toaster position="bottom-right" className="hidden md:block" />
+      {/* Mobile: top-center, above the bottom nav */}
+      <Toaster position="top-center" className="md:hidden" />
     </AuthProvider>
   );
 }
