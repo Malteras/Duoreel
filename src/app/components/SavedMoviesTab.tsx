@@ -56,6 +56,7 @@ export function SavedMoviesTab({
   const [partnerName, setPartnerName] = useState<string>(savedCache?.partnerName ?? '');
   const [hasPartner, setHasPartner] = useState(savedCache?.hasPartner ?? false);
   const [loading, setLoading] = useState(true);
+  const [likedMoviesReady, setLikedMoviesReady] = useState(false);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
@@ -178,6 +179,16 @@ export function SavedMoviesTab({
     publicAnonKey,
     baseUrl,
   });
+
+  // Mark likedMoviesReady once movies arrive, or after 3s timeout (empty account)
+  useEffect(() => {
+    if (likedMovies.length > 0) {
+      setLikedMoviesReady(true);
+      return;
+    }
+    const timeout = setTimeout(() => setLikedMoviesReady(true), 3000);
+    return () => clearTimeout(timeout);
+  }, [likedMovies.length]);
 
   // Listen for individual rating updates
   useEffect(() => {
@@ -555,7 +566,7 @@ export function SavedMoviesTab({
         </div>
 
         {/* ── Content ── */}
-        {loading ? (
+        {(loading || !likedMoviesReady) ? (
           <MovieCardSkeletonGrid count={8} />
         ) : viewMode === 'mine' ? (
           filteredLikedMovies.length === 0 ? (
