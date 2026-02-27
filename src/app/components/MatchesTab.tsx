@@ -605,8 +605,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
                   <Select value={selectedService} onValueChange={setSelectedService}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[140px] h-8 text-sm">
-                      <div className="flex items-center gap-2 truncate md:overflow-visible">
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white min-w-[110px] w-auto h-8 text-sm">
+                      <div className="flex items-center gap-2">
                         <Tv className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
                         <SelectValue />
                       </div>
