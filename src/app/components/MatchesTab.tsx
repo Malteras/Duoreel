@@ -644,14 +644,16 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     <LayoutGrid className="size-3.5" />
                   </button>
                 </div>
-
-                {/* Match count */}
-                <span className="text-xs text-slate-500 md:ml-2">
-                  {filteredAndSortedMovies.length === matchedMovies.length
-                    ? `${matchedMovies.length} match${matchedMovies.length !== 1 ? 'es' : ''}`
-                    : `${filteredAndSortedMovies.length} of ${matchedMovies.length} (filtered)`}
-                </span>
               </div>
+            )}
+
+            {/* Match count — centered below filter row, matching Saved tab pattern */}
+            {!loading && matchedMovies.length > 0 && (
+              <p className="text-sm text-slate-500 text-center mt-2">
+                {filteredAndSortedMovies.length === matchedMovies.length
+                  ? `${matchedMovies.length} match${matchedMovies.length !== 1 ? 'es' : ''}`
+                  : `${filteredAndSortedMovies.length} of ${matchedMovies.length} matches (filtered)`}
+              </p>
             )}
           </div>
         )}
