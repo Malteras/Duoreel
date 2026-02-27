@@ -55,7 +55,7 @@ export function SavedMoviesTab({
   const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(new Map());
   const [partnerName, setPartnerName] = useState<string>(savedCache?.partnerName ?? '');
   const [hasPartner, setHasPartner] = useState(savedCache?.hasPartner ?? false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
@@ -88,13 +88,14 @@ export function SavedMoviesTab({
 
   // Fetch partner info and partner's list
   useEffect(() => {
-    if (!accessToken) return;
+    if (!accessToken) { setLoading(false); return; }
 
     // Skip fetch if cache is valid: likedMovies hasn't grown since last Saved load.
     // Case 1 (no new saves): return immediately and show cached data.
     // Case 2 (user saved movies in Discover): likedMovies.length grew → re-fetch.
     // viewMode change always re-fetches regardless of cache.
     if (savedCache && savedCache.likedMoviesLengthAtLoad === likedMovies.length) {
+      setLoading(false);
       return;
     }
 
