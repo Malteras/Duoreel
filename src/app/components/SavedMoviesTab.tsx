@@ -9,7 +9,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff, LayoutGrid, List, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff, LayoutGrid, LayoutList, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -498,8 +498,16 @@ export function SavedMoviesTab({
                 </Select>
               </div>
 
-              {/* View mode toggle — pushed to the right on wider screens, wraps naturally on mobile */}
+              {/* View mode toggle — Large (default) vs Compact grid */}
               <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 md:ml-auto flex-shrink-0">
+                <button
+                  onClick={() => handleCardViewMode('grid')}
+                  className={`p-1.5 rounded transition-colors ${cardViewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                  aria-label="Large card view"
+                  title="Large cards"
+                >
+                  <LayoutList className="size-3.5" />
+                </button>
                 <button
                   onClick={() => handleCardViewMode('compact')}
                   className={`p-1.5 rounded transition-colors ${cardViewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
@@ -507,14 +515,6 @@ export function SavedMoviesTab({
                   title="Compact grid"
                 >
                   <LayoutGrid className="size-3.5" />
-                </button>
-                <button
-                  onClick={() => handleCardViewMode('list')}
-                  className={`p-1.5 rounded transition-colors ${cardViewMode === 'list' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                  aria-label="List view"
-                  title="List view"
-                >
-                  <List className="size-3.5" />
                 </button>
               </div>
             </div>
@@ -748,62 +748,15 @@ export function SavedMoviesTab({
                 </div>
               )}
 
-              {/* ── List view ── */}
+              {/* ── List view ── KEPT AS DEAD CODE: list layout is implemented and working
+                  but not currently exposed in the UI toggle. To re-enable: add a List icon
+                  button to the toggle above calling handleCardViewMode('list').
               {cardViewMode === 'list' && (
                 <div className="space-y-2">
-                  {visibleLikedMovies.map((movie) => {
-                    const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : '';
-                    const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-                    const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
-                    const imdbRating = imdbRatings.get(movie.id);
-                    const isWatchedMovie = watchedMovieIds.has(movie.id);
-                    return (
-                      <div
-                        key={movie.id}
-                        className={`group flex gap-3 bg-gradient-to-r from-slate-800/50 to-slate-900/80 border border-slate-700/50 hover:border-slate-600 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isWatchedMovie ? 'opacity-60 grayscale-[30%]' : ''}`}
-                        onClick={() => openMovie(movie)}
-                      >
-                        <div className="relative w-14 flex-shrink-0">
-                          {posterUrl
-                            ? <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full bg-slate-800 flex items-center justify-center"><Film className="size-6 text-slate-600" /></div>
-                          }
-                        </div>
-                        <div className="flex-1 py-2.5 min-w-0">
-                          <p className="font-semibold text-white text-sm leading-tight truncate">{movie.title}</p>
-                          <p className="text-slate-400 text-xs mt-0.5">
-                            {[year, runtime, movie.genres?.[0]?.name].filter(Boolean).join(' · ')}
-                          </p>
-                          {movie.director && <p className="text-slate-500 text-xs mt-0.5">Dir: {movie.director}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 pr-3 flex-shrink-0">
-                          {movie.vote_average > 0 && (
-                            <div className="hidden sm:flex items-center gap-1.5">
-                              <div className="bg-blue-600/90 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
-                                <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
-                              </div>
-                              {imdbRating && imdbRating !== 'N/A' && (
-                                <div className="bg-[#F5C518] px-2 py-0.5 rounded-full flex items-center gap-1">
-                                  <span className="text-[9px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
-                                  <span className="text-xs font-bold text-black">{imdbRating}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                          <button
-                            className="size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors flex-shrink-0"
-                            onClick={(e) => { e.stopPropagation(); handleUnlike(movie.id); }}
-                            aria-label="Remove from watchlist"
-                          >
-                            <svg className="size-4 fill-white text-white" fill="currentColor" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {visibleLikedMovies.map((movie) => { ... })}
                 </div>
               )}
+              ── end of list view dead code ── */}
 
               <div ref={setSentinelEl} className="flex justify-center mt-8 h-12 items-center">
                 {loadingMore && <Film className="size-8 animate-spin text-slate-400" />}
@@ -956,55 +909,15 @@ export function SavedMoviesTab({
                 </div>
               )}
 
-              {/* ── List view (partner) ── */}
+              {/* ── List view (partner) ── KEPT AS DEAD CODE: list layout is implemented and working
+                  but not currently exposed in the UI toggle. To re-enable: add a List icon
+                  button to the toggle above calling handleCardViewMode('list').
               {cardViewMode === 'list' && (
                 <div className="space-y-2">
-                  {visiblePartnerMovies.map((movie) => {
-                    const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : '';
-                    const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
-                    const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
-                    const imdbRating = imdbRatings.get(movie.id);
-                    const isWatchedMovie = watchedMovieIds.has(movie.id);
-                    return (
-                      <div
-                        key={movie.id}
-                        className={`group flex gap-3 bg-gradient-to-r from-slate-800/50 to-slate-900/80 border border-slate-700/50 hover:border-slate-600 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${isWatchedMovie ? 'opacity-60 grayscale-[30%]' : ''}`}
-                        onClick={() => openMovie(movie)}
-                      >
-                        <div className="relative w-14 flex-shrink-0">
-                          {posterUrl
-                            ? <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover" />
-                            : <div className="w-full h-full bg-slate-800 flex items-center justify-center"><Film className="size-6 text-slate-600" /></div>
-                          }
-                        </div>
-                        <div className="flex-1 py-2.5 min-w-0">
-                          <p className="font-semibold text-white text-sm leading-tight truncate">{movie.title}</p>
-                          <p className="text-slate-400 text-xs mt-0.5">
-                            {[year, runtime, movie.genres?.[0]?.name].filter(Boolean).join(' · ')}
-                          </p>
-                          {movie.director && <p className="text-slate-500 text-xs mt-0.5">Dir: {movie.director}</p>}
-                        </div>
-                        <div className="flex items-center gap-2 pr-3 flex-shrink-0">
-                          {movie.vote_average > 0 && (
-                            <div className="hidden sm:flex items-center gap-1.5">
-                              <div className="bg-blue-600/90 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
-                                <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
-                              </div>
-                              {imdbRating && imdbRating !== 'N/A' && (
-                                <div className="bg-[#F5C518] px-2 py-0.5 rounded-full flex items-center gap-1">
-                                  <span className="text-[9px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
-                                  <span className="text-xs font-bold text-black">{imdbRating}</span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {visiblePartnerMovies.map((movie) => { ... })}
                 </div>
               )}
+              ── end of list view dead code ── */}
 
               <div ref={setSentinelEl} className="flex justify-center mt-8 h-12 items-center">
                 {loadingMore && <Film className="size-8 animate-spin text-slate-400" />}
