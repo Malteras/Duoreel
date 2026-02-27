@@ -478,7 +478,7 @@ export function SavedMoviesTab({
               </div>
 
               {/* Sort */}
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 md:ml-auto">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[160px]">
@@ -499,7 +499,7 @@ export function SavedMoviesTab({
               </div>
 
               {/* View mode toggle — Large (default) vs Compact grid */}
-              <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 md:ml-auto flex-shrink-0">
+              <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
                 <button
                   onClick={() => handleCardViewMode('grid')}
                   className={`p-1.5 rounded transition-colors ${cardViewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}

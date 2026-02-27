@@ -543,22 +543,22 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           </Card>
         ) : null}
 
-        {/* ── Heading + controls — single compact area ── */}
+        {/* ── Heading + controls ── */}
         {partner && (
           <div className="mb-4">
-            {/* Row 1: Title + view toggle */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Heart className="size-5 md:size-7 text-pink-500 fill-pink-500 flex-shrink-0" />
-                <div>
+            {/* Row 1: Title — centered on desktop, left-aligned with toggle on mobile */}
+            <div className="flex items-center justify-between md:justify-center mb-3">
+              <div className="flex items-center gap-2 md:flex-col md:items-center md:gap-1">
+                <div className="flex items-center gap-2">
+                  <Heart className="size-5 md:size-7 text-pink-500 fill-pink-500 flex-shrink-0" />
                   <h2 className="text-lg md:text-3xl font-bold text-white leading-tight">Your Matches</h2>
-                  <p className="text-slate-400 text-xs md:text-sm hidden md:block">Movies you both want to watch</p>
                 </div>
+                <p className="text-slate-400 text-xs md:text-sm hidden md:block">Movies you both want to watch</p>
               </div>
 
-              {/* View toggle — only shown when there are matches */}
+              {/* View toggle — mobile only (on desktop it moves to Row 2) */}
               {!loading && matchedMovies.length > 0 && (
-                <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
+                <div className="flex md:hidden items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
                   <button
                     onClick={() => handleViewMode('grid')}
                     className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
@@ -579,7 +579,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               )}
             </div>
 
-            {/* Row 2: Filters + sort + match count — only shown when there are matches */}
+            {/* Row 2: Filters + sort + view toggle + match count */}
             {!loading && matchedMovies.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 {/* Service filter */}
@@ -606,8 +606,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   </Select>
                 </div>
 
-                {/* Sort */}
-                <div className="flex items-center gap-2">
+                {/* Sort — pushed right on desktop */}
+                <div className="flex items-center gap-2 md:ml-auto">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                     <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[155px] h-8 text-sm">
@@ -625,8 +625,28 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   </Select>
                 </div>
 
+                {/* View toggle — desktop only (mobile version is in Row 1) */}
+                <div className="hidden md:flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
+                  <button
+                    onClick={() => handleViewMode('grid')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="Large card view"
+                    title="Large cards"
+                  >
+                    <LayoutList className="size-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleViewMode('compact')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="Compact grid view"
+                    title="Compact grid"
+                  >
+                    <LayoutGrid className="size-3.5" />
+                  </button>
+                </div>
+
                 {/* Match count */}
-                <span className="text-xs text-slate-500 ml-auto">
+                <span className="text-xs text-slate-500 md:ml-2">
                   {filteredAndSortedMovies.length === matchedMovies.length
                     ? `${matchedMovies.length} match${matchedMovies.length !== 1 ? 'es' : ''}`
                     : `${filteredAndSortedMovies.length} of ${matchedMovies.length} (filtered)`}
