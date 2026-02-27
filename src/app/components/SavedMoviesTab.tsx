@@ -457,7 +457,7 @@ export function SavedMoviesTab({
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
             <div className="flex items-center gap-2">
               {/* Show filter */}
-              <div className="flex flex-1 md:flex-none items-center gap-2">
+              <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
                 <WatchedFilterSelect
                   value={viewMode === 'mine' ? filterBy : partnerFilterBy}
@@ -468,12 +468,20 @@ export function SavedMoviesTab({
               </div>
 
               {/* Sort */}
-              <div className="flex flex-1 md:flex-none items-center gap-2 md:ml-auto">
+              <div className="flex items-center gap-2 md:ml-auto">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[160px]">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpDown className="size-4 md:hidden flex-shrink-0 text-slate-400" />
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-9 md:w-[160px] h-8 text-sm">
+                    {/* Mobile: icon only, dot when non-default */}
+                    <div className="flex md:hidden items-center justify-center w-full relative">
+                      <ArrowUpDown className="size-3.5 text-slate-300" />
+                      {sortBy !== 'newest' && (
+                        <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-pink-500" />
+                      )}
+                    </div>
+                    {/* Desktop: full label */}
+                    <div className="hidden md:flex items-center gap-2">
+                      <ArrowUpDown className="size-3.5 text-slate-400" />
                       <SelectValue />
                     </div>
                   </SelectTrigger>

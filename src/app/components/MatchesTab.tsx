@@ -580,18 +580,30 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             {!loading && matchedMovies.length > 0 && (
               <div className="flex items-center gap-2">
                 {/* Show filter */}
-                <div className="flex flex-1 md:flex-none items-center gap-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
                   <WatchedFilterSelect value={filterBy} onChange={setFilterBy} />
                 </div>
 
                 {/* Service filter */}
-                <div className="flex flex-1 md:flex-none items-center gap-2">
+                <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
                   <Select value={selectedService} onValueChange={setSelectedService}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[110px] md:w-auto h-8 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Tv className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-9 md:min-w-[110px] md:w-auto h-8 text-sm">
+                      {/* Mobile: logo if service selected, Tv icon if all */}
+                      <div className="flex md:hidden items-center justify-center w-full">
+                        {selectedService !== 'all'
+                          ? <img
+                              src={STREAMING_SERVICES.find(s => s.value === selectedService)?.logo}
+                              alt=""
+                              className="size-4 rounded object-cover"
+                            />
+                          : <Tv className="size-3.5 text-slate-300" />
+                        }
+                      </div>
+                      {/* Desktop: full label via SelectValue */}
+                      <div className="hidden md:flex items-center gap-2">
+                        <Tv className="size-3.5 text-slate-400" />
                         <SelectValue />
                       </div>
                     </SelectTrigger>
@@ -610,12 +622,20 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 </div>
 
                 {/* Sort — pushed right on desktop */}
-                <div className="flex flex-1 md:flex-none items-center gap-2 md:ml-auto">
+                <div className="flex items-center gap-2 md:ml-auto">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[155px] h-8 text-sm">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-9 md:w-[155px] h-8 text-sm">
+                      {/* Mobile: icon only, with active dot when non-default sort */}
+                      <div className="flex md:hidden items-center justify-center w-full relative">
+                        <ArrowUpDown className="size-3.5 text-slate-300" />
+                        {sortBy !== 'default' && (
+                          <span className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-pink-500" />
+                        )}
+                      </div>
+                      {/* Desktop: full label */}
+                      <div className="hidden md:flex items-center gap-2">
+                        <ArrowUpDown className="size-3.5 text-slate-400" />
                         <SelectValue />
                       </div>
                     </SelectTrigger>
@@ -741,7 +761,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </div>
             )}
 
-            {/* ─�� Compact grid ── */}
+            {/* ─ Compact grid ── */}
             {viewMode === 'compact' && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredAndSortedMovies.map((movie) => {
