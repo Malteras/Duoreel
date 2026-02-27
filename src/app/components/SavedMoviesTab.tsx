@@ -455,9 +455,9 @@ export function SavedMoviesTab({
 
           {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 overflow-hidden">
               {/* Show filter */}
-              <div className="flex flex-1 md:flex-none items-center gap-2">
+              <div className="flex flex-1 min-w-0 md:flex-none items-center gap-2">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
                 <WatchedFilterSelect
                   value={viewMode === 'mine' ? filterBy : partnerFilterBy}
@@ -468,10 +468,10 @@ export function SavedMoviesTab({
               </div>
 
               {/* Sort */}
-              <div className="flex flex-1 md:flex-none items-center gap-2 md:ml-auto">
+              <div className="flex flex-1 min-w-0 md:flex-none items-center gap-2 md:ml-auto">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[160px] h-8 text-sm">
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[160px] h-8 text-sm min-w-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                       <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
                       <span className="truncate"><SelectValue /></span>
