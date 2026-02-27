@@ -44,6 +44,7 @@ import {
   LayoutGrid,
   // List, // kept for list view — see commented-out dead code block below the compact grid
   LayoutList,
+  ArrowUpDown,
 } from "lucide-react";
 
 interface MoviesTabProps {
@@ -1142,7 +1143,10 @@ export function MoviesTab({
             {/* Sort */}
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white w-fit min-w-[160px] h-9">
-                <SelectValue />
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="size-3.5 text-slate-400 flex-shrink-0" />
+                  <SelectValue />
+                </div>
               </SelectTrigger>
               <SelectContent>
                 {SORT_OPTIONS.map((option) => (
@@ -1376,13 +1380,13 @@ export function MoviesTab({
                           </button>
                         </div>
                         {movie.vote_average > 0 && (
-                          <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
+                          <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
                             {/* TMDB badge */}
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <div className="bg-blue-600/90 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                                  <span className="text-[9px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
-                                  <span className="text-xs font-bold text-white">{movie.vote_average.toFixed(1)}</span>
+                                <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                                  <span className="text-[7px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                                  <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
                                 </div>
                               </TooltipTrigger>
                               <TooltipContent className="bg-slate-800 text-white border-slate-700">
@@ -1399,27 +1403,27 @@ export function MoviesTab({
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
-                                    className={`backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                                    className={`backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
                                       displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
                                         ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
                                         : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
                                     }`}
                                   >
-                                    <span className={`text-[9px] font-bold uppercase tracking-wide ${
+                                    <span className={`text-[7px] font-bold uppercase tracking-wide ${
                                       displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
                                     }`}>IMDb</span>
                                     {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
-                                      <span className="text-xs font-bold text-black">{displayImdbRating}</span>
+                                      <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
                                     ) : displayImdbRating === 'NOT_FOUND' ? (
-                                      <span className="text-xs font-bold text-black/40">—</span>
+                                      <span className="text-[10px] font-bold text-black/40">—</span>
                                     ) : (
-                                      <Loader2 className="size-3 text-black/50 animate-spin" />
+                                      <Loader2 className="size-2.5 text-black/50 animate-spin" />
                                     )}
                                   </a>
                                 ) : (
-                                  <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
-                                    <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
-                                    <span className="text-xs font-bold text-black/40">—</span>
+                                  <div className="bg-[#F5C518]/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                                    <span className="text-[7px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                                    <span className="text-[10px] font-bold text-black/40">—</span>
                                   </div>
                                 )}
                               </TooltipTrigger>

@@ -9,7 +9,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff, LayoutGrid, List } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff, LayoutGrid, List, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -447,17 +447,18 @@ export function SavedMoviesTab({
 
           {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
-            <div className="flex items-center gap-3 md:justify-between">
-              <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
-                <label className="text-sm font-medium text-slate-300 hidden md:block">Show:</label>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Show filter */}
+              <div className="flex items-center gap-2 min-w-0">
+                <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
                 <Select
                   value={viewMode === 'mine' ? filterBy : partnerFilterBy}
                   onValueChange={(value: 'all' | 'unwatched' | 'watched') =>
                     viewMode === 'mine' ? setFilterBy(value) : setPartnerFilterBy(value)
                   }
                 >
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white flex-1 md:w-fit">
-                    <div className="flex items-center gap-2 truncate md:overflow-visible">
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[140px]">
+                    <div className="flex items-center gap-2">
                       {(viewMode === 'mine' ? filterBy : partnerFilterBy) === 'unwatched' ? (
                         <EyeOff className="size-4 flex-shrink-0 text-slate-400" />
                       ) : (viewMode === 'mine' ? filterBy : partnerFilterBy) === 'watched' ? (
@@ -476,12 +477,13 @@ export function SavedMoviesTab({
                 </Select>
               </div>
 
-              <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
-                <label className="text-sm font-medium text-slate-300 hidden md:block">Sort by:</label>
+              {/* Sort */}
+              <div className="flex items-center gap-2 min-w-0">
+                <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white flex-1 md:w-fit md:max-w-[280px]">
-                    <div className="flex items-center gap-2 truncate md:overflow-visible">
-                      <ArrowUpDown className="size-4 md:hidden flex-shrink-0" />
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[160px]">
+                    <div className="flex items-center gap-2">
+                      <ArrowUpDown className="size-4 flex-shrink-0 text-slate-400" />
                       <SelectValue />
                     </div>
                   </SelectTrigger>
@@ -496,8 +498,8 @@ export function SavedMoviesTab({
                 </Select>
               </div>
 
-              {/* View mode toggle */}
-              <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 ml-auto flex-shrink-0">
+              {/* View mode toggle — pushed to the right on wider screens, wraps naturally on mobile */}
+              <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 md:ml-auto flex-shrink-0">
                 <button
                   onClick={() => handleCardViewMode('compact')}
                   className={`p-1.5 rounded transition-colors ${cardViewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
@@ -661,6 +663,9 @@ export function SavedMoviesTab({
                     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
                     const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
                     const imdbRating = imdbRatings.get(movie.id);
+                    const hasImdbId = (movie as any).external_ids?.imdb_id;
+                    const cachedRating = hasImdbId ? globalImdbCache?.get(hasImdbId) : undefined;
+                    const displayImdbRating = imdbRatings.get(movie.id) || (movie as any).imdbRating || (cachedRating && cachedRating !== 'N/A' ? cachedRating : null);
                     const isWatchedMovie = watchedMovieIds.has(movie.id);
                     return (
                       <div
@@ -684,15 +689,38 @@ export function SavedMoviesTab({
                             </button>
                           </div>
                           {movie.vote_average > 0 && (
-                            <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1">
+                            <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
                               <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                                <span className="text-[8px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                                <span className="text-[7px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
                                 <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
                               </div>
-                              {imdbRating && imdbRating !== 'N/A' && (
-                                <div className="bg-[#F5C518] backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                                  <span className="text-[8px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
-                                  <span className="text-[10px] font-bold text-black">{imdbRating}</span>
+                              {hasImdbId ? (
+                                <a
+                                  href={`https://www.imdb.com/title/${hasImdbId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                                    displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
+                                      ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
+                                      : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
+                                  }`}
+                                >
+                                  <span className={`text-[7px] font-bold uppercase tracking-wide ${
+                                    displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
+                                  }`}>IMDb</span>
+                                  {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
+                                    <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+                                  ) : displayImdbRating === 'NOT_FOUND' ? (
+                                    <span className="text-[10px] font-bold text-black/40">—</span>
+                                  ) : (
+                                    <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                                  )}
+                                </a>
+                              ) : (
+                                <div className="bg-[#F5C518]/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                                  <span className="text-[7px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                                  <span className="text-[10px] font-bold text-black/40">—</span>
                                 </div>
                               )}
                             </div>
@@ -852,6 +880,9 @@ export function SavedMoviesTab({
                     const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
                     const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
                     const imdbRating = imdbRatings.get(movie.id);
+                    const hasImdbId = (movie as any).external_ids?.imdb_id;
+                    const cachedRating = hasImdbId ? globalImdbCache?.get(hasImdbId) : undefined;
+                    const displayImdbRating = imdbRatings.get(movie.id) || (movie as any).imdbRating || (cachedRating && cachedRating !== 'N/A' ? cachedRating : null);
                     const isWatchedMovie = watchedMovieIds.has(movie.id);
                     return (
                       <div
@@ -866,15 +897,38 @@ export function SavedMoviesTab({
                           }
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
                           {movie.vote_average > 0 && (
-                            <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1">
+                            <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
                               <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                                <span className="text-[8px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                                <span className="text-[7px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
                                 <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
                               </div>
-                              {imdbRating && imdbRating !== 'N/A' && (
-                                <div className="bg-[#F5C518] backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                                  <span className="text-[8px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
-                                  <span className="text-[10px] font-bold text-black">{imdbRating}</span>
+                              {hasImdbId ? (
+                                <a
+                                  href={`https://www.imdb.com/title/${hasImdbId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className={`backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                                    displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
+                                      ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
+                                      : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
+                                  }`}
+                                >
+                                  <span className={`text-[7px] font-bold uppercase tracking-wide ${
+                                    displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
+                                  }`}>IMDb</span>
+                                  {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
+                                    <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+                                  ) : displayImdbRating === 'NOT_FOUND' ? (
+                                    <span className="text-[10px] font-bold text-black/40">—</span>
+                                  ) : (
+                                    <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                                  )}
+                                </a>
+                              ) : (
+                                <div className="bg-[#F5C518]/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                                  <span className="text-[7px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                                  <span className="text-[10px] font-bold text-black/40">—</span>
                                 </div>
                               )}
                             </div>

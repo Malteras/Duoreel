@@ -30,6 +30,7 @@ import {
   Tv,
   ArrowUpDown,
   Filter,
+  Loader2,
   LayoutGrid,
   List,
   Film,
@@ -703,6 +704,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
                   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
                   const imdbRating = imdbRatings.get(movie.id);
+                  const hasImdbId = (movie as any).external_ids?.imdb_id;
+                  const cachedRating = hasImdbId ? globalImdbCache?.get(hasImdbId) : undefined;
+                  const displayImdbRating = imdbRatings.get(movie.id) || (movie as any).imdbRating || (cachedRating && cachedRating !== 'N/A' ? cachedRating : null);
                   const isWatchedMovie = watchedMovieIds.has(movie.id);
                   return (
                     <div
@@ -723,15 +727,38 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                           </span>
                         </div>
                         {movie.vote_average > 0 && (
-                          <div className="absolute bottom-2 right-2 z-10 flex flex-col items-end gap-1">
+                          <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
                             <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                              <span className="text-[8px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+                              <span className="text-[7px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
                               <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
                             </div>
-                            {imdbRating && imdbRating !== 'N/A' && (
-                              <div className="bg-[#F5C518] backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
-                                <span className="text-[8px] font-bold text-black/70 uppercase tracking-wide">IMDb</span>
-                                <span className="text-[10px] font-bold text-black">{imdbRating}</span>
+                            {hasImdbId ? (
+                              <a
+                                href={`https://www.imdb.com/title/${hasImdbId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={(e) => e.stopPropagation()}
+                                className={`backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                                  displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
+                                    ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
+                                    : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
+                                }`}
+                              >
+                                <span className={`text-[7px] font-bold uppercase tracking-wide ${
+                                  displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
+                                }`}>IMDb</span>
+                                {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
+                                  <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+                                ) : displayImdbRating === 'NOT_FOUND' ? (
+                                  <span className="text-[10px] font-bold text-black/40">—</span>
+                                ) : (
+                                  <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                                )}
+                              </a>
+                            ) : (
+                              <div className="bg-[#F5C518]/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+                                <span className="text-[7px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
+                                <span className="text-[10px] font-bold text-black/40">—</span>
                               </div>
                             )}
                           </div>
