@@ -43,6 +43,7 @@ import { PartnerConnectCard } from './PartnerConnectCard';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { MatchesCache } from '../hooks/useTabCache';
+import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -69,6 +70,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   // ── Filter / sort state ────────────────────────────────────────────────────
   const [selectedService, setSelectedService] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'default' | 'rating' | 'year-new' | 'year-old'>('default');
+  const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
   const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
     return (localStorage.getItem('duoreel-viewmode-matches') as 'grid' | 'compact' | 'list') || 'grid';
   });
@@ -276,6 +278,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const filteredAndSortedMovies = useMemo(() => {
     let movies = [...matchedMovies];
 
+    if (filterBy === 'unwatched') {
+      movies = movies.filter(m => !watchedMovieIds.has(m.id));
+    } else if (filterBy === 'watched') {
+      movies = movies.filter(m => watchedMovieIds.has(m.id));
+    }
+
     if (selectedService !== 'all') {
       movies = movies.filter(movie => {
         const flatrate = movie['watch/providers']?.results?.US?.flatrate || [];
@@ -302,7 +310,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     }
 
     return movies;
-  }, [matchedMovies, selectedService, sortBy]);
+  }, [matchedMovies, filterBy, watchedMovieIds, selectedService, sortBy]);
+
+  const hiddenWatchedCount = useMemo(
+    () => matchedMovies.filter(m => watchedMovieIds.has(m.id)).length,
+    [matchedMovies, watchedMovieIds]
+  );
 
   const activeServiceLabel = STREAMING_SERVICES.find(s => s.value === selectedService)?.label;
 
@@ -582,6 +595,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             {/* Row 2: Filters + sort + view toggle + match count */}
             {!loading && matchedMovies.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
+                {/* Show filter */}
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
+                  <WatchedFilterSelect value={filterBy} onChange={setFilterBy} />
+                </div>
+
                 {/* Service filter */}
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
@@ -652,7 +671,29 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               <p className="text-sm text-slate-500 text-center mt-2">
                 {filteredAndSortedMovies.length === matchedMovies.length
                   ? `${matchedMovies.length} match${matchedMovies.length !== 1 ? 'es' : ''}`
-                  : `${filteredAndSortedMovies.length} of ${matchedMovies.length} matches (filtered)`}
+                  : `Showing ${filteredAndSortedMovies.length} of ${matchedMovies.length} matches`}
+                {filterBy === 'unwatched' && hiddenWatchedCount > 0 && (
+                  <>
+                    {' · '}
+                    <button
+                      onClick={() => setFilterBy('all')}
+                      className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                    >
+                      {hiddenWatchedCount} watched {hiddenWatchedCount === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
+                    </button>
+                  </>
+                )}
+                {filterBy === 'watched' && (matchedMovies.length - hiddenWatchedCount) > 0 && (
+                  <>
+                    {' · '}
+                    <button
+                      onClick={() => setFilterBy('all')}
+                      className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                    >
+                      {matchedMovies.length - hiddenWatchedCount} unwatched {(matchedMovies.length - hiddenWatchedCount) === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
+                    </button>
+                  </>
+                )}
               </p>
             )}
           </div>
@@ -681,14 +722,22 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           <div className="text-center py-20">
             <Filter className="size-16 mx-auto mb-6 text-slate-700" />
             <h3 className="text-xl font-semibold text-white mb-2">
-              No matches on {activeServiceLabel || 'this service'}
+              {filterBy === 'unwatched' && hiddenWatchedCount === matchedMovies.length
+                ? "You've watched all your matches!"
+                : filterBy === 'watched'
+                ? 'No watched matches yet'
+                : `No matches on ${activeServiceLabel || 'this service'}`}
             </h3>
             <p className="text-slate-400 mb-6">
-              None of your {matchedMovies.length} matches are currently streaming there.
+              {filterBy === 'unwatched' && hiddenWatchedCount === matchedMovies.length
+                ? `All ${matchedMovies.length} matched movies are marked as watched.`
+                : filterBy === 'watched'
+                ? 'Mark movies as watched from the matches grid to see them here.'
+                : `None of your ${matchedMovies.length} matches are currently streaming there.`}
             </p>
             <Button
               variant="ghost"
-              onClick={() => setSelectedService('all')}
+              onClick={() => { setFilterBy('all'); setSelectedService('all'); }}
               className="text-blue-400 hover:text-blue-300 hover:bg-blue-950/30"
             >
               Show all matches

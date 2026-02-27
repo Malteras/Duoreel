@@ -9,7 +9,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Eye, EyeOff, LayoutGrid, LayoutList, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, LayoutGrid, LayoutList, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { useImportContext } from './ImportContext';
 import { ImportDialog } from './ImportDialog';
 import { PartnerConnectCard } from './PartnerConnectCard';
+import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
 
 interface SavedMoviesTabProps {
   accessToken: string | null;
@@ -56,7 +57,7 @@ export function SavedMoviesTab({
   const [isLikeLoading, setIsLikeLoading] = useState(false);
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
-  const [filterBy, setFilterBy] = useState<'all' | 'unwatched' | 'watched'>('unwatched');
+  const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
   const [cardViewMode, setCardViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
     return (localStorage.getItem('duoreel-viewmode-saved') as 'grid' | 'compact' | 'list') || 'grid';
   });
@@ -64,7 +65,7 @@ export function SavedMoviesTab({
     setCardViewMode(mode);
     localStorage.setItem('duoreel-viewmode-saved', mode);
   };
-  const [partnerFilterBy, setPartnerFilterBy] = useState<'all' | 'unwatched' | 'watched'>('all');
+  const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
@@ -451,30 +452,12 @@ export function SavedMoviesTab({
               {/* Show filter */}
               <div className="flex items-center gap-2 min-w-0">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
-                <Select
+                <WatchedFilterSelect
                   value={viewMode === 'mine' ? filterBy : partnerFilterBy}
-                  onValueChange={(value: 'all' | 'unwatched' | 'watched') =>
+                  onChange={(value) =>
                     viewMode === 'mine' ? setFilterBy(value) : setPartnerFilterBy(value)
                   }
-                >
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[140px]">
-                    <div className="flex items-center gap-2">
-                      {(viewMode === 'mine' ? filterBy : partnerFilterBy) === 'unwatched' ? (
-                        <EyeOff className="size-4 flex-shrink-0 text-slate-400" />
-                      ) : (viewMode === 'mine' ? filterBy : partnerFilterBy) === 'watched' ? (
-                        <Eye className="size-4 flex-shrink-0 text-slate-400" />
-                      ) : (
-                        <Filter className="size-4 flex-shrink-0 text-slate-400" />
-                      )}
-                      <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Movies</SelectItem>
-                    <SelectItem value="unwatched">Unwatched</SelectItem>
-                    <SelectItem value="watched">Watched</SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </div>
 
               {/* Sort */}
