@@ -447,7 +447,7 @@ export function SavedMoviesTab({
 
           {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 md:justify-between">
               {/* Show filter */}
               <div className="flex items-center gap-2 min-w-0">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
@@ -482,8 +482,8 @@ export function SavedMoviesTab({
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[160px]">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpDown className="size-4 flex-shrink-0 text-slate-400" />
+                    <div className="flex items-center gap-2 truncate md:overflow-visible">
+                      <ArrowUpDown className="size-4 md:hidden flex-shrink-0 text-slate-400" />
                       <SelectValue />
                     </div>
                   </SelectTrigger>

@@ -583,41 +583,47 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             {!loading && matchedMovies.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
                 {/* Service filter */}
-                <Select value={selectedService} onValueChange={setSelectedService}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[140px] h-8 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Tv className="size-3.5 flex-shrink-0 text-slate-400" />
-                      <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Services</SelectItem>
-                    {STREAMING_SERVICES.map(s => (
-                      <SelectItem key={s.value} value={s.value}>
-                        <div className="flex items-center gap-2">
-                          <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
-                          {s.label}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
+                  <Select value={selectedService} onValueChange={setSelectedService}>
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[140px] h-8 text-sm">
+                      <div className="flex items-center gap-2 truncate md:overflow-visible">
+                        <Tv className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Services</SelectItem>
+                      {STREAMING_SERVICES.map(s => (
+                        <SelectItem key={s.value} value={s.value}>
+                          <div className="flex items-center gap-2">
+                            <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
+                            {s.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Sort */}
-                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[155px] h-8 text-sm">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
-                      <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="default">Recently Matched</SelectItem>
-                    <SelectItem value="rating">Highest Rated</SelectItem>
-                    <SelectItem value="year-new">Newest First</SelectItem>
-                    <SelectItem value="year-old">Oldest First</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[155px] h-8 text-sm">
+                      <div className="flex items-center gap-2 truncate md:overflow-visible">
+                        <ArrowUpDown className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Recently Matched</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="year-new">Newest First</SelectItem>
+                      <SelectItem value="year-old">Oldest First</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 {/* Match count */}
                 <span className="text-xs text-slate-500 ml-auto">
