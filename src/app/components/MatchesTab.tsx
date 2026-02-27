@@ -590,9 +590,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
                   <Select value={selectedService} onValueChange={setSelectedService}>
                     <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[110px] md:w-auto h-8 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Tv className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
-                        <SelectValue />
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Tv className="size-3.5 flex-shrink-0 text-slate-400" />
+                        <span className="truncate"><SelectValue /></span>
                       </div>
                     </SelectTrigger>
                     <SelectContent>
@@ -614,9 +614,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                     <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[155px] h-8 text-sm">
-                      <div className="flex items-center gap-2">
-                        <ArrowUpDown className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
-                        <SelectValue />
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
+                        <span className="truncate"><SelectValue /></span>
                       </div>
                     </SelectTrigger>
                     <SelectContent>
@@ -741,7 +741,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </div>
             )}
 
-            {/* ─�� Compact grid ── */}
+            {/* ─ Compact grid ── */}
             {viewMode === 'compact' && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredAndSortedMovies.map((movie) => {

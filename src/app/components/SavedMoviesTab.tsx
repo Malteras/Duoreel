@@ -471,10 +471,10 @@ export function SavedMoviesTab({
               <div className="flex flex-1 md:flex-none items-center gap-2 md:ml-auto">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[160px]">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpDown className="size-4 md:hidden flex-shrink-0 text-slate-400" />
-                      <SelectValue />
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[160px] h-8 text-sm">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <span className="truncate"><SelectValue /></span>
                     </div>
                   </SelectTrigger>
                   <SelectContent>
