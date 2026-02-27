@@ -543,92 +543,91 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           </Card>
         ) : null}
 
-        {/* Matched Movies heading */}
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
-            <Heart className="size-8 text-pink-500 fill-pink-500" />
-            Your Matches
-          </h2>
-          <p className="text-slate-400">Movies you both want to watch</p>
-        </div>
+        {/* ── Heading + controls — single compact area ── */}
+        {partner && (
+          <div className="mb-4">
+            {/* Row 1: Title + view toggle */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Heart className="size-5 md:size-7 text-pink-500 fill-pink-500 flex-shrink-0" />
+                <div>
+                  <h2 className="text-lg md:text-3xl font-bold text-white leading-tight">Your Matches</h2>
+                  <p className="text-slate-400 text-xs md:text-sm hidden md:block">Movies you both want to watch</p>
+                </div>
+              </div>
 
-        {/* ── Filter & Sort bar ── */}
-        {!loading && partner && matchedMovies.length > 0 && (
-          <div className="flex items-center gap-3 md:justify-between mb-6">
-            <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
-              <label className="text-sm font-medium text-slate-300 hidden md:block">Service:</label>
-              <Select value={selectedService} onValueChange={setSelectedService}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white flex-1 md:w-fit md:min-w-[160px]">
-                  <div className="flex items-center gap-2 truncate md:overflow-visible">
-                    <Tv className="size-4 md:hidden flex-shrink-0" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Services</SelectItem>
-                  {STREAMING_SERVICES.map(s => (
-                    <SelectItem key={s.value} value={s.value}>
-                      <div className="flex items-center gap-2">
-                        <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
-                        {s.label}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* View toggle — only shown when there are matches */}
+              {!loading && matchedMovies.length > 0 && (
+                <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
+                  <button
+                    onClick={() => handleViewMode('grid')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="Large card view"
+                    title="Large cards"
+                  >
+                    <LayoutList className="size-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleViewMode('compact')}
+                    className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    aria-label="Compact grid view"
+                    title="Compact grid"
+                  >
+                    <LayoutGrid className="size-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
 
-            <div className="flex items-center gap-3 flex-1 md:flex-initial max-w-[calc(50%-6px)] md:max-w-none">
-              <label className="text-sm font-medium text-slate-300 hidden md:block">Sort by:</label>
-              <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white flex-1 md:w-fit md:min-w-[160px]">
-                  <div className="flex items-center gap-2 truncate md:overflow-visible">
-                    <ArrowUpDown className="size-4 md:hidden flex-shrink-0" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">Recently Matched</SelectItem>
-                  <SelectItem value="rating">Highest Rated</SelectItem>
-                  <SelectItem value="year-new">Newest First</SelectItem>
-                  <SelectItem value="year-old">Oldest First</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Row 2: Filters + sort + match count — only shown when there are matches */}
+            {!loading && matchedMovies.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Service filter */}
+                <Select value={selectedService} onValueChange={setSelectedService}>
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[140px] h-8 text-sm">
+                    <div className="flex items-center gap-2">
+                      <Tv className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Services</SelectItem>
+                    {STREAMING_SERVICES.map(s => (
+                      <SelectItem key={s.value} value={s.value}>
+                        <div className="flex items-center gap-2">
+                          <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
+                          {s.label}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Sort */}
+                <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[155px] h-8 text-sm">
+                    <div className="flex items-center gap-2">
+                      <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <SelectValue />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Recently Matched</SelectItem>
+                    <SelectItem value="rating">Highest Rated</SelectItem>
+                    <SelectItem value="year-new">Newest First</SelectItem>
+                    <SelectItem value="year-old">Oldest First</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Match count */}
+                <span className="text-xs text-slate-500 ml-auto">
+                  {filteredAndSortedMovies.length === matchedMovies.length
+                    ? `${matchedMovies.length} match${matchedMovies.length !== 1 ? 'es' : ''}`
+                    : `${filteredAndSortedMovies.length} of ${matchedMovies.length} (filtered)`}
+                </span>
+              </div>
+            )}
           </div>
-        )}
-
-        {/* View mode toggle */}
-        {!loading && partner && matchedMovies.length > 0 && (
-          <div className="flex justify-end mb-4 -mt-2">
-            <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5">
-              <button
-                onClick={() => handleViewMode('grid')}
-                className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                aria-label="Large card view"
-                title="Large cards"
-              >
-                <LayoutList className="size-3.5" />
-              </button>
-              <button
-                onClick={() => handleViewMode('compact')}
-                className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                aria-label="Compact grid view"
-                title="Compact grid"
-              >
-                <LayoutGrid className="size-3.5" />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Match count */}
-        {!loading && partner && matchedMovies.length > 0 && (
-          <p className="text-sm text-slate-500 mb-4">
-            {filteredAndSortedMovies.length === matchedMovies.length
-              ? `${matchedMovies.length} match${matchedMovies.length !== 1 ? 'es' : ''}`
-              : `${filteredAndSortedMovies.length} of ${matchedMovies.length} matches (filtered)`}
-          </p>
         )}
 
         {/* ── Grid / empty states ── */}
