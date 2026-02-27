@@ -2,12 +2,12 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
 import { MovieCard } from './MovieCard';
-import { MovieDetailModal } from './MovieDetailModal';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { MovieDetailModal } from './MovieDetailModal';
+import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   AlertDialog,
@@ -31,8 +31,6 @@ import {
   ArrowUpDown,
   Filter,
   Loader2,
-  LayoutGrid,
-  LayoutList,
   Film,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -44,6 +42,7 @@ import { useUserInteractions } from './UserInteractionsContext';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { MatchesCache } from '../hooks/useTabCache';
 import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
+import { ViewToggle } from './ViewToggle';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -571,41 +570,26 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
               {/* View toggle — mobile only (on desktop it moves to Row 2) */}
               {!loading && matchedMovies.length > 0 && (
-                <div className="flex md:hidden items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
-                  <button
-                    onClick={() => handleViewMode('grid')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                    aria-label="Large card view"
-                    title="Large cards"
-                  >
-                    <LayoutList className="size-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleViewMode('compact')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                    aria-label="Compact grid view"
-                    title="Compact grid"
-                  >
-                    <LayoutGrid className="size-3.5" />
-                  </button>
+                <div className="md:hidden">
+                  <ViewToggle value={viewMode} onChange={handleViewMode} />
                 </div>
               )}
             </div>
 
-            {/* Row 2: Filters + sort + view toggle + match count */}
+            {/* Row 2: Filters + sort + view toggle */}
             {!loading && matchedMovies.length > 0 && (
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2">
                 {/* Show filter */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-1 md:flex-none items-center gap-2">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
                   <WatchedFilterSelect value={filterBy} onChange={setFilterBy} />
                 </div>
 
                 {/* Service filter */}
-                <div className="flex items-center gap-2">
+                <div className="flex flex-1 md:flex-none items-center gap-2">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
                   <Select value={selectedService} onValueChange={setSelectedService}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white min-w-[110px] w-auto h-8 text-sm">
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[110px] md:w-auto h-8 text-sm">
                       <div className="flex items-center gap-2">
                         <Tv className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
                         <SelectValue />
@@ -626,11 +610,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 </div>
 
                 {/* Sort — pushed right on desktop */}
-                <div className="flex items-center gap-2 md:ml-auto">
+                <div className="flex flex-1 md:flex-none items-center gap-2 md:ml-auto">
                   <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[155px] h-8 text-sm">
-                      <div className="flex items-center gap-2 truncate md:overflow-visible">
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[155px] h-8 text-sm">
+                      <div className="flex items-center gap-2">
                         <ArrowUpDown className="size-3.5 md:hidden flex-shrink-0 text-slate-400" />
                         <SelectValue />
                       </div>
@@ -644,24 +628,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   </Select>
                 </div>
 
-                {/* View toggle — desktop only (mobile version is in Row 1) */}
-                <div className="hidden md:flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
-                  <button
-                    onClick={() => handleViewMode('grid')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                    aria-label="Large card view"
-                    title="Large cards"
-                  >
-                    <LayoutList className="size-3.5" />
-                  </button>
-                  <button
-                    onClick={() => handleViewMode('compact')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                    aria-label="Compact grid view"
-                    title="Compact grid"
-                  >
-                    <LayoutGrid className="size-3.5" />
-                  </button>
+                {/* View toggle — desktop only */}
+                <div className="hidden md:block">
+                  <ViewToggle value={viewMode} onChange={handleViewMode} />
                 </div>
               </div>
             )}
@@ -772,7 +741,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </div>
             )}
 
-            {/* ── Compact grid ── */}
+            {/* ─�� Compact grid ── */}
             {viewMode === 'compact' && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredAndSortedMovies.map((movie) => {

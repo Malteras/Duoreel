@@ -9,7 +9,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, LayoutGrid, LayoutList, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -18,6 +18,7 @@ import { useImportContext } from './ImportContext';
 import { ImportDialog } from './ImportDialog';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
+import { ViewToggle } from './ViewToggle';
 
 interface SavedMoviesTabProps {
   accessToken: string | null;
@@ -424,8 +425,8 @@ export function SavedMoviesTab({
                 : 'Connect with a partner to see their saved movies'}
           </p>
 
-          {/* Toggle Buttons */}
-          <div className="flex justify-center">
+          {/* Toggle Buttons + View toggle (mobile) */}
+          <div className="flex items-center justify-center gap-3">
             <div className="inline-flex gap-2 bg-slate-800/50 p-1.5 rounded-lg border border-slate-700/50">
               <Button
                 variant={viewMode === 'mine' ? 'default' : 'ghost'}
@@ -444,13 +445,19 @@ export function SavedMoviesTab({
                 <Users className="size-4 mr-2" />Partner's List
               </Button>
             </div>
+            {/* View toggle — mobile only, desktop version stays in filter row */}
+            {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
+              <div className="md:hidden">
+                <ViewToggle value={cardViewMode} onChange={handleCardViewMode} />
+              </div>
+            )}
           </div>
 
           {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
-            <div className="flex flex-wrap items-center gap-2 md:justify-between">
+            <div className="flex items-center gap-2">
               {/* Show filter */}
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex flex-1 md:flex-none items-center gap-2">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Show:</label>
                 <WatchedFilterSelect
                   value={viewMode === 'mine' ? filterBy : partnerFilterBy}
@@ -461,11 +468,11 @@ export function SavedMoviesTab({
               </div>
 
               {/* Sort */}
-              <div className="flex items-center gap-2 min-w-0 md:ml-auto">
+              <div className="flex flex-1 md:flex-none items-center gap-2 md:ml-auto">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[160px]">
-                    <div className="flex items-center gap-2 truncate md:overflow-visible">
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[160px]">
+                    <div className="flex items-center gap-2">
                       <ArrowUpDown className="size-4 md:hidden flex-shrink-0 text-slate-400" />
                       <SelectValue />
                     </div>
@@ -481,24 +488,9 @@ export function SavedMoviesTab({
                 </Select>
               </div>
 
-              {/* View mode toggle — Large (default) vs Compact grid */}
-              <div className="flex items-center gap-1 bg-slate-800/50 border border-slate-700 rounded-md p-0.5 flex-shrink-0">
-                <button
-                  onClick={() => handleCardViewMode('grid')}
-                  className={`p-1.5 rounded transition-colors ${cardViewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                  aria-label="Large card view"
-                  title="Large cards"
-                >
-                  <LayoutList className="size-3.5" />
-                </button>
-                <button
-                  onClick={() => handleCardViewMode('compact')}
-                  className={`p-1.5 rounded transition-colors ${cardViewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
-                  aria-label="Compact grid view"
-                  title="Compact grid"
-                >
-                  <LayoutGrid className="size-3.5" />
-                </button>
+              {/* View toggle — desktop only (mobile moved to title row) */}
+              <div className="hidden md:block">
+                <ViewToggle value={cardViewMode} onChange={handleCardViewMode} />
               </div>
             </div>
           )}
