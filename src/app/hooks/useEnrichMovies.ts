@@ -28,8 +28,7 @@ export function useEnrichMovies({
         (m) =>
           !enrichedIds.has(m.id) &&
           !enrichingRef.current.has(m.id) &&
-          (!m.genres || m.genres.length === 0) &&
-          !m.director
+          ((!m.genres || m.genres.length === 0) || !m.director || !m.keywords)
       );
       if (toEnrich.length === 0) return;
 
