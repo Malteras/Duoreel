@@ -39,6 +39,7 @@ export function ProfilePage() {
   // Profile state
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [name, setName] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
@@ -112,6 +113,7 @@ export function ProfilePage() {
 
     const fetchData = async () => {
       setLoading(true);
+      let resolvedPartnerData: any = null;
       try {
         const [profileRes, partnerRes, inviteCodeRes] = await Promise.all([
           fetch(`${baseUrl}/profile`, {
@@ -135,61 +137,64 @@ export function ProfilePage() {
           setLetterboxdUsername(profileData.letterboxdUsername);
         }
 
-        const partnerData = await partnerRes.json();
-        if (partnerData.partner) {
-          setPartner(partnerData.partner);
+        resolvedPartnerData = await partnerRes.json();
+        if (resolvedPartnerData.partner) {
+          setPartner(resolvedPartnerData.partner);
         }
 
         const inviteData = await inviteCodeRes.json();
         if (inviteData.code) {
           setInviteCode(inviteData.code);
         }
-
-        // Fetch stats (non-blocking — page works without them)
-        try {
-          const [likedRes, matchesRes, watchedRes] = await Promise.all([
-            fetch(`${baseUrl}/movies/liked`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            }),
-            fetch(`${baseUrl}/movies/matches`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            }),
-            fetch(`${baseUrl}/movies/watched`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            }),
-          ]);
-
-          const likedData = await likedRes.json();
-          const matchesData = await matchesRes.json();
-          const watchedData = await watchedRes.json();
-
-          setStats({
-            saved: likedData.movies?.length || 0,
-            matches: matchesData.movies?.length || 0,
-            watched: watchedData.movies?.length || 0,
-          });
-
-          // If partner connected, get partner's saved count
-          if (partnerData.partner) {
-            try {
-              const partnerLikedRes = await fetch(`${baseUrl}/movies/partner-liked`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              });
-              const partnerLikedData = await partnerLikedRes.json();
-              setPartnerStats({
-                savedCount: partnerLikedData.movies?.length || 0,
-              });
-            } catch {
-              // Non-critical
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching stats:', error);
-        }
       } catch (error) {
         console.error('Error fetching profile data:', error);
       } finally {
+        // Unblock the page render immediately after profile/partner loads
         setLoading(false);
+      }
+
+      // Fetch stats in the background — page is already visible
+      setStatsLoading(true);
+      try {
+        const [likedRes, matchesRes, watchedRes] = await Promise.all([
+          fetch(`${baseUrl}/movies/liked`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }),
+          fetch(`${baseUrl}/movies/matches`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }),
+          fetch(`${baseUrl}/movies/watched`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }),
+        ]);
+
+        const likedData = await likedRes.json();
+        const matchesData = await matchesRes.json();
+        const watchedData = await watchedRes.json();
+
+        setStats({
+          saved: likedData.movies?.length || 0,
+          matches: matchesData.movies?.length || 0,
+          watched: watchedData.movies?.length || 0,
+        });
+
+        if (resolvedPartnerData?.partner) {
+          try {
+            const partnerLikedRes = await fetch(`${baseUrl}/movies/partner-liked`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+            const partnerLikedData = await partnerLikedRes.json();
+            setPartnerStats({
+              savedCount: partnerLikedData.movies?.length || 0,
+            });
+          } catch {
+            // Non-critical
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setStatsLoading(false);
       }
     };
 
@@ -692,44 +697,54 @@ export function ProfilePage() {
           </div>
 
           {/* Stats row */}
-          {stats && (
-            <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-3">
 
-              <button
-                onClick={() => openStatsModal('saved')}
-                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <Bookmark className="size-3.5 text-blue-400" />
-                  <span className="text-xs text-slate-400 font-medium">Saved</span>
-                </div>
-                <p className="text-xl font-bold text-white">{stats.saved}</p>
-              </button>
+            <button
+              onClick={() => openStatsModal('saved')}
+              className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Bookmark className="size-3.5 text-blue-400" />
+                <span className="text-xs text-slate-400 font-medium">Saved</span>
+              </div>
+              {statsLoading ? (
+                <div className="h-6 w-8 bg-slate-700 rounded animate-pulse mx-auto" />
+              ) : (
+                <p className="text-xl font-bold text-white">{stats?.saved ?? 0}</p>
+              )}
+            </button>
 
-              <button
-                onClick={() => openStatsModal('matches')}
-                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <Heart className="size-3.5 text-pink-400" />
-                  <span className="text-xs text-slate-400 font-medium">Matches</span>
-                </div>
-                <p className="text-xl font-bold text-white">{stats.matches}</p>
-              </button>
+            <button
+              onClick={() => openStatsModal('matches')}
+              className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Heart className="size-3.5 text-pink-400" />
+                <span className="text-xs text-slate-400 font-medium">Matches</span>
+              </div>
+              {statsLoading ? (
+                <div className="h-6 w-8 bg-slate-700 rounded animate-pulse mx-auto" />
+              ) : (
+                <p className="text-xl font-bold text-white">{stats?.matches ?? 0}</p>
+              )}
+            </button>
 
-              <button
-                onClick={() => openStatsModal('watched')}
-                className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center justify-center gap-1.5 mb-1">
-                  <Eye className="size-3.5 text-emerald-400" />
-                  <span className="text-xs text-slate-400 font-medium">Watched</span>
-                </div>
-                <p className="text-xl font-bold text-white">{stats.watched}</p>
-              </button>
+            <button
+              onClick={() => openStatsModal('watched')}
+              className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3 text-center hover:bg-slate-700/50 hover:border-slate-600 transition-colors cursor-pointer"
+            >
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <Eye className="size-3.5 text-emerald-400" />
+                <span className="text-xs text-slate-400 font-medium">Watched</span>
+              </div>
+              {statsLoading ? (
+                <div className="h-6 w-8 bg-slate-700 rounded animate-pulse mx-auto" />
+              ) : (
+                <p className="text-xl font-bold text-white">{stats?.watched ?? 0}</p>
+              )}
+            </button>
 
-            </div>
-          )}
+          </div>
         </div>
 
         <div className="space-y-6">
@@ -769,11 +784,13 @@ export function ProfilePage() {
                         Connected
                       </div>
                       <p className="text-white font-semibold">{partner.name || 'Partner'}</p>
-                      {partnerStats && (
+                      {statsLoading ? (
+                        <div className="h-4 w-20 bg-slate-700 rounded animate-pulse mt-0.5" />
+                      ) : partnerStats ? (
                         <p className="text-slate-400 text-xs mt-0.5">
                           {partnerStats.savedCount} movie{partnerStats.savedCount === 1 ? '' : 's'} saved
                         </p>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                   <AlertDialog>
