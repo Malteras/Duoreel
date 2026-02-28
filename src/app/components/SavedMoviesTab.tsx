@@ -194,11 +194,13 @@ export function SavedMoviesTab({
   useEffect(() => {
     const unsubscribe = onRatingFetched((tmdbId, rating) => {
       setImdbRatings(prev => new Map(prev).set(tmdbId, rating));
-      const imdbId = likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+      const imdbId =
+        likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id ||
+        partnerLikedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
       if (imdbId) setGlobalImdbCache(prev => new Map(prev).set(imdbId, rating));
     });
     return unsubscribe;
-  }, [likedMovies]);
+  }, [likedMovies, partnerLikedMovies]);
 
   // ── Partner connection helpers ─────────────────────────────
   const handleCopyInviteLink = () => {
@@ -334,25 +336,19 @@ export function SavedMoviesTab({
   // Re-fires when visibleCount grows (infinite scroll loads more pages)
   // or when the movie list changes.
   useEffect(() => {
-    if (likedMovies.length === 0) return;
+    const activeMovies = viewMode === 'mine' ? filteredLikedMovies : filteredPartnerMovies;
+    if (activeMovies.length === 0) return;
 
     const fetchRatings = async () => {
-      // Only fetch for the movies currently rendered on screen.
-      // visibleLikedMovies is already computed as filteredLikedMovies.slice(0, visibleCount)
-      // but at this point in the component, we need to derive it from the base list
-      // because visibleLikedMovies is defined below in the render section.
-      // Re-derive it here using the same logic: apply sort → filter → slice.
-      const currentlyVisible = filteredLikedMovies.slice(0, visibleCount);
+      const currentlyVisible = activeMovies.slice(0, visibleCount);
 
       if (currentlyVisible.length === 0) return;
 
-      // Only request IDs we don't already have ratings for — avoids re-fetching
-      // on every scroll when most ratings are already loaded.
       const tmdbIdsToFetch = currentlyVisible
         .filter(m => !imdbRatings.has(m.id))
         .map(m => m.id);
 
-      if (tmdbIdsToFetch.length === 0) return; // All visible ratings already loaded
+      if (tmdbIdsToFetch.length === 0) return;
 
       const cached = await bulkFetchCachedRatings(tmdbIdsToFetch, projectId, publicAnonKey);
 
@@ -367,14 +363,16 @@ export function SavedMoviesTab({
         setGlobalImdbCache(prev => {
           const updated = new Map(prev);
           cached.forEach((value, tmdbId) => {
-            const imdbId = likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+            // Look up IMDb ID from either list
+            const imdbId =
+              likedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id ||
+              partnerLikedMovies.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
             if (imdbId && value.rating) updated.set(imdbId, value.rating);
           });
           return updated;
         });
       }
 
-      // Background-fetch any that weren't in the cache
       const moviesNeedingRatings = currentlyVisible.filter(
         m => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id)
       );
@@ -386,7 +384,7 @@ export function SavedMoviesTab({
     };
 
     fetchRatings();
-  }, [likedMovies.length, visibleCount, filterBy, sortBy]);
+  }, [likedMovies.length, partnerLikedMovies.length, visibleCount, filterBy, sortBy, viewMode]);
   // Dependencies:
   // - likedMovies.length: new movie added to list
   // - visibleCount: user scrolled to next page → load ratings for new page
