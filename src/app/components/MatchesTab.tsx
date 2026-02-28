@@ -94,7 +94,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
 
-  const [likedMovies, setLikedMovies] = useState<Set<number>>(new Set());
+  const [likedMovies, setLikedMovies] = useState<Set<number>>(
+    new Set((matchesCache?.matchedMovies ?? []).map((m: Movie) => m.id))
+  );
 
   const baseUrl = API_BASE_URL;
 
