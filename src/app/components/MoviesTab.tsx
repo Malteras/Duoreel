@@ -20,6 +20,7 @@ import {
 } from "../../utils/imdbRatings";
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
+import { useEnrichMovies } from "../hooks/useEnrichMovies";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
@@ -193,11 +194,28 @@ export function MoviesTab({
     moviesRef.current = movies;
   }, [movies]);
 
-  // Movie details enrichment tracking — restored from cache if available
-  const [enrichedIds, setEnrichedIds] = useState<Set<number>>(
-    discoverCache?.enrichedIds ?? new Set(),
-  );
-  const enrichingRef = useRef<Set<number>>(discoverCache?.enrichedIds ? new Set(discoverCache.enrichedIds) : new Set());
+  // Movie details enrichment tracking — delegated to shared hook
+  const { enrichedIds, setEnrichedIds, enrichingRef, resetEnrichment } = useEnrichMovies({
+    movies,
+    setMovies,
+    publicAnonKey,
+    baseUrl,
+    batchSize: 5,
+    onEnriched: (updatedMovies) => {
+      setDiscoverCache(c => c ? { ...c, movies: updatedMovies } : null);
+    },
+  });
+
+  // Restore enrichedIds from cache on mount (only once)
+  const restoredEnrichRef = useRef(false);
+  useEffect(() => {
+    if (!restoredEnrichRef.current && discoverCache?.enrichedIds && discoverCache.enrichedIds.size > 0) {
+      setEnrichedIds(discoverCache.enrichedIds);
+      enrichingRef.current = new Set(discoverCache.enrichedIds);
+      restoredEnrichRef.current = true;
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [discoverCache?.enrichedIds]);
 
   // Skip the initial fetch if we restored from cache. Set to true when cache is
   // present; cleared to false on the first user-triggered filter/sort change.
@@ -431,119 +449,13 @@ export function MoviesTab({
     }
 
     setPage(1);
-    setEnrichedIds(new Set());
-    enrichingRef.current = new Set();
+    resetEnrichment();
     setImdbRatings(new Map());
     fetchMovies(1, false);
     // fetchMovies is included so this effect always runs with the freshest
     // callback (no stale likedMovieIds / pendingRemovals closures).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, sortBy, showWatchedMovies, contextLoading, fetchMovies]);
-
-  // ──────────────── Enrich movies with details (director, actors, providers) ────────────────
-  useEffect(() => {
-    if (movies.length === 0) return;
-
-    const enrichMovies = async () => {
-      const moviesToEnrich = movies.filter(
-        (m) =>
-          !enrichedIds.has(m.id) &&
-          !enrichingRef.current.has(m.id),
-      );
-
-      if (moviesToEnrich.length === 0) return;
-
-      // Mark as in-progress
-      moviesToEnrich.forEach((m) =>
-        enrichingRef.current.add(m.id),
-      );
-
-      // Fetch details in batches of 5
-      const BATCH_SIZE = 5;
-      for (
-        let i = 0;
-        i < moviesToEnrich.length;
-        i += BATCH_SIZE
-      ) {
-        const batch = moviesToEnrich.slice(i, i + BATCH_SIZE);
-        const results = await Promise.all(
-          batch.map(async (movie) => {
-            try {
-              const response = await fetch(
-                `${baseUrl}/movies/${movie.id}`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${publicAnonKey}`,
-                  },
-                },
-              );
-              if (!response.ok) return null;
-              return await response.json();
-            } catch {
-              return null;
-            }
-          }),
-        );
-
-        setMovies((prev) => {
-          const enriched = prev.map((movie) => {
-            const detail = results.find(
-              (r) => r && r.id === movie.id,
-            );
-            if (!detail) return movie;
-
-            const director = detail.credits?.crew?.find(
-              (c) => c.job === "Director",
-            )?.name;
-            const actors = detail.credits?.cast
-              ?.slice(0, 5)
-              .map((a) => a.name);
-
-            return {
-              ...movie,
-              director: director || movie.director,
-              actors: actors || movie.actors,
-              genres: detail.genres || movie.genres,
-              runtime: detail.runtime || movie.runtime,
-              external_ids:
-                detail.external_ids || movie.external_ids,
-              "watch/providers":
-                detail["watch/providers"] ||
-                movie["watch/providers"],
-              tagline: detail.tagline,
-              budget: detail.budget,
-              revenue: detail.revenue,
-              original_language:
-                detail.original_language ||
-                movie.original_language,
-              status: detail.status,
-              homepage: detail.homepage,
-              vote_count: detail.vote_count || movie.vote_count,
-              keywords: detail.keywords?.keywords || movie.keywords,
-            };
-          });
-          // Keep cache in sync with enriched data so returning to Discover
-          // restores director, actors, genres, external_ids, watch/providers.
-          setDiscoverCache(c => c ? { ...c, movies: enriched } : null);
-          return enriched;
-        });
-
-        // Track enriched
-        batch.forEach((m) => {
-          setEnrichedIds((prev) => new Set(prev).add(m.id));
-        });
-
-        // Small delay between batches
-        if (i + BATCH_SIZE < moviesToEnrich.length) {
-          await new Promise((resolve) =>
-            setTimeout(resolve, 200),
-          );
-        }
-      }
-    };
-
-    enrichMovies();
-  }, [movies.length, enrichedIds.size]);
 
   // ─────────────── Fetch IMDb ratings ────────────────
   useEffect(() => {
@@ -683,8 +595,7 @@ export function MoviesTab({
 
         if (data.results) {
           setMovies(data.results);
-          setEnrichedIds(new Set());
-          enrichingRef.current = new Set();
+          resetEnrichment();
         }
       } catch (error) {
         console.error("Error searching movies:", error);
@@ -930,8 +841,7 @@ export function MoviesTab({
     setDiscoverCache(null); // Invalidate  next mount will fetch fresh
     skipNextFetchRef.current = false;
     setPage(1);
-    setEnrichedIds(new Set());
-    enrichingRef.current = new Set();
+    resetEnrichment();
     setImdbRatings(new Map());
     fetchMovies(1, false);
   };

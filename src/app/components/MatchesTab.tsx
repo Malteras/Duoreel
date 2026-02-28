@@ -79,9 +79,15 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     localStorage.setItem('duoreel-viewmode-matches', mode);
   };
 
-  // Enrichment state
-  const [enrichedIds, setEnrichedIds] = useState<Set<number>>(new Set());
-  const enrichingRef = useRef<Set<number>>(new Set());
+  // Enrichment — delegated to shared hook
+  const { resetEnrichment } = useEnrichMovies({
+    movies: matchedMovies,
+    setMovies: setMatchedMovies as (updater: (prev: Movie[]) => Movie[]) => void,
+    publicAnonKey,
+    baseUrl,
+    batchSize: 3,
+    dep: accessToken,
+  });
 
   // IMDb ratings keyed by tmdbId to avoid external_ids dependency
   const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(new Map());
@@ -125,8 +131,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
       if (matchesData.movies) {
         setMatchedMovies(matchesData.movies);
         setLikedMovies(new Set(matchesData.movies.map((m: Movie) => m.id)));
-        setEnrichedIds(new Set());
-        enrichingRef.current = new Set();
+        resetEnrichment();
       }
 
       const inviteData = await inviteCodeRes.json();
@@ -224,58 +229,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     });
     return unsubscribe;
   }, [matchedMovies]);
-
-  // ── Provider enrichment ────────────────────────────────────────────────────
-  useEffect(() => {
-    if (matchedMovies.length === 0 || !accessToken) return;
-    const enrichMovies = async () => {
-      const toEnrich = matchedMovies.filter(m => !enrichedIds.has(m.id) && !enrichingRef.current.has(m.id));
-      if (toEnrich.length === 0) return;
-      toEnrich.forEach(m => enrichingRef.current.add(m.id));
-
-      const BATCH = 3;
-      for (let i = 0; i < toEnrich.length; i += BATCH) {
-        const batch = toEnrich.slice(i, i + BATCH);
-        const results = await Promise.allSettled(
-          batch.map(async (movie) => {
-            const res = await fetch(`${baseUrl}/movies/${movie.id}`, {
-              headers: { Authorization: `Bearer ${publicAnonKey}` },
-            });
-            if (!res.ok) return null;
-            return res.json();
-          }),
-        );
-
-        setMatchedMovies(prev => prev.map(movie => {
-          const idx = batch.findIndex(b => b.id === movie.id);
-          if (idx === -1) return movie;
-          const result = results[idx];
-          if (result.status !== 'fulfilled' || !result.value) return movie;
-          const d = result.value;
-          return {
-            ...movie,
-            runtime:           d.runtime           || movie.runtime,
-            director:          d.credits?.crew?.find((c) => c.job === 'Director')?.name || movie.director,
-            actors:            d.credits?.cast?.slice(0, 5).map((a) => a.name)           || movie.actors,
-            genres:            d.genres             || movie.genres,
-            'watch/providers': d['watch/providers'] || movie['watch/providers'],
-            external_ids:      d.external_ids       || (movie as any).external_ids,
-            keywords:          d.keywords?.keywords || movie.keywords,
-          };
-        }));
-
-        setEnrichedIds(prev => {
-          const s = new Set(prev);
-          batch.forEach(m => s.add(m.id));
-          return s;
-        });
-
-        if (i + BATCH < toEnrich.length) await new Promise(r => setTimeout(r, 200));
-      }
-    };
-    enrichMovies();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [matchedMovies.length, accessToken]);
 
   // ── Filtered + sorted view ─────────────────────────────────────────────────
   const filteredAndSortedMovies = useMemo(() => {
