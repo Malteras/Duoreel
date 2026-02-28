@@ -61,6 +61,7 @@ export function useEnrichMovies({
             external_ids:       d.external_ids       || movie.external_ids,
             homepage:           d.homepage           || movie.homepage,
             'watch/providers':  d['watch/providers'] || movie['watch/providers'],
+            keywords:           d.keywords?.keywords || movie.keywords,
           });
         });
 

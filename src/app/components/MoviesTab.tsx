@@ -519,6 +519,7 @@ export function MoviesTab({
               status: detail.status,
               homepage: detail.homepage,
               vote_count: detail.vote_count || movie.vote_count,
+              keywords: detail.keywords?.keywords || movie.keywords,
             };
           });
           // Keep cache in sync with enriched data so returning to Discover

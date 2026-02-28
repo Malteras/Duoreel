@@ -306,18 +306,33 @@ export function MovieDetailModal({
 
               {/* Genres */}
               {movie.genres && movie.genres.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-3">
                   {movie.genres.map((genre) => (
                     <Badge 
                       key={genre.id} 
                       variant="secondary" 
-                      className="bg-purple-600/70 text-white border-purple-500 cursor-pointer hover:bg-purple-700 hover:border-purple-400 transition-colors" 
+                      className="rounded-full bg-purple-600/70 text-white border-purple-500 cursor-pointer hover:bg-purple-700 hover:border-purple-400 transition-colors" 
                       onClick={() => {
                         onGenreClick?.(genre.id);
                         onClose();
                       }}
                     >
                       {genre.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+
+              {/* Keywords */}
+              {movie.keywords && movie.keywords.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {movie.keywords.slice(0, 8).map((kw) => (
+                    <Badge
+                      key={kw.id}
+                      variant="secondary"
+                      className="rounded-full bg-slate-700/80 text-slate-300 border-slate-600 text-xs font-normal"
+                    >
+                      {kw.name}
                     </Badge>
                   ))}
                 </div>

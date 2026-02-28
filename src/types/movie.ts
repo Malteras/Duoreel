@@ -41,6 +41,7 @@ export interface Movie {
   revenue?: number;
   status?: string;
   homepage?: string;
+  keywords?: { id: number; name: string }[];
   imdbRating?: string;
 
   external_ids?: {

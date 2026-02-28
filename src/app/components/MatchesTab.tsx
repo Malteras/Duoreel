@@ -260,6 +260,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
             genres:            d.genres             || movie.genres,
             'watch/providers': d['watch/providers'] || movie['watch/providers'],
             external_ids:      d.external_ids       || (movie as any).external_ids,
+            keywords:          d.keywords?.keywords || movie.keywords,
           };
         }));
 
