@@ -441,14 +441,15 @@ export function MoviesTab({
     ],
   );
 
-  // ──────────────── Cross-tab navigation: bust cache + clear route state ────────────────
+  // ──────────────── Cross-tab navigation: bust cache ────────────────
   // Filters are already baked into initial state via crossTabFilters (no setFilters needed).
-  // We just need to clear the discover cache so it doesn't restore stale results on next visit,
-  // and clear route state so browser Back doesn't re-trigger the filter.
+  // Clear discover cache so stale results aren't restored on next visit.
+  // We intentionally do NOT call onFiltersApplied() (which navigates with state:null) because
+  // the navigation can cause DiscoverPage to re-render with null props, potentially losing state.
+  // Leftover route state is harmless — it only affects the first mount via hasCrossTabFilter.
   useEffect(() => {
     if (crossTabFilters) {
       setDiscoverCache(null);
-      onFiltersApplied?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Run once on mount only
