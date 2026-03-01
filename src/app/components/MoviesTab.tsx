@@ -440,7 +440,10 @@ export function MoviesTab({
       // so the [filters] fetch effect will fire normally with the new filters.
       setDiscoverCache(null);
       setFilters(newFilters);
-      onFiltersApplied?.();
+      // Defer clearing route state — if we call onFiltersApplied() synchronously,
+      // the navigate('/discover', { state: null }) can cause a re-render that
+      // remounts MoviesTab before the fetch effect fires, losing the filter state.
+      setTimeout(() => onFiltersApplied?.(), 0);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialGenre, initialDirector, initialActor, initialYear, initialKeyword, initialKeywordName]);
