@@ -49,7 +49,7 @@ interface MatchesTabProps {
   accessToken: string | null;
   projectId: string;
   publicAnonKey: string;
-  navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year', value: string | number) => void;
+  navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year' | 'keyword', value: string | number, extra?: string) => void;
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   matchesCache: MatchesCache | null;
@@ -79,6 +79,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     localStorage.setItem('duoreel-viewmode-matches', mode);
   };
 
+  const baseUrl = API_BASE_URL;
+
   // Enrichment — delegated to shared hook
   const { resetEnrichment } = useEnrichMovies({
     movies: matchedMovies,
@@ -103,8 +105,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [likedMovies, setLikedMovies] = useState<Set<number>>(
     new Set((matchesCache?.matchedMovies ?? []).map((m: Movie) => m.id))
   );
-
-  const baseUrl = API_BASE_URL;
 
   // ── Data fetching ──────────────────────────────────────────────────────────
   const fetchData = useCallback(async () => {
@@ -686,6 +686,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     onDislike={() => handleDislike(movie.id)}
                     onClick={() => openMovie(movie)}
                     onGenreClick={(genreId) => navigateToDiscoverWithFilter('genre', genreId)}
+                    onKeywordClick={(keywordId, keywordName) => navigateToDiscoverWithFilter('keyword', keywordId, keywordName)}
                     onDirectorClick={(director) => navigateToDiscoverWithFilter('director', director)}
                     onActorClick={(actor) => navigateToDiscoverWithFilter('actor', actor)}
                     onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
@@ -746,9 +747,10 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         onWatched={() => selectedMovie && handleWatched(selectedMovie)}
         onUnwatched={() => selectedMovie && handleUnwatched(selectedMovie.id)}
         onGenreClick={(genre) => navigateToDiscoverWithFilter('genre', genre)}
+        onKeywordClick={(keywordId, keywordName) => navigateToDiscoverWithFilter('keyword', keywordId, keywordName)}
         onDirectorClick={(director) => navigateToDiscoverWithFilter('director', director)}
         onActorClick={(actor) => navigateToDiscoverWithFilter('actor', actor)}
-        onLanguageClick={(language) => navigateToDiscoverWithFilter('year', language)}
+        onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
         projectId={projectId}
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}

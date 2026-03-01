@@ -83,6 +83,9 @@ export function AdvancedFiltersModal({
   const [actorResults, setActorResults] = useState<any[]>([]);
   const [searchingDirector, setSearchingDirector] = useState(false);
   const [searchingActor, setSearchingActor] = useState(false);
+  const [keywordSearch, setKeywordSearch] = useState('');
+  const [keywordResults, setKeywordResults] = useState<any[]>([]);
+  const [searchingKeyword, setSearchingKeyword] = useState(false);
   const [localShowWatched, setLocalShowWatched] = useState(showWatchedMovies);
 
   const baseUrl = API_BASE_URL;
@@ -94,8 +97,10 @@ export function AdvancedFiltersModal({
       setLocalShowWatched(showWatchedMovies);
       setDirectorSearch('');
       setActorSearch('');
+      setKeywordSearch('');
       setDirectorResults([]);
       setActorResults([]);
+      setKeywordResults([]);
     }
   }, [isOpen, currentFilters, showWatchedMovies]);
 
@@ -136,6 +141,26 @@ export function AdvancedFiltersModal({
       console.error('Error searching actors:', error);
     } finally {
       setSearchingActor(false);
+    }
+  };
+
+  const searchKeywords = async (query: string) => {
+    if (!query.trim()) {
+      setKeywordResults([]);
+      return;
+    }
+
+    setSearchingKeyword(true);
+    try {
+      const response = await fetch(`${baseUrl}/search/keywords?query=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${publicAnonKey}` }
+      });
+      const data = await response.json();
+      setKeywordResults(data.results || []);
+    } catch (error) {
+      console.error('Error searching keywords:', error);
+    } finally {
+      setSearchingKeyword(false);
     }
   };
 
@@ -262,6 +287,62 @@ export function AdvancedFiltersModal({
                 <SelectItem value="epic">Epic (120+ mins)</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Keyword Search */}
+          <div>
+            <Label className="text-slate-300 mb-2 block">Keyword</Label>
+            {filters.keyword ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white">
+                  {filters.keywordName || `Keyword #${filters.keyword}`}
+                </div>
+                <Button
+                  variant="secondary"
+                  className="bg-slate-700 hover:bg-slate-600 text-white"
+                  onClick={() => {
+                    setFilters({ ...filters, keyword: null, keywordName: null });
+                    setKeywordSearch('');
+                  }}
+                >
+                  Clear
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="relative">
+                  <Input
+                    value={keywordSearch}
+                    onChange={(e) => {
+                      setKeywordSearch(e.target.value);
+                      searchKeywords(e.target.value);
+                    }}
+                    placeholder="Search for a keyword..."
+                    className="bg-slate-800 border-slate-700 text-white pr-10"
+                  />
+                  {searchingKeyword && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 animate-spin" />
+                  )}
+                </div>
+                {keywordResults.length > 0 && (
+                  <div className="mt-2 bg-slate-800 border border-slate-700 rounded-md max-h-[200px] overflow-y-auto">
+                    {keywordResults.slice(0, 10).map((kw) => (
+                      <div
+                        key={kw.id}
+                        className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
+                        onClick={() => {
+                          setFilters({ ...filters, keyword: kw.id.toString(), keywordName: kw.name });
+                          setKeywordSearch('');
+                          setKeywordResults([]);
+                        }}
+                      >
+                        <div className="text-white font-medium">{kw.name}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Director Search */}

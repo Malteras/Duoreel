@@ -56,6 +56,8 @@ interface MoviesTabProps {
   initialDirector?: string | null;
   initialActor?: string | null;
   initialYear?: number | null;
+  initialKeyword?: string | null;
+  initialKeywordName?: string | null;
   onFiltersApplied?: () => void;
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<
@@ -100,6 +102,8 @@ export function MoviesTab({
   initialDirector,
   initialActor,
   initialYear,
+  initialKeyword,
+  initialKeywordName,
   onFiltersApplied,
   globalImdbCache,
   setGlobalImdbCache,
@@ -111,7 +115,7 @@ export function MoviesTab({
   // Core state — restored from cache if available
   // When arriving via cross-tab navigation (initial* filter props), don't restore
   // movies or filters from cache — we need a fresh fetch with the new filter.
-  const hasCrossTabFilter = !!(initialGenre || initialDirector || initialActor || initialYear);
+  const hasCrossTabFilter = !!(initialGenre || initialDirector || initialActor || initialYear || initialKeyword);
   const [movies, setMovies] = useState<Movie[]>(hasCrossTabFilter ? [] : (discoverCache?.movies ?? []));
   const [loading, setLoading] = useState(hasCrossTabFilter ? true : !discoverCache);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -194,6 +198,8 @@ export function MoviesTab({
     moviesRef.current = movies;
   }, [movies]);
 
+  const baseUrl = API_BASE_URL;
+
   // Movie details enrichment tracking — delegated to shared hook
   const { enrichedIds, setEnrichedIds, enrichingRef, resetEnrichment } = useEnrichMovies({
     movies,
@@ -221,7 +227,7 @@ export function MoviesTab({
   // present; cleared to false on the first user-triggered filter/sort change.
   // If arriving via cross-tab navigation (initial* filter props set), don't skip
   // the initial fetch — we need fresh results for the new filter, not cached ones.
-  const skipNextFetchRef = useRef(!!discoverCache && !initialGenre && !initialDirector && !initialActor && !initialYear);
+  const skipNextFetchRef = useRef(!!discoverCache && !initialGenre && !initialDirector && !initialActor && !initialYear && !initialKeyword);
 
   // Skip the IMDb ratings fetch if we restored ratings from cache. Ratings are
   // already in imdbRatings state — no need to re-fetch from the DB.
@@ -244,8 +250,6 @@ export function MoviesTab({
     notInterestedLoadingIds,
     isInitialLoading: contextLoading,
   } = useUserInteractions();
-
-  const baseUrl = API_BASE_URL;
 
   // Liked movie IDs set for quick lookup
   const likedMovieIds = useMemo(
@@ -270,6 +274,7 @@ export function MoviesTab({
     if (filters.language) count++;
     if (filters.duration !== "all") count++;
     if (filters.streamingServices.length > 0) count++;
+    if (filters.keyword) count++;
     return count;
   }, [filters]);
 
@@ -318,6 +323,8 @@ export function MoviesTab({
           params.append("actor", filters.actor);
         if (filters.language)
           params.append("language", filters.language);
+        if (filters.keyword)
+          params.append("keyword", filters.keyword);
         if (filters.duration !== "all")
           params.append("duration", filters.duration);
         if (showWatchedMovies)
@@ -418,12 +425,16 @@ export function MoviesTab({
 
   // ──────────────── Apply initial filters from cross-tab navigation ────────────────
   useEffect(() => {
-    if (initialGenre || initialDirector || initialActor || initialYear) {
+    if (initialGenre || initialDirector || initialActor || initialYear || initialKeyword) {
       const newFilters = { ...DEFAULT_FILTERS };
       if (initialGenre) newFilters.genre = initialGenre;
       if (initialDirector) newFilters.director = initialDirector;
       if (initialActor) newFilters.actor = initialActor;
       if (initialYear) newFilters.year = initialYear.toString();
+      if (initialKeyword) {
+        newFilters.keyword = initialKeyword;
+        newFilters.keywordName = initialKeywordName || null;
+      }
       // Bust cache so next mount doesn't restore stale filtered results.
       // skipNextFetchRef is already false at mount when initial* props are set,
       // so the [filters] fetch effect will fire normally with the new filters.
@@ -432,7 +443,7 @@ export function MoviesTab({
       onFiltersApplied?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialGenre, initialDirector, initialActor, initialYear]);
+  }, [initialGenre, initialDirector, initialActor, initialYear, initialKeyword, initialKeywordName]);
 
   // ──────────────── Fetch when filters/sort/showWatched change ────────────────
   // Note: We include `showWatchedMovies` in the dependency array so that when the
@@ -1151,6 +1162,18 @@ export function MoviesTab({
                 <X className="size-3 ml-1" />
               </Badge>
             )}
+            {filters.keyword && (
+              <Badge
+                variant="secondary"
+                className="bg-slate-600/70 text-white border-slate-500 cursor-pointer hover:bg-slate-700"
+                onClick={() =>
+                  setFilters({ ...filters, keyword: null, keywordName: null })
+                }
+              >
+                Keyword: {filters.keywordName || filters.keyword}{" "}
+                <X className="size-3 ml-1" />
+              </Badge>
+            )}
             {activeFilterCount > 0 && (
               <Button
                 variant="ghost"
@@ -1235,6 +1258,12 @@ export function MoviesTab({
                     onClick={() => openMovie(movie)}
                     onDirectorClick={(director) => updateFilter("director", director)}
                     onGenreClick={(genreId) => updateFilter("genre", genreId.toString())}
+                    onKeywordClick={(keywordId, keywordName) => {
+                      setFilters(prev => ({ ...prev, keyword: keywordId.toString(), keywordName }));
+                      setPage(1);
+                      setIsSearchMode(false);
+                      setSearchQuery("");
+                    }}
                     onYearClick={(year) => updateFilter("year", year.toString())}
                     onActorClick={(actor) => updateFilter("actor", actor)}
                     imdbRating={imdbRatings.get(movie.id)}
@@ -1523,6 +1552,13 @@ export function MoviesTab({
         }
         onGenreClick={(genreId) => {
           updateFilter("genre", genreId.toString());
+          closeMovie();
+        }}
+        onKeywordClick={(keywordId, keywordName) => {
+          setFilters(prev => ({ ...prev, keyword: keywordId.toString(), keywordName }));
+          setPage(1);
+          setIsSearchMode(false);
+          setSearchQuery("");
           closeMovie();
         }}
         onDirectorClick={(director) => {

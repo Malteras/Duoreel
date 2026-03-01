@@ -24,8 +24,9 @@ export interface AppLayoutContext {
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   navigateToDiscoverWithFilter: (
-    filterType: 'genre' | 'director' | 'actor' | 'year',
-    value: string | number
+    filterType: 'genre' | 'director' | 'actor' | 'year' | 'keyword',
+    value: string | number,
+    extra?: string
   ) => void;
   onSignOut: () => Promise<void>;
   // Tab caches
@@ -306,9 +307,10 @@ export function AppLayout() {
 
   const navigateToDiscoverWithFilter: AppLayoutContext['navigateToDiscoverWithFilter'] = (
     filterType,
-    value
+    value,
+    extra
   ) => {
-    navigate('/discover', { state: { filterType, filterValue: value } });
+    navigate('/discover', { state: { filterType, filterValue: value, filterExtra: extra } });
   };
 
   const { discoverCache, setDiscoverCache, savedCache, setSavedCache, matchesCache, setMatchesCache } = useTabCache();

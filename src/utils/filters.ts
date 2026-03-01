@@ -12,6 +12,8 @@ export interface Filters {
   language: string | null;
   duration: string;
   streamingServices: string[];
+  keyword: string | null;
+  keywordName: string | null;
 }
 
 export const DEFAULT_FILTERS: Filters = {
@@ -24,4 +26,6 @@ export const DEFAULT_FILTERS: Filters = {
   language: null,
   duration: "all",
   streamingServices: [],
+  keyword: null,
+  keywordName: null,
 };

@@ -2003,6 +2003,30 @@ app.get("/make-server-5623fde1/search/people", async (c) => {
   }
 });
 
+// Search for keywords
+app.get("/make-server-5623fde1/search/keywords", async (c) => {
+  try {
+    const apiKey = Deno.env.get('TMDB_API_KEY');
+    if (!apiKey) {
+      return c.json({ error: 'TMDb API key not configured' }, 500);
+    }
+
+    const query = c.req.query('query');
+    if (!query) {
+      return c.json({ error: 'Query parameter is required' }, 400);
+    }
+
+    const url = `https://api.themoviedb.org/3/search/keyword?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    return c.json(data);
+  } catch (error) {
+    console.error('Error searching keywords:', error);
+    return c.json({ error: `Failed to search keywords: ${error}` }, 500);
+  }
+});
+
 // Get IMDb rating for a movie (with caching)
 app.get("/make-server-5623fde1/movies/:movieId/imdb", async (c) => {
   try {
@@ -2678,6 +2702,7 @@ app.get("/make-server-5623fde1/movies/discover-filtered", async (c) => {
     const year = c.req.query('year');
     const decade = c.req.query('decade'); // e.g., "2020-2029"
     const sortBy = c.req.query('sortBy') || 'popularity.desc';
+    const keyword = c.req.query('keyword');
     const includeWatched = c.req.query('includeWatched') === 'true';
 
     // Get excluded movie IDs
@@ -2763,6 +2788,7 @@ app.get("/make-server-5623fde1/movies/discover-filtered", async (c) => {
       if (sortBy) params.append('sort_by', sortBy);
       if (withCrew) params.append('with_crew', withCrew);
       if (withCast) params.append('with_cast', withCast);
+      if (keyword) params.append('with_keywords', keyword);
 
       // Streaming services filter
       if (streamingServices) {

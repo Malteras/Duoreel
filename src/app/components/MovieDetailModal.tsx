@@ -22,6 +22,7 @@ interface MovieDetailModalProps {
   isDislikeLoading?: boolean;
   isWatchedLoading?: boolean;
   onGenreClick?: (genreId: number) => void;
+  onKeywordClick?: (keywordId: number, keywordName: string) => void;
   onDirectorClick?: (director: string) => void;
   onActorClick?: (actor: string) => void;
   onLanguageClick?: (language: string) => void;
@@ -48,6 +49,7 @@ export function MovieDetailModal({
   isDislikeLoading = false,
   isWatchedLoading = false,
   onGenreClick,
+  onKeywordClick,
   onDirectorClick,
   onActorClick,
   onLanguageClick,
@@ -330,7 +332,11 @@ export function MovieDetailModal({
                     <Badge
                       key={kw.id}
                       variant="secondary"
-                      className="rounded-full bg-slate-700/80 text-slate-300 border-slate-600 text-xs font-normal"
+                      className="rounded-full bg-slate-700/80 text-slate-300 border-slate-600 text-xs font-normal cursor-pointer hover:bg-slate-600 hover:text-slate-200 hover:border-slate-500 transition-colors"
+                      onClick={() => {
+                        onKeywordClick?.(kw.id, kw.name);
+                        onClose();
+                      }}
                     >
                       {kw.name}
                     </Badge>

@@ -25,7 +25,7 @@ interface SavedMoviesTabProps {
   accessToken: string | null;
   projectId: string;
   publicAnonKey: string;
-  navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year', value: string | number) => void;
+  navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year' | 'keyword', value: string | number, extra?: string) => void;
   likedMovies: Movie[];
   setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
   globalImdbCache: Map<string, string>;
@@ -629,6 +629,7 @@ export function SavedMoviesTab({
                       onUnlike={() => handleUnlike(movie.id)}
                       onClick={() => openMovie(movie)}
                       onGenreClick={(genreId) => navigateToDiscoverWithFilter('genre', genreId)}
+                      onKeywordClick={(keywordId, keywordName) => navigateToDiscoverWithFilter('keyword', keywordId, keywordName)}
                       onDirectorClick={(director) => navigateToDiscoverWithFilter('director', director)}
                       onActorClick={(actor) => navigateToDiscoverWithFilter('actor', actor)}
                       onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
@@ -734,6 +735,7 @@ export function SavedMoviesTab({
                       onUnlike={() => handleUnlike(movie.id)}
                       onClick={() => openMovie(movie)}
                       onGenreClick={(genreId) => navigateToDiscoverWithFilter('genre', genreId)}
+                      onKeywordClick={(keywordId, keywordName) => navigateToDiscoverWithFilter('keyword', keywordId, keywordName)}
                       onDirectorClick={(director) => navigateToDiscoverWithFilter('director', director)}
                       onActorClick={(actor) => navigateToDiscoverWithFilter('actor', actor)}
                       onYearClick={(year) => navigateToDiscoverWithFilter('year', year)}
@@ -831,6 +833,7 @@ export function SavedMoviesTab({
         onDislike={() => {}}
         isWatched={watchedMovieIds.has(selectedMovie?.id)}
         onGenreClick={(genre) => navigateToDiscoverWithFilter('genre', genre)}
+        onKeywordClick={(keywordId, keywordName) => navigateToDiscoverWithFilter('keyword', keywordId, keywordName)}
         onDirectorClick={(director) => navigateToDiscoverWithFilter('director', director)}
         onActorClick={(actor) => navigateToDiscoverWithFilter('actor', actor)}
         onLanguageClick={() => {}}
