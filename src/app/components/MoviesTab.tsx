@@ -116,6 +116,23 @@ export function MoviesTab({
   // When arriving via cross-tab navigation (initial* filter props), don't restore
   // movies or filters from cache — we need a fresh fetch with the new filter.
   const hasCrossTabFilter = !!(initialGenre || initialDirector || initialActor || initialYear || initialKeyword);
+
+  // Build cross-tab filters once at mount — no effect/navigate race condition.
+  const crossTabFilters = useMemo(() => {
+    if (!hasCrossTabFilter) return null;
+    const f = { ...DEFAULT_FILTERS };
+    if (initialGenre) f.genre = initialGenre;
+    if (initialDirector) f.director = initialDirector;
+    if (initialActor) f.actor = initialActor;
+    if (initialYear) f.year = initialYear.toString();
+    if (initialKeyword) {
+      f.keyword = initialKeyword;
+      f.keywordName = initialKeywordName || null;
+    }
+    return f;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Intentionally empty — only compute on first mount
+
   const [movies, setMovies] = useState<Movie[]>(hasCrossTabFilter ? [] : (discoverCache?.movies ?? []));
   const [loading, setLoading] = useState(hasCrossTabFilter ? true : !discoverCache);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -125,8 +142,9 @@ export function MoviesTab({
     { id: number; name: string }[]
   >([]);
 
-  // Filter state — restored from cache if available
-  const [filters, setFilters] = useState(hasCrossTabFilter ? DEFAULT_FILTERS : (discoverCache?.filters ?? DEFAULT_FILTERS));
+  // Filter state — restored from cache if available.
+  // When arriving via cross-tab navigation, use the pre-built crossTabFilters.
+  const [filters, setFilters] = useState(crossTabFilters ?? (discoverCache?.filters ?? DEFAULT_FILTERS));
   const [sortBy, setSortBy] = useState(discoverCache?.sortBy ?? "popularity");
   const [showWatchedMovies, setShowWatchedMovies] =
     useState(discoverCache?.showWatchedMovies ?? false);
@@ -423,30 +441,17 @@ export function MoviesTab({
     ],
   );
 
-  // ──────────────── Apply initial filters from cross-tab navigation ────────────────
+  // ──────────────── Cross-tab navigation: bust cache + clear route state ────────────────
+  // Filters are already baked into initial state via crossTabFilters (no setFilters needed).
+  // We just need to clear the discover cache so it doesn't restore stale results on next visit,
+  // and clear route state so browser Back doesn't re-trigger the filter.
   useEffect(() => {
-    if (initialGenre || initialDirector || initialActor || initialYear || initialKeyword) {
-      const newFilters = { ...DEFAULT_FILTERS };
-      if (initialGenre) newFilters.genre = initialGenre;
-      if (initialDirector) newFilters.director = initialDirector;
-      if (initialActor) newFilters.actor = initialActor;
-      if (initialYear) newFilters.year = initialYear.toString();
-      if (initialKeyword) {
-        newFilters.keyword = initialKeyword;
-        newFilters.keywordName = initialKeywordName || null;
-      }
-      // Bust cache so next mount doesn't restore stale filtered results.
-      // skipNextFetchRef is already false at mount when initial* props are set,
-      // so the [filters] fetch effect will fire normally with the new filters.
+    if (crossTabFilters) {
       setDiscoverCache(null);
-      setFilters(newFilters);
-      // Defer clearing route state — if we call onFiltersApplied() synchronously,
-      // the navigate('/discover', { state: null }) can cause a re-render that
-      // remounts MoviesTab before the fetch effect fires, losing the filter state.
-      setTimeout(() => onFiltersApplied?.(), 0);
+      onFiltersApplied?.();
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialGenre, initialDirector, initialActor, initialYear, initialKeyword, initialKeywordName]);
+  }, []); // Run once on mount only
 
   // ──────────────── Fetch when filters/sort/showWatched change ────────────────
   // Note: We include `showWatchedMovies` in the dependency array so that when the
