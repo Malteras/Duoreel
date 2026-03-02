@@ -316,7 +316,6 @@ export function MovieDetailModal({
                       className="rounded-full bg-purple-600/70 text-white border-purple-500 cursor-pointer hover:bg-purple-700 hover:border-purple-400 transition-colors" 
                       onClick={() => {
                         onGenreClick?.(genre.id);
-                        onClose();
                       }}
                     >
                       {genre.name}
@@ -335,7 +334,6 @@ export function MovieDetailModal({
                       className="rounded-full bg-slate-700/80 text-slate-300 border-slate-600 text-xs font-normal cursor-pointer hover:bg-slate-600 hover:text-slate-200 hover:border-slate-500 transition-colors"
                       onClick={() => {
                         onKeywordClick?.(kw.id, kw.name);
-                        onClose();
                       }}
                     >
                       {kw.name}
@@ -418,7 +416,6 @@ export function MovieDetailModal({
                   className="bg-slate-700 text-slate-200 border-slate-600 cursor-pointer hover:bg-slate-600 hover:border-slate-500 transition-colors text-base px-3 py-1"
                   onClick={() => {
                     onDirectorClick?.(movie.director);
-                    onClose();
                   }}
                 >
                   {movie.director}
@@ -438,7 +435,6 @@ export function MovieDetailModal({
                       className="bg-blue-600/80 text-white border-blue-500 cursor-pointer hover:bg-blue-700 hover:border-blue-400 transition-colors"
                       onClick={() => {
                         onActorClick?.(actor);
-                        onClose();
                       }}
                     >
                       {actor}
@@ -470,7 +466,6 @@ export function MovieDetailModal({
                     className="bg-slate-700 text-slate-200 border-slate-600 cursor-pointer hover:bg-slate-600 hover:border-slate-500 transition-colors uppercase"
                     onClick={() => {
                       onLanguageClick?.(movie.original_language);
-                      onClose();
                     }}
                   >
                     {movie.original_language}
