@@ -121,7 +121,7 @@ function SearchFilterInput({
             onSearchChange(e.target.value);
           }}
           placeholder={placeholder}
-          className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-10 placeholder:text-slate-500"
+          className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-colors pr-10 placeholder:text-slate-500"
         />
 
         {/* Right side: spinner or ✕ clear button */}
