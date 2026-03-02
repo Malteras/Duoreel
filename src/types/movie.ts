@@ -61,4 +61,15 @@ export interface Movie {
     crew?: CrewMember[];
     cast?: CastMember[];
   };
+
+  // Video/trailer data (from TMDB videos endpoint)
+  videos?: {
+    results?: {
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+      official: boolean;
+    }[];
+  };
 }

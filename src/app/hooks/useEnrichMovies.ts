@@ -104,6 +104,7 @@ export function useEnrichMovies({
               original_language: d.original_language || movie.original_language,
               status: d.status ?? movie.status,
               vote_count: d.vote_count || movie.vote_count,
+              videos: d.videos || movie.videos,
             };
           });
           return updatedMovies;

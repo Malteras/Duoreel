@@ -889,7 +889,7 @@ app.post("/make-server-5623fde1/letterboxd/sync", async (c) => {
 
             // Fetch full movie details from TMDB
             const tmdbRes = await fetch(
-              `https://api.themoviedb.org/3/movie/${item.tmdbMovieId}?api_key=${tmdbApiKey}&append_to_response=credits,external_ids,keywords`
+              `https://api.themoviedb.org/3/movie/${item.tmdbMovieId}?api_key=${tmdbApiKey}&append_to_response=credits,external_ids,keywords,videos`
             );
 
             if (!tmdbRes.ok) {
@@ -2918,7 +2918,7 @@ app.get("/make-server-5623fde1/movies/:id", async (c) => {
     }
 
     const movieId = c.req.param('id');
-    const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&append_to_response=credits,external_ids,watch/providers,keywords`;
+    const url = `https://api.themoviedb.org/3/movie/${movieId}?api_key=${apiKey}&append_to_response=credits,external_ids,watch/providers,keywords,videos`;
     const response = await fetch(url);
     const data = await response.json();
 

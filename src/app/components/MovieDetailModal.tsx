@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film } from 'lucide-react';
+import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
@@ -122,6 +122,33 @@ export function MovieDetailModal({
     }
   }, [isOpen, movie?.external_ids?.imdb_id, publicAnonKey, globalImdbCache, setGlobalImdbCache, imdbRatingFromCard]);
 
+  // --- Trailer logic ---
+  const [showTrailer, setShowTrailer] = useState(false);
+
+  // Find the best YouTube trailer: prefer official trailers, then any trailer, then any YouTube video
+  const trailerKey = (() => {
+    const videos = movie?.videos?.results;
+    if (!videos || videos.length === 0) return null;
+
+    const youtubeVideos = videos.filter((v) => v.site === 'YouTube');
+    // Priority 1: Official trailer
+    const officialTrailer = youtubeVideos.find((v) => v.type === 'Trailer' && v.official);
+    if (officialTrailer) return officialTrailer.key;
+    // Priority 2: Any trailer
+    const anyTrailer = youtubeVideos.find((v) => v.type === 'Trailer');
+    if (anyTrailer) return anyTrailer.key;
+    // Priority 3: Official teaser
+    const officialTeaser = youtubeVideos.find((v) => v.type === 'Teaser' && v.official);
+    if (officialTeaser) return officialTeaser.key;
+    // Priority 4: Any YouTube video (clip, featurette, etc.)
+    return youtubeVideos[0]?.key || null;
+  })();
+
+  // Reset trailer playback when modal closes or movie changes
+  useEffect(() => {
+    if (!isOpen) setShowTrailer(false);
+  }, [isOpen, movie?.id]);
+
   if (!movie) return null;
 
   const posterUrl = movie.poster_path 
@@ -189,26 +216,71 @@ export function MovieDetailModal({
         <div className="max-h-[90dvh] overflow-y-auto">
           {/* Backdrop Image */}
           <div className="relative h-64 md:h-80 overflow-hidden">
-            {backdropUrl ? (
-              <img 
-                src={backdropUrl} 
-                alt={cleanTitle(movie.title)}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.currentTarget;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
+            {showTrailer && trailerKey ? (
+              /* YouTube embed — active when user clicks play */
+              <iframe
+                src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0&modestbranding=1`}
+                title="Movie Trailer"
+                className="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                frameBorder="0"
               />
-            ) : null}
-            <div
-              className="w-full h-full bg-slate-800 items-center justify-center"
-              style={{ display: backdropUrl ? 'none' : 'flex' }}
-            >
-              <Film className="size-20 text-slate-600" />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
+            ) : (
+              /* Thumbnail state — poster/backdrop with optional play button */
+              <>
+                {trailerKey ? (
+                  /* YouTube thumbnail as backdrop replacement */
+                  <div
+                    className="w-full h-full cursor-pointer group/trailer"
+                    onClick={() => setShowTrailer(true)}
+                  >
+                    <img
+                      src={`https://img.youtube.com/vi/${trailerKey}/maxresdefault.jpg`}
+                      alt={`${cleanTitle(movie.title)} trailer`}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // maxresdefault may not exist — fall back to hqdefault
+                        const target = e.currentTarget;
+                        if (target.src.includes('maxresdefault')) {
+                          target.src = `https://img.youtube.com/vi/${trailerKey}/hqdefault.jpg`;
+                        }
+                      }}
+                    />
+                    {/* Play button overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center z-[1]">
+                      <div className="bg-black/60 group-hover/trailer:bg-red-600 transition-colors rounded-full p-4 shadow-2xl">
+                        <Play className="size-10 text-white fill-white" />
+                      </div>
+                    </div>
+                  </div>
+                ) : backdropUrl ? (
+                  <img
+                    src={backdropUrl}
+                    alt={cleanTitle(movie.title)}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                      const fallback = target.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                {!trailerKey && (
+                  <div
+                    className="w-full h-full bg-slate-800 items-center justify-center"
+                    style={{ display: backdropUrl ? 'none' : 'flex' }}
+                  >
+                    <Film className="size-20 text-slate-600" />
+                  </div>
+                )}
+              </>
+            )}
+            {/* Gradient overlay — hide during video playback for clean player */}
+            {!showTrailer && (
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-transparent" />
+            )}
             
             {/* Rating Badges - Bottom Right */}
             <div className="absolute bottom-4 right-4 flex items-center gap-2">
