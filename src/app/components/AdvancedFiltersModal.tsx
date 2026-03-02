@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { API_BASE_URL } from '../../utils/api';
 import { type Filters, DEFAULT_FILTERS } from '../../utils/filters';
 import { STREAMING_SERVICES } from '../../constants/streaming';
@@ -64,12 +64,18 @@ const YEAR_OPTIONS = [
   }),
 ];
 
-/** Unified search input that shows the selected value as a dismissible chip. */
-function ChipSearchInput({
+/**
+ * URL-bar style search input for single-select filter fields.
+ * When a value is selected, it shows as normal text in the input.
+ * Focusing selects all text; typing replaces the selection and starts a new search.
+ * An ✕ button on the right clears the value.
+ */
+function SearchFilterInput({
   selectedValue,
-  selectedLabel,
+  displayLabel,
   searchValue,
   onSearchChange,
+  onSelect,
   onClear,
   placeholder,
   isSearching,
@@ -77,65 +83,68 @@ function ChipSearchInput({
   renderResult,
 }: {
   selectedValue: string | null;
-  selectedLabel: string;
+  displayLabel: string;
   searchValue: string;
   onSearchChange: (value: string) => void;
+  onSelect: () => void;
   onClear: () => void;
   placeholder: string;
   isSearching: boolean;
   results: any[];
   renderResult: (item: any) => React.ReactNode;
 }) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Track whether the user is actively searching (vs showing selected value)
+  const isSearching_ = !selectedValue || searchValue !== '';
+
+  // The displayed input value: show the search query when typing, otherwise show the selected label
+  const inputValue = isSearching_ ? searchValue : displayLabel;
 
   return (
     <div className="relative">
-      {/* Input container with optional chip */}
-      <div
-        className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-md px-3 py-1.5 cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-colors"
-        onClick={() => inputRef.current?.focus()}
-      >
-        {/* Chip — shown when a value is selected and user hasn't started typing */}
-        {selectedValue && !searchValue && (
-          <span className="inline-flex items-center gap-1 bg-slate-600 text-slate-200 text-sm rounded-full px-2.5 py-0.5 shrink-0">
-            {selectedLabel}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClear();
-              }}
-              className="hover:text-white transition-colors"
-              aria-label={`Remove ${selectedLabel}`}
-            >
-              <X className="size-3" />
-            </button>
-          </span>
-        )}
-
-        {/* Input — always rendered, visible when no chip OR when typing */}
+      <div className="relative">
         <input
           ref={inputRef}
           type="text"
-          value={searchValue}
+          value={inputValue}
+          onFocus={() => {
+            // Select all text on focus so typing replaces the current value
+            if (selectedValue && searchValue === '') {
+              setTimeout(() => inputRef.current?.select(), 0);
+            }
+          }}
           onChange={(e) => {
+            // If user starts typing while a value is selected, clear the selection
+            if (selectedValue && searchValue === '') {
+              onClear();
+            }
             onSearchChange(e.target.value);
           }}
-          onFocus={() => {
-            // If a chip is showing and user focuses, we keep it visible
-            // until they actually type something (handled by onSearchChange clearing the selection)
-          }}
-          placeholder={selectedValue && !searchValue ? '' : placeholder}
-          className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-slate-500 min-w-[60px] py-0.5"
+          placeholder={placeholder}
+          className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors pr-10 placeholder:text-slate-500"
         />
 
-        {/* Spinner */}
-        {isSearching && (
-          <Loader2 className="size-4 text-slate-400 animate-spin shrink-0" />
-        )}
+        {/* Right side: spinner or ✕ clear button */}
+        {isSearching ? (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 animate-spin" />
+        ) : (selectedValue || searchValue) ? (
+          <button
+            type="button"
+            onClick={() => {
+              onClear();
+              onSearchChange('');
+              // Focus the input after clearing so user can immediately type
+              setTimeout(() => inputRef.current?.focus(), 0);
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-700 transition-colors text-slate-400 hover:text-white"
+            aria-label="Clear"
+          >
+            <X className="size-4" />
+          </button>
+        ) : null}
       </div>
 
-      {/* Dropdown results */}
+      {/* Dropdown results — only when actively searching */}
       {results.length > 0 && searchValue && (
         <div className="absolute z-50 left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-md max-h-[200px] overflow-y-auto shadow-lg">
           {results.map(renderResult)}
@@ -373,18 +382,15 @@ export function AdvancedFiltersModal({
           {/* Keyword Search */}
           <div>
             <Label className="text-slate-300 mb-2 block">Keyword</Label>
-            <ChipSearchInput
+            <SearchFilterInput
               selectedValue={filters.keyword}
-              selectedLabel={filters.keywordName || `Keyword #${filters.keyword}`}
+              displayLabel={filters.keywordName || `Keyword #${filters.keyword}`}
               searchValue={keywordSearch}
               onSearchChange={(value) => {
-                // If user starts typing while a keyword is selected, clear the selection
-                if (filters.keyword) {
-                  setFilters({ ...filters, keyword: null, keywordName: null });
-                }
                 setKeywordSearch(value);
                 searchKeywords(value);
               }}
+              onSelect={() => {}}
               onClear={() => {
                 setFilters({ ...filters, keyword: null, keywordName: null });
                 setKeywordSearch('');
@@ -412,17 +418,15 @@ export function AdvancedFiltersModal({
           {/* Director Search */}
           <div>
             <Label className="text-slate-300 mb-2 block">Director</Label>
-            <ChipSearchInput
+            <SearchFilterInput
               selectedValue={filters.director}
-              selectedLabel={filters.director || ''}
+              displayLabel={filters.director || ''}
               searchValue={directorSearch}
               onSearchChange={(value) => {
-                if (filters.director) {
-                  setFilters({ ...filters, director: null });
-                }
                 setDirectorSearch(value);
                 searchDirectors(value);
               }}
+              onSelect={() => {}}
               onClear={() => {
                 setFilters({ ...filters, director: null });
                 setDirectorSearch('');
@@ -453,17 +457,15 @@ export function AdvancedFiltersModal({
           {/* Actor Search */}
           <div>
             <Label className="text-slate-300 mb-2 block">Actor</Label>
-            <ChipSearchInput
+            <SearchFilterInput
               selectedValue={filters.actor}
-              selectedLabel={filters.actor || ''}
+              displayLabel={filters.actor || ''}
               searchValue={actorSearch}
               onSearchChange={(value) => {
-                if (filters.actor) {
-                  setFilters({ ...filters, actor: null });
-                }
                 setActorSearch(value);
                 searchActors(value);
               }}
+              onSelect={() => {}}
               onClear={() => {
                 setFilters({ ...filters, actor: null });
                 setActorSearch('');
