@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../../utils/api';
 import { type Filters, DEFAULT_FILTERS } from '../../utils/filters';
 import { STREAMING_SERVICES } from '../../constants/streaming';
@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
-import { Search, Loader2, Eye, EyeOff, Clock } from 'lucide-react';
+import { Search, Loader2, Eye, EyeOff, Clock, X } from 'lucide-react';
 
 interface AdvancedFiltersModalProps {
   isOpen: boolean;
@@ -63,6 +63,87 @@ const YEAR_OPTIONS = [
     return { label: year.toString(), value: year.toString() };
   }),
 ];
+
+/** Unified search input that shows the selected value as a dismissible chip. */
+function ChipSearchInput({
+  selectedValue,
+  selectedLabel,
+  searchValue,
+  onSearchChange,
+  onClear,
+  placeholder,
+  isSearching,
+  results,
+  renderResult,
+}: {
+  selectedValue: string | null;
+  selectedLabel: string;
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  onClear: () => void;
+  placeholder: string;
+  isSearching: boolean;
+  results: any[];
+  renderResult: (item: any) => React.ReactNode;
+}) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  return (
+    <div className="relative">
+      {/* Input container with optional chip */}
+      <div
+        className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-md px-3 py-1.5 cursor-text focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition-colors"
+        onClick={() => inputRef.current?.focus()}
+      >
+        {/* Chip — shown when a value is selected and user hasn't started typing */}
+        {selectedValue && !searchValue && (
+          <span className="inline-flex items-center gap-1 bg-slate-600 text-slate-200 text-sm rounded-full px-2.5 py-0.5 shrink-0">
+            {selectedLabel}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClear();
+              }}
+              className="hover:text-white transition-colors"
+              aria-label={`Remove ${selectedLabel}`}
+            >
+              <X className="size-3" />
+            </button>
+          </span>
+        )}
+
+        {/* Input — always rendered, visible when no chip OR when typing */}
+        <input
+          ref={inputRef}
+          type="text"
+          value={searchValue}
+          onChange={(e) => {
+            onSearchChange(e.target.value);
+          }}
+          onFocus={() => {
+            // If a chip is showing and user focuses, we keep it visible
+            // until they actually type something (handled by onSearchChange clearing the selection)
+          }}
+          placeholder={selectedValue && !searchValue ? '' : placeholder}
+          className="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-slate-500 min-w-[60px] py-0.5"
+        />
+
+        {/* Spinner */}
+        {isSearching && (
+          <Loader2 className="size-4 text-slate-400 animate-spin shrink-0" />
+        )}
+      </div>
+
+      {/* Dropdown results */}
+      {results.length > 0 && searchValue && (
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-slate-800 border border-slate-700 rounded-md max-h-[200px] overflow-y-auto shadow-lg">
+          {results.map(renderResult)}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function AdvancedFiltersModal({ 
   isOpen, 
@@ -292,175 +373,122 @@ export function AdvancedFiltersModal({
           {/* Keyword Search */}
           <div>
             <Label className="text-slate-300 mb-2 block">Keyword</Label>
-            {filters.keyword ? (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white">
-                  {filters.keywordName || `Keyword #${filters.keyword}`}
-                </div>
-                <Button
-                  variant="secondary"
-                  className="bg-slate-700 hover:bg-slate-600 text-white"
+            <ChipSearchInput
+              selectedValue={filters.keyword}
+              selectedLabel={filters.keywordName || `Keyword #${filters.keyword}`}
+              searchValue={keywordSearch}
+              onSearchChange={(value) => {
+                // If user starts typing while a keyword is selected, clear the selection
+                if (filters.keyword) {
+                  setFilters({ ...filters, keyword: null, keywordName: null });
+                }
+                setKeywordSearch(value);
+                searchKeywords(value);
+              }}
+              onClear={() => {
+                setFilters({ ...filters, keyword: null, keywordName: null });
+                setKeywordSearch('');
+                setKeywordResults([]);
+              }}
+              placeholder="Search for a keyword..."
+              isSearching={searchingKeyword}
+              results={keywordResults}
+              renderResult={(kw) => (
+                <div
+                  key={kw.id}
+                  className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
                   onClick={() => {
-                    setFilters({ ...filters, keyword: null, keywordName: null });
+                    setFilters({ ...filters, keyword: kw.id.toString(), keywordName: kw.name });
                     setKeywordSearch('');
+                    setKeywordResults([]);
                   }}
                 >
-                  Clear
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="relative">
-                  <Input
-                    value={keywordSearch}
-                    onChange={(e) => {
-                      setKeywordSearch(e.target.value);
-                      searchKeywords(e.target.value);
-                    }}
-                    placeholder="Search for a keyword..."
-                    className="bg-slate-800 border-slate-700 text-white pr-10"
-                  />
-                  {searchingKeyword && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 animate-spin" />
-                  )}
+                  <div className="text-white font-medium text-sm">{kw.name}</div>
                 </div>
-                {keywordResults.length > 0 && (
-                  <div className="mt-2 bg-slate-800 border border-slate-700 rounded-md max-h-[200px] overflow-y-auto">
-                    {keywordResults.slice(0, 10).map((kw) => (
-                      <div
-                        key={kw.id}
-                        className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
-                        onClick={() => {
-                          setFilters({ ...filters, keyword: kw.id.toString(), keywordName: kw.name });
-                          setKeywordSearch('');
-                          setKeywordResults([]);
-                        }}
-                      >
-                        <div className="text-white font-medium">{kw.name}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+              )}
+            />
           </div>
 
           {/* Director Search */}
           <div>
             <Label className="text-slate-300 mb-2 block">Director</Label>
-            {filters.director ? (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white">
-                  {filters.director}
-                </div>
-                <Button
-                  variant="secondary"
-                  className="bg-slate-700 hover:bg-slate-600 text-white"
+            <ChipSearchInput
+              selectedValue={filters.director}
+              selectedLabel={filters.director || ''}
+              searchValue={directorSearch}
+              onSearchChange={(value) => {
+                if (filters.director) {
+                  setFilters({ ...filters, director: null });
+                }
+                setDirectorSearch(value);
+                searchDirectors(value);
+              }}
+              onClear={() => {
+                setFilters({ ...filters, director: null });
+                setDirectorSearch('');
+                setDirectorResults([]);
+              }}
+              placeholder="Search for a director..."
+              isSearching={searchingDirector}
+              results={directorResults}
+              renderResult={(person) => (
+                <div
+                  key={person.id}
+                  className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
                   onClick={() => {
-                    setFilters({ ...filters, director: null });
+                    setFilters({ ...filters, director: person.name });
                     setDirectorSearch('');
+                    setDirectorResults([]);
                   }}
                 >
-                  Clear
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="relative">
-                  <Input
-                    value={directorSearch}
-                    onChange={(e) => {
-                      setDirectorSearch(e.target.value);
-                      searchDirectors(e.target.value);
-                    }}
-                    placeholder="Search for a director..."
-                    className="bg-slate-800 border-slate-700 text-white pr-10"
-                  />
-                  {searchingDirector && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 animate-spin" />
+                  <div className="text-white font-medium text-sm">{person.name}</div>
+                  {person.known_for_department && (
+                    <div className="text-xs text-slate-400">{person.known_for_department}</div>
                   )}
                 </div>
-                {directorResults.length > 0 && (
-                  <div className="mt-2 bg-slate-800 border border-slate-700 rounded-md max-h-[200px] overflow-y-auto">
-                    {directorResults.slice(0, 10).map((person) => (
-                      <div
-                        key={person.id}
-                        className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
-                        onClick={() => {
-                          setFilters({ ...filters, director: person.name });
-                          setDirectorSearch('');
-                          setDirectorResults([]);
-                        }}
-                      >
-                        <div className="text-white font-medium">{person.name}</div>
-                        {person.known_for_department && (
-                          <div className="text-xs text-slate-400">{person.known_for_department}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+              )}
+            />
           </div>
 
           {/* Actor Search */}
           <div>
             <Label className="text-slate-300 mb-2 block">Actor</Label>
-            {filters.actor ? (
-              <div className="flex items-center gap-2">
-                <div className="flex-1 bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white">
-                  {filters.actor}
-                </div>
-                <Button
-                  variant="secondary"
-                  className="bg-slate-700 hover:bg-slate-600 text-white"
+            <ChipSearchInput
+              selectedValue={filters.actor}
+              selectedLabel={filters.actor || ''}
+              searchValue={actorSearch}
+              onSearchChange={(value) => {
+                if (filters.actor) {
+                  setFilters({ ...filters, actor: null });
+                }
+                setActorSearch(value);
+                searchActors(value);
+              }}
+              onClear={() => {
+                setFilters({ ...filters, actor: null });
+                setActorSearch('');
+                setActorResults([]);
+              }}
+              placeholder="Search for an actor..."
+              isSearching={searchingActor}
+              results={actorResults}
+              renderResult={(person) => (
+                <div
+                  key={person.id}
+                  className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
                   onClick={() => {
-                    setFilters({ ...filters, actor: null });
+                    setFilters({ ...filters, actor: person.name });
                     setActorSearch('');
+                    setActorResults([]);
                   }}
                 >
-                  Clear
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="relative">
-                  <Input
-                    value={actorSearch}
-                    onChange={(e) => {
-                      setActorSearch(e.target.value);
-                      searchActors(e.target.value);
-                    }}
-                    placeholder="Search for an actor..."
-                    className="bg-slate-800 border-slate-700 text-white pr-10"
-                  />
-                  {searchingActor && (
-                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-slate-400 animate-spin" />
+                  <div className="text-white font-medium text-sm">{person.name}</div>
+                  {person.known_for_department && (
+                    <div className="text-xs text-slate-400">{person.known_for_department}</div>
                   )}
                 </div>
-                {actorResults.length > 0 && (
-                  <div className="mt-2 bg-slate-800 border border-slate-700 rounded-md max-h-[200px] overflow-y-auto">
-                    {actorResults.slice(0, 10).map((person) => (
-                      <div
-                        key={person.id}
-                        className="px-3 py-2 hover:bg-slate-700 cursor-pointer transition-colors"
-                        onClick={() => {
-                          setFilters({ ...filters, actor: person.name });
-                          setActorSearch('');
-                          setActorResults([]);
-                        }}
-                      >
-                        <div className="text-white font-medium">{person.name}</div>
-                        {person.known_for_department && (
-                          <div className="text-xs text-slate-400">{person.known_for_department}</div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
+              )}
+            />
           </div>
 
           {/* Streaming Services */}
