@@ -229,23 +229,40 @@ export function MovieDetailModal({
             ) : (
               /* Thumbnail state — poster/backdrop with optional play button */
               <>
-                {trailerKey ? (
-                  /* YouTube thumbnail as backdrop replacement */
+                {trailerKey && backdropUrl ? (
+                  /* Backdrop image with play button — trailer available */
                   <div
                     className="w-full h-full cursor-pointer group/trailer"
                     onClick={() => setShowTrailer(true)}
                   >
                     <img
-                      src={`https://img.youtube.com/vi/${trailerKey}/maxresdefault.jpg`}
-                      alt={`${cleanTitle(movie.title)} trailer`}
+                      src={backdropUrl}
+                      alt={cleanTitle(movie.title)}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        // maxresdefault may not exist — fall back to hqdefault
                         const target = e.currentTarget;
-                        if (target.src.includes('maxresdefault')) {
-                          target.src = `https://img.youtube.com/vi/${trailerKey}/hqdefault.jpg`;
-                        }
+                        target.style.display = 'none';
+                        const fallback = target.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
                       }}
+                    />
+                    {/* Play button overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center z-[1]">
+                      <div className="bg-black/60 group-hover/trailer:bg-red-600 transition-colors rounded-full p-4 shadow-2xl">
+                        <Play className="size-10 text-white fill-white" />
+                      </div>
+                    </div>
+                  </div>
+                ) : trailerKey && !backdropUrl ? (
+                  /* No backdrop but trailer exists — use YouTube thumbnail as last resort */
+                  <div
+                    className="w-full h-full cursor-pointer group/trailer"
+                    onClick={() => setShowTrailer(true)}
+                  >
+                    <img
+                      src={`https://img.youtube.com/vi/${trailerKey}/hqdefault.jpg`}
+                      alt={`${cleanTitle(movie.title)} trailer`}
+                      className="w-full h-full object-cover"
                     />
                     {/* Play button overlay */}
                     <div className="absolute inset-0 flex items-center justify-center z-[1]">
@@ -485,10 +502,13 @@ export function MovieDetailModal({
             </div>
 
             {/* Actions */}
-            <div className="flex flex-wrap gap-2 sm:gap-3">
+            {/* Mobile: flex-col (Save full-width top, secondary pair below) */}
+            {/* Desktop sm+: flex-row (all three side by side, equal flex-1) */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              {/* Primary action — full width on mobile, flex-1 on desktop */}
               <Button
                 onClick={isLiked ? onUnlike : onLike}
-                className={`flex-1 min-w-[120px] ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
+                className={`w-full sm:flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
                 disabled={isLikeLoading}
               >
                 {isLikeLoading ? (
@@ -498,43 +518,46 @@ export function MovieDetailModal({
                 )}
                 {isLiked ? 'Remove' : 'Save'}
               </Button>
-              <Button
-                onClick={onNotInterested || onDislike}
-                variant="outline"
-                className="flex-1 min-w-[100px] bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                disabled={isDislikeLoading}
-              >
-                {isDislikeLoading ? (
-                  <Loader2 className="size-5 sm:mr-2 animate-spin" />
-                ) : (
-                  <Ban className="size-5 sm:mr-2" />
-                )}
-                <span className="hidden sm:inline">Not Interested</span>
-              </Button>
-              {onWatched && onUnwatched && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="flex-1 min-w-[100px]">
+
+              {/* Secondary actions — equal halves on mobile, flex-1 each on desktop */}
+              <div className="flex gap-2 sm:gap-3 sm:contents">
+                <Button
+                  onClick={onNotInterested || onDislike}
+                  variant="outline"
+                  className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                  disabled={isDislikeLoading}
+                >
+                  {isDislikeLoading ? (
+                    <Loader2 className="size-5 mr-2 animate-spin" />
+                  ) : (
+                    <Ban className="size-5 mr-2" />
+                  )}
+                  Not Interested
+                </Button>
+
+                {onWatched && onUnwatched && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <Button
                         onClick={isWatched ? onUnwatched : onWatched}
                         variant="outline"
-                        className="w-full bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                        className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
                         disabled={isWatchedLoading}
                       >
                         {isWatchedLoading ? (
-                          <Loader2 className="size-5 sm:mr-2 animate-spin" />
+                          <Loader2 className="size-5 mr-2 animate-spin" />
                         ) : (
-                          <Eye className="size-5 sm:mr-2" />
+                          <Eye className="size-5 mr-2" />
                         )}
-                        <span className="hidden sm:inline">{isWatched ? 'Unwatched' : 'Watched'}</span>
+                        {isWatched ? 'Unwatched' : 'Watched'}
                       </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" sideOffset={5} className="bg-slate-800 text-white border-slate-700">
-                    <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={5} className="bg-slate-800 text-white border-slate-700">
+                      <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             </div>
 
             {/* Tagline */}
