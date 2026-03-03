@@ -137,7 +137,7 @@ function AppLayoutContent({
               <button
                 type="button"
                 onClick={handleLogoClick}
-                className="flex items-center gap-3 cursor-pointer"
+                className="flex items-center gap-3 cursor-pointer text-left"
                 aria-label="Go to Discover"
               >
                 <img src={duoReelLogo} alt="DuoReel" className="h-10 w-auto" />
