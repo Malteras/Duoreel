@@ -78,6 +78,15 @@ function AppLayoutContent({
   matchNotificationCount,
 }: AppLayoutContentProps) {
   const { refreshInteractions } = useUserInteractions();
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    // Bust the discover cache so MoviesTab re-mounts with DEFAULT_FILTERS and
+    // fresh results — equivalent to "Clear all filters + go to Discover".
+    context.setDiscoverCache(null);
+    navigate('/discover');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const tabCls = ({ isActive }: { isActive: boolean }) =>
     `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
@@ -125,7 +134,12 @@ function AppLayoutContent({
           <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
             {/* Logo row */}
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleLogoClick}
+                className="flex items-center gap-3 cursor-pointer"
+                aria-label="Go to Discover"
+              >
                 <img src={duoReelLogo} alt="DuoReel" className="h-10 w-auto" />
                 <div>
                   <h1 className="text-2xl font-bold text-white">
@@ -133,7 +147,7 @@ function AppLayoutContent({
                   </h1>
                   <p className="hidden md:block text-sm text-slate-400">Find movies you both love</p>
                 </div>
-              </div>
+              </button>
               <div className="flex items-center gap-3">
                 <NotificationBell accessToken={accessToken} />
                 <ProfileDropdown

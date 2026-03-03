@@ -471,6 +471,12 @@ export function MoviesTab({
     setPage(1);
     resetEnrichment();
     setImdbRatings(new Map());
+    // Reset the in-flight guard so the ratings effect isn't skipped if a
+    // previous OMDb fetch was still running when the new filter fired.
+    fetchingRatingsRef.current = false;
+    // Reset the cache-skip flag in case it was never consumed (edge case where
+    // the ratings effect hasn't fired yet at the time the user changes filters).
+    skipRatingsFetchRef.current = false;
     fetchMovies(1, false);
     // fetchMovies is included so this effect always runs with the freshest
     // callback (no stale likedMovieIds / pendingRemovals closures).
