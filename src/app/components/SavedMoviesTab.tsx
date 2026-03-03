@@ -95,7 +95,9 @@ export function SavedMoviesTab({
     // Case 1 (no new saves): return immediately and show cached data.
     // Case 2 (user saved movies in Discover): likedMovies.length grew → re-fetch.
     // viewMode change always re-fetches regardless of cache.
-    if (savedCache && savedCache.likedMoviesLengthAtLoad === likedMovies.length) {
+    // Only re-fetch when the list has grown (new save from Discover tab).
+    // Removals are handled optimistically — no re-fetch needed.
+    if (savedCache && likedMovies.length <= savedCache.likedMoviesLengthAtLoad) {
       setLoading(false);
       return;
     }
@@ -267,6 +269,9 @@ export function SavedMoviesTab({
       });
       if (response.ok) {
         setLikedMovies(prev => prev.filter(m => m.id !== movieId));
+        // Keep cache length in sync so the useEffect doesn't treat
+        // this removal as a stale-cache signal and re-fetch partner data
+        setSavedCache(prev => prev ? { ...prev, likedMoviesLengthAtLoad: prev.likedMoviesLengthAtLoad - 1 } : prev);
         toast.success('Removed from your list');
       }
     } catch (error) {
