@@ -508,7 +508,7 @@ export function MovieDetailModal({
               {/* Primary action — full width on mobile, flex-1 on desktop */}
               <Button
                 onClick={isLiked ? onUnlike : onLike}
-                className={`w-full sm:flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
+                className={`flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
                 disabled={isLikeLoading}
               >
                 {isLikeLoading ? (
