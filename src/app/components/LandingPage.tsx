@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 import { Heart } from "lucide-react";
 import duoReelLogo from "figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png";
+import appScreenshot from "figma:asset/b93eb9190ee818e6e3f0c5e4e02a1b41573eb5df.png";
+import matchesScreenshot from "figma:asset/f99272690cff28ce969229dfd7b06bc1656eb9a2.png";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -302,53 +304,64 @@ export function LandingPage() {
         <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
           {/* Logo and Title */}
           <div
-            className="text-center mb-32 backdrop-blur-lg rounded-[20px] border border-slate-700/30 px-[32px] py-[92px]"
+            className="mb-32 backdrop-blur-lg rounded-[20px] border border-slate-700/30 px-[32px] py-[60px]"
             style={{
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(10px)",
             }}
           >
-            <img
-              src={duoReelLogo}
-              alt="DuoReel"
-              className="h-32 w-auto mx-auto mb-8"
-            />
-            <p className="text-2xl sm:text-3xl text-slate-300 mb-4">
-              Find movies you{" "}
-              <span className="text-pink-400 font-semibold">
-                both
-              </span>{" "}
-              love
-            </p>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto mb-8">
-              Stop spending hours deciding what to watch. Swipe
-              through movies,{" "}
-              <span className="font-bold">
-                match with your partner
-              </span>
-              , and discover your{" "}
-              <span className="font-bold">
-                next perfect movie
-              </span>{" "}
-              night together.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                onClick={onGetStarted}
-                size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg px-8 py-6 shadow-xl shadow-blue-500/30"
-              >
-                Get Started Free
-                <ArrowRight className="size-5 ml-2" />
-              </Button>
-              <Button
-                onClick={onGetStarted}
-                size="lg"
-                variant="outline"
-                className="bg-slate-800/50 border-slate-700 text-white text-lg px-8 py-6 hover:bg-slate-700/50 hover:text-white"
-              >
-                Sign In
-              </Button>
+            <div className="flex flex-col lg:flex-row items-center gap-12">
+              {/* Left column: text + CTAs */}
+              <div className="flex-1 text-center lg:text-left">
+                <img
+                  src={duoReelLogo}
+                  alt="DuoReel"
+                  className="h-24 w-auto mx-auto lg:mx-0 mb-6"
+                />
+                <p className="text-2xl sm:text-3xl text-slate-300 mb-4">
+                  Find movies you{" "}
+                  <span className="text-pink-400 font-semibold">both</span>{" "}
+                  love
+                </p>
+                <p className="text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 mb-8">
+                  Stop spending hours deciding what to watch. Swipe through
+                  movies,{" "}
+                  <span className="font-bold">match with your partner</span>,
+                  and discover your{" "}
+                  <span className="font-bold">next perfect movie</span> night
+                  together.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                  <Button
+                    onClick={onGetStarted}
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg px-8 py-6 shadow-xl shadow-blue-500/30"
+                  >
+                    Get Started Free
+                    <ArrowRight className="size-5 ml-2" />
+                  </Button>
+                  <Button
+                    onClick={onGetStarted}
+                    size="lg"
+                    variant="outline"
+                    className="bg-slate-800/50 border-slate-700 text-white text-lg px-8 py-6 hover:bg-slate-700/50 hover:text-white"
+                  >
+                    Sign In
+                  </Button>
+                </div>
+              </div>
+
+              {/* Right column: real app screenshot */}
+              <div className="flex-shrink-0 w-full lg:w-auto flex justify-center lg:justify-end">
+                <div className="relative">
+                  <div className="absolute -inset-3 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl" />
+                  <img
+                    src={appScreenshot}
+                    alt="DuoReel app — Discover tab"
+                    className="relative w-full max-w-sm lg:max-w-md rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -546,65 +559,14 @@ export function LandingPage() {
                   Get instant notifications when you both like
                   the same movie
                 </p>
-                {/* Matches UI Preview */}
-                <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-md">
-                  <div className="space-y-3">
-                    {/* Match Item - Stalker */}
-                    <div className="bg-gradient-to-r from-pink-500/30 to-purple-500/30 backdrop-blur-sm border border-pink-500/50 rounded-lg p-3 shadow-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-16 rounded overflow-hidden flex-shrink-0 shadow-lg">
-                          <img
-                            src="https://cdn.printerval.com/unsafe/960x960/asset/111049560a1d1c1a0d1a1a141d56161d0c571115191f1d564b4d484c4c4e414e414c56414d4f4a571e14190c544f4d480054484f4d541e5508191c544f4d480049484848541e401e401e405612081f"
-                            alt="Stalker"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Sparkles className="size-4 text-pink-400" />
-                            <span className="text-pink-400 text-xs font-semibold">
-                              MATCH!
-                            </span>
-                          </div>
-                          <div className="text-white font-semibold text-sm">
-                            Stalker
-                          </div>
-                          <div className="text-slate-400 text-xs">
-                            You both saved this
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Another Match - Interstellar */}
-                    <div className="bg-gradient-to-r from-pink-500/30 to-purple-500/30 backdrop-blur-sm border border-pink-500/50 rounded-lg p-3 shadow-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-16 rounded overflow-hidden flex-shrink-0 shadow-lg">
-                          <img
-                            src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"
-                            alt="Interstellar"
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Sparkles className="size-4 text-pink-400" />
-                            <span className="text-pink-400 text-xs font-semibold">
-                              MATCH!
-                            </span>
-                          </div>
-                          <div className="text-white font-semibold text-sm">
-                            Interstellar
-                          </div>
-                          <div className="text-slate-400 text-xs">
-                            You both saved this
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-400 text-center mt-3">
-                    No more endless scrolling!
-                  </p>
+                {/* Matches UI Preview — real screenshot */}
+                <div className="relative max-w-md">
+                  <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
+                  <img
+                    src={matchesScreenshot}
+                    alt="DuoReel app — Matches tab"
+                    className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
+                  />
                 </div>
               </div>
             </div>
