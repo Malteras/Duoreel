@@ -50,8 +50,11 @@ export interface Movie {
 
   'watch/providers'?: {
     results?: {
-      US?: {
+      [countryCode: string]: {
+        link?: string;
         flatrate?: WatchProvider[];
+        buy?: WatchProvider[];
+        rent?: WatchProvider[];
       };
     };
   };

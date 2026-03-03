@@ -65,6 +65,22 @@ export function MovieDetailModal({
   // Strip wrapping quotes from TMDB titles (e.g., "\"Wuthering Heights\"" → "Wuthering Heights")
   const cleanTitle = (title: string) => title.replace(/^[\"']+|[\"']+$/g, '').trim();
 
+  // Derive the user's country code from their browser locale (e.g. 'en-US' → 'US')
+  // Falls back to 'US' if the locale doesn't include a region.
+  const getUserCountryCode = (): string => {
+    const locale = navigator.language || 'en-US';
+    const parts = locale.split('-');
+    return parts.length > 1 ? parts[parts.length - 1].toUpperCase() : 'US';
+  };
+
+  // Returns the watch/providers result for the user's region,
+  // falling back to US if their region has no data.
+  const getRegionProviders = (watchProviders: Movie['watch/providers']) => {
+    if (!watchProviders?.results) return null;
+    const countryCode = getUserCountryCode();
+    return watchProviders.results[countryCode] || watchProviders.results['US'] || null;
+  };
+
   // Fetch IMDb rating when modal opens — skip if already available from any source
   useEffect(() => {
     const imdbId = movie?.external_ids?.imdb_id;
@@ -161,51 +177,6 @@ export function MovieDetailModal({
 
   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
-
-  // Helper function to get streaming provider URL
-  const getProviderUrl = (providerName: string, movieTitle: string, homepage?: string) => {
-    const encodedTitle = encodeURIComponent(movieTitle);
-    
-    // If movie has a homepage and it's relevant to the provider, use it
-    if (homepage) {
-      const homepageLower = homepage.toLowerCase();
-      if (
-        (providerName.toLowerCase().includes('netflix') && homepageLower.includes('netflix')) ||
-        (providerName.toLowerCase().includes('amazon') && (homepageLower.includes('amazon') || homepageLower.includes('prime'))) ||
-        (providerName.toLowerCase().includes('hulu') && homepageLower.includes('hulu')) ||
-        (providerName.toLowerCase().includes('disney') && homepageLower.includes('disney')) ||
-        (providerName.toLowerCase().includes('max') && homepageLower.includes('max')) ||
-        (providerName.toLowerCase().includes('apple') && homepageLower.includes('apple'))
-      ) {
-        return homepage;
-      }
-    }
-    
-    // Otherwise, construct URLs for known providers
-    const providerLower = providerName.toLowerCase();
-    if (providerLower.includes('netflix')) {
-      return `https://www.netflix.com/search?q=${encodedTitle}`;
-    } else if (providerLower.includes('amazon') || providerLower.includes('prime')) {
-      return `https://www.amazon.com/s?k=${encodedTitle}&i=instant-video`;
-    } else if (providerLower.includes('hulu')) {
-      return `https://www.hulu.com/search?q=${encodedTitle}`;
-    } else if (providerLower.includes('disney')) {
-      return `https://www.disneyplus.com/search?q=${encodedTitle}`;
-    } else if (providerLower.includes('max') || providerLower.includes('hbo')) {
-      return `https://www.max.com/search?q=${encodedTitle}`;
-    } else if (providerLower.includes('apple')) {
-      return `https://tv.apple.com/search?q=${encodedTitle}`;
-    } else if (providerLower.includes('criterion')) {
-      return `https://www.criterionchannel.com/`;
-    } else if (providerLower.includes('paramount')) {
-      return `https://www.paramountplus.com/search/?query=${encodedTitle}`;
-    } else if (providerLower.includes('peacock')) {
-      return `https://www.peacocktv.com/search?q=${encodedTitle}`;
-    }
-    
-    // Default: return homepage if available, otherwise generic search
-    return homepage || `https://www.google.com/search?q=watch+${encodedTitle}+online`;
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -645,46 +616,54 @@ export function MovieDetailModal({
             </div>
 
             {/* Watch Providers */}
-            <div className="pt-4 border-t border-slate-800">
-              {movie['watch/providers']?.results?.US?.flatrate && movie['watch/providers'].results.US.flatrate.length > 0 ? (
-                <>
-                  <h4 className="text-sm font-semibold text-slate-400 mb-3">Watch on:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {movie['watch/providers'].results.US.flatrate.map((provider) => {
-                      const providerUrl = getProviderUrl(provider.provider_name, movie.title, movie.homepage);
-                      
-                      return (
-                        <a
-                          key={provider.provider_id}
-                          href={providerUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg hover:bg-slate-600 transition-colors group"
-                        >
-                          <img
-                            src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
-                            alt={provider.provider_name}
-                            className="size-5 rounded object-cover"
-                          />
-                          <span className="text-slate-200 text-sm">{provider.provider_name}</span>
-                          <ExternalLink className="size-3 text-slate-400 group-hover:text-slate-300 transition-colors" />
-                        </a>
-                      );
-                    })}
-                  </div>
-                </>
-              ) : (
-                <a
-                  href={`https://www.justwatch.com/us/search?q=${encodeURIComponent(cleanTitle(movie.title))}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-slate-500 text-sm hover:text-blue-400 transition-colors inline-flex items-center gap-1.5"
-                >
-                  Find where to watch
-                  <ExternalLink className="size-3.5" />
-                </a>
-              )}
-            </div>
+            {(() => {
+              const regionData = getRegionProviders(movie['watch/providers']);
+              const providers = regionData?.flatrate;
+              // regionData.link is the TMDB /watch page for this exact movie in the user's region.
+              // TMDB does not provide direct platform deep-links; this page lists all options and
+              // links out to the correct streaming services. Far better than a constructed search URL.
+              const watchLink = regionData?.link
+                || `https://www.justwatch.com/search?q=${encodeURIComponent(cleanTitle(movie.title))}`;
+
+              return (
+                <div className="pt-4 border-t border-slate-800">
+                  {providers && providers.length > 0 ? (
+                    <>
+                      <h4 className="text-sm font-semibold text-slate-400 mb-3">Watch on:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {providers.map((provider) => (
+                          <a
+                            key={provider.provider_id}
+                            href={watchLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 bg-slate-700/50 px-3 py-2 rounded-lg hover:bg-slate-600 transition-colors group"
+                          >
+                            <img
+                              src={`https://image.tmdb.org/t/p/original${provider.logo_path}`}
+                              alt={provider.provider_name}
+                              className="size-5 rounded object-cover"
+                            />
+                            <span className="text-slate-200 text-sm">{provider.provider_name}</span>
+                            <ExternalLink className="size-3 text-slate-400 group-hover:text-slate-300 transition-colors" />
+                          </a>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <a
+                      href={watchLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-slate-500 text-sm hover:text-blue-400 transition-colors inline-flex items-center gap-1.5"
+                    >
+                      Find where to watch
+                      <ExternalLink className="size-3.5" />
+                    </a>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
       </DialogContent>
