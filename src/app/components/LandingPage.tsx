@@ -1,5 +1,6 @@
 import { useNavigate, Navigate } from "react-router";
 import { useEffect, useState, useRef } from "react";
+import { motion } from "motion/react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
 import {
@@ -27,6 +28,7 @@ import appScreenshot from "figma:asset/b93eb9190ee818e6e3f0c5e4e02a1b41573eb5df.
 import matchesScreenshot from "figma:asset/f99272690cff28ce969229dfd7b06bc1656eb9a2.png";
 import twoHoursLater from "figma:asset/0d9cdcfe1e0abe10063defa7d62be273fa090bad.png";
 import grandBudapestCard from "figma:asset/315a25f13c2a9fe5a43cfc015139edb8155d5420.png";
+import duoReelMatchHeart from "figma:asset/1de8a8f1f163270e2734dea06481c2638f51aedc.png";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -823,8 +825,8 @@ export function LandingPage() {
                   <p className="text-green-400 text-base font-semibold tracking-wide">
                     wait for it…
                   </p>
-                  <p className="text-slate-400 text-xs">
-                    the good ending is coming
+                  <p className="text-slate-400 text-xs italic max-w-[220px] text-center leading-relaxed">
+                    "I find I'm so excited I can barely sit still or hold a thought in my head... I hope the Pacific is as blue as it has been in my dreams. I hope."
                   </p>
                 </div>
 
@@ -890,6 +892,15 @@ export function LandingPage() {
                       src={grandBudapestCard}
                       alt="The Grand Budapest Hotel saved by S"
                       className="w-36 drop-shadow-xl"
+                    />
+                  </div>
+                  <div className="flex items-center justify-center self-center flex-shrink-0">
+                    <motion.img
+                      src={duoReelMatchHeart}
+                      alt="Match!"
+                      className="w-10 h-10 drop-shadow-lg"
+                      animate={{ scale: [1, 1.6, 1], opacity: [1, 0.85, 1] }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
                     />
                   </div>
                   <div className="flex items-start gap-2">
