@@ -85,7 +85,10 @@ export function LandingPage() {
 
           <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
             No more<br />
-            &ldquo;<span className="text-pink-500">What should<br />we watch?</span>&rdquo;
+            &ldquo;<span
+              className="bg-clip-text text-transparent"
+              style={{ backgroundImage: 'linear-gradient(135deg, #db2777, #a78bfa)' }}
+            >What should<br />we watch?</span>&rdquo;
           </h1>
 
           <p className="text-lg text-slate-400 leading-relaxed mb-8 max-w-md">
@@ -103,17 +106,17 @@ export function LandingPage() {
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-4 text-sm text-slate-500 mb-4">
+          <div className="flex flex-wrap gap-3 mb-4">
             {(['Free forever', 'No credit card', '2-min setup'] as const).map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <CheckCircle2 className="size-3.5 text-green-500" /> {t}
+              <span key={t} className="flex items-center gap-1.5 text-sm text-slate-300 bg-slate-800/60 border border-slate-700/50 px-3 py-1 rounded-full">
+                <CheckCircle2 className="size-3.5 text-green-400 shrink-0" /> {t}
               </span>
             ))}
           </div>
 
-          <p className="text-xs text-slate-600">
+          <p className="text-sm text-slate-400">
             Already have an account?{' '}
-            <button onClick={onGetStarted} className="text-blue-400 hover:underline bg-transparent border-none cursor-pointer p-0">
+            <button onClick={onGetStarted} className="text-blue-400 hover:text-blue-300 hover:underline bg-transparent border-none cursor-pointer p-0 font-medium">
               Sign in
             </button>
           </p>
@@ -122,21 +125,31 @@ export function LandingPage() {
         {/* Right column: app screenshot */}
         <div className="hidden md:flex items-center justify-center">
           <div className="relative">
-            {/* Glow behind image */}
-            <div className="absolute -inset-4 bg-gradient-to-br from-pink-500/20 via-purple-500/10 to-transparent rounded-2xl blur-2xl" />
+            {/* Diffuse glow layer — wide, soft */}
+            <div className="absolute -inset-8 bg-gradient-to-br from-pink-500/30 via-purple-500/20 to-blue-500/10 rounded-3xl blur-3xl" />
+            {/* Tight inner glow for the "lit edge" feel */}
+            <div className="absolute -inset-2 bg-gradient-to-br from-pink-400/20 via-purple-400/15 to-transparent rounded-2xl blur-xl" />
+            {/* Gradient border wrapper */}
             <div
-              className="relative rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl shadow-slate-950/80"
-              style={{ transform: 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)', transition: 'transform 0.5s ease' }}
+              className="relative p-[1.5px] rounded-2xl overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, rgba(236,72,153,0.55) 0%, rgba(168,85,247,0.35) 50%, rgba(99,102,241,0.2) 100%)',
+                transform: 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)',
+                transition: 'transform 0.5s ease',
+                boxShadow: '0 0 32px 4px rgba(236,72,153,0.18), 0 0 80px 8px rgba(168,85,247,0.10)',
+              }}
               onMouseEnter={e => (e.currentTarget.style.transform = 'perspective(1200px) rotateY(-1deg) rotateX(0.5deg)')}
               onMouseLeave={e => (e.currentTarget.style.transform = 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)')}
             >
-              <img
-                src={appScreenshot}
-                alt="DuoReel app showing the Discover tab with movie cards featuring bookmark save buttons, genre filters, TMDb and IMDb ratings, and director filtering"
-                className="w-full max-w-sm block brightness-[0.92] saturate-[1.05]"
-              />
-              {/* Bottom fade */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none" />
+              <div className="rounded-[14px] overflow-hidden shadow-2xl shadow-slate-950/80">
+                <img
+                  src={appScreenshot}
+                  alt="DuoReel app showing the Discover tab with movie cards featuring bookmark save buttons, genre filters, TMDb and IMDb ratings, and director filtering"
+                  className="w-full max-w-3xl block brightness-[0.92] saturate-[1.05]"
+                />
+                {/* Bottom fade */}
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none" />
+              </div>
             </div>
           </div>
         </div>
