@@ -515,7 +515,7 @@ export function LandingPage() {
                 Discover
               </h3>
               <p
-                className="text-slate-300 leading-relaxed mb-2 max-w-lg fade-on-scroll"
+                className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll"
                 style={{ transitionDelay: "0.16s" }}
               >
                 Browse thousands of movies independently. Save
