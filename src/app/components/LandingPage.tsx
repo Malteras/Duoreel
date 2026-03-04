@@ -73,298 +73,77 @@ export function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden pt-20">
-        {/* Movie Poster Grid Background */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute inset-0 grid grid-cols-8 gap-0 opacity-70"
-            style={{
-              transform:
-                "perspective(1200px) rotateY(-15deg) rotateX(10deg) scale(1.4)",
-              transformOrigin: "center center",
-              minHeight: "120%",
-            }}
-          >
-            {/* Row 1 */}
-            <img
-              src="https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/3bhkrj58Vtu7enYsRolD1fZdja1.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/npMcVR3ykKRtofGrf6rraNbwPTw.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/kXfqcdQKsToO0OUXHcrrNCHDBzO.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/wuMc08IPKEatf9rnMNXvIDxqP4W.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/iYypPT4bhqXTt1zOIC8FqEU2r4R.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
+      <section className="max-w-7xl mx-auto px-4 pt-32 pb-20 grid grid-cols-1 md:grid-cols-2 gap-16 items-center min-h-[90vh]">
 
-            {/* Row 2 */}
-            <img
-              src="https://image.tmdb.org/t/p/w500/nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/5VTN0pR8gcqV3EPUHHfMGnJYN9L.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/n6bUvigpRFqSwmPp1m2YADdbRBc.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/xBKGJQsAIeweesB79KC89FpBrVr.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/cezWGskPY5x7GaglTTRN4Fugfb8.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/lMyv7XAwXeJZXF9xw8JS9g3Iibb.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-
-            {/* Row 3 */}
-            <img
-              src="https://image.tmdb.org/t/p/w500/aWeKITRFbbwY8txG5uCj4rMCfSR.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/dqK9Hag1054tghRQSqLSfrkvQnA.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/suaEOtk1N1sgg2MTM7oZd2cfVp3.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/rSPw7tgCH9c6NqICZef0kZjFOQ5.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/lHu1wtNaczFPGFDTrjCSzeLPTKN.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/db32LaOibwEliAmSL2jjDF6oDdj.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/fev8UFNFFYsD5q7AcYS8LyTzqwl.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-
-            {/* Row 4 */}
-            <img
-              src="https://image.tmdb.org/t/p/w500/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/rCzpDGLbOoPwLjy3OAm5NUPOTrC.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/iiZZdoQBEYBv6id8su7ImL0oCbD.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/2CAL2433ZeIihfX1Hb2139CX0pW.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/fqe8v8ME0z0CiU7sf6vxToAfOCh.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/pFlaoHTZeyNkG83vxsAJiGzfSsa.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/mDfJG3LC3Dqb67AZ52x3Z0jU0uB.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/tVxDe01Zy3kZqaZRNiXFGDICdZk.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-
-            {/* Row 5 */}
-            <img
-              src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/d5NXSklXo0qyIYkgV94XAgMIckC.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/bOGkgRGdhrBYJSLpXaxhXVstddV.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/ipc1O5rMpALxH1rJHnvvmpapo37.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/8Y43POKjjKDGI9MH89WW2Di64Ym.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/gzlJkVfWV5VEG5xK25cvFGJgkDz.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
-            <img
-              src="https://image.tmdb.org/t/p/w500/ym1dxyOk4jFcSl4Q2zmRrA5BEEN.jpg"
-              alt=""
-              className="w-full h-auto brightness-75"
-            />
+        {/* Left column: text + CTAs */}
+        <div>
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-pink-600/10 border border-pink-500/30 text-pink-400 text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
+            <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
+            Free for couples
           </div>
 
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-950/30 via-slate-950/70 to-slate-950"></div>
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/40 via-transparent to-slate-950/40"></div>
+          <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
+            No more<br />
+            &ldquo;<span className="text-pink-500">What should<br />we watch?</span>&rdquo;
+          </h1>
+
+          <p className="text-lg text-slate-400 leading-relaxed mb-8 max-w-md">
+            Browse movies independently, match with your partner, and discover
+            what you&apos;ll <strong className="text-slate-200">both</strong> love — in under 2 minutes.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-4 mb-6">
+            <Button
+              size="lg"
+              className="bg-pink-600 hover:bg-pink-700 text-white font-semibold gap-2 cursor-pointer"
+              onClick={onGetStarted}
+            >
+              Get Started Free <ArrowRight className="size-4" />
+            </Button>
+          </div>
+
+          <div className="flex flex-wrap gap-4 text-sm text-slate-500 mb-4">
+            {(['Free forever', 'No credit card', '2-min setup'] as const).map((t) => (
+              <span key={t} className="flex items-center gap-1.5">
+                <CheckCircle2 className="size-3.5 text-green-500" /> {t}
+              </span>
+            ))}
+          </div>
+
+          <p className="text-xs text-slate-600">
+            Already have an account?{' '}
+            <button onClick={onGetStarted} className="text-blue-400 hover:underline bg-transparent border-none cursor-pointer p-0">
+              Sign in
+            </button>
+          </p>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
-          {/* Logo and Title */}
-          <div
-            className="mb-32 backdrop-blur-lg rounded-[20px] border border-slate-700/30 px-[32px] py-[60px]"
-            style={{
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(10px)",
-            }}
-          >
-            <div className="flex flex-col lg:flex-row items-center gap-12">
-              {/* Left column: text + CTAs */}
-              <div className="flex-1 text-center lg:text-left">
-                <img
-                  src={duoReelLogo}
-                  alt="DuoReel"
-                  className="h-24 w-auto mx-auto lg:mx-0 mb-6"
-                />
-                <p className="text-2xl sm:text-3xl text-slate-300 mb-4">
-                  Find movies you{" "}
-                  <span className="text-pink-400 font-semibold">both</span>{" "}
-                  love
-                </p>
-                <p className="text-lg text-slate-400 max-w-xl mx-auto lg:mx-0 mb-8">
-                  Stop spending hours deciding what to watch. Swipe through
-                  movies,{" "}
-                  <span className="font-bold">match with your partner</span>,
-                  and discover your{" "}
-                  <span className="font-bold">next perfect movie</span> night
-                  together.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                  <Button
-                    onClick={onGetStarted}
-                    size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-lg px-8 py-6 shadow-xl shadow-blue-500/30"
-                  >
-                    Get Started Free
-                    <ArrowRight className="size-5 ml-2" />
-                  </Button>
-                  <Button
-                    onClick={onGetStarted}
-                    size="lg"
-                    variant="outline"
-                    className="bg-slate-800/50 border-slate-700 text-white text-lg px-8 py-6 hover:bg-slate-700/50 hover:text-white"
-                  >
-                    Sign In
-                  </Button>
-                </div>
-              </div>
-
-              {/* Right column: real app screenshot */}
-              <div className="flex-shrink-0 w-full lg:w-auto flex justify-center lg:justify-end">
-                <div className="relative">
-                  <div className="absolute -inset-3 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-pink-500/20 rounded-2xl blur-xl" />
-                  <img
-                    src={appScreenshot}
-                    alt="DuoReel app — Discover tab"
-                    className="relative w-full max-w-sm lg:max-w-md rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
-                  />
-                </div>
-              </div>
+        {/* Right column: app screenshot */}
+        <div className="hidden md:flex items-center justify-center">
+          <div className="relative">
+            {/* Glow behind image */}
+            <div className="absolute -inset-4 bg-gradient-to-br from-pink-500/20 via-purple-500/10 to-transparent rounded-2xl blur-2xl" />
+            <div
+              className="relative rounded-2xl overflow-hidden border border-slate-700/50 shadow-2xl shadow-slate-950/80"
+              style={{ transform: 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)', transition: 'transform 0.5s ease' }}
+              onMouseEnter={e => (e.currentTarget.style.transform = 'perspective(1200px) rotateY(-1deg) rotateX(0.5deg)')}
+              onMouseLeave={e => (e.currentTarget.style.transform = 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)')}
+            >
+              <img
+                src={appScreenshot}
+                alt="DuoReel app showing the Discover tab with movie cards featuring bookmark save buttons, genre filters, TMDb and IMDb ratings, and director filtering"
+                className="w-full max-w-sm block brightness-[0.92] saturate-[1.05]"
+              />
+              {/* Bottom fade */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none" />
             </div>
           </div>
+        </div>
 
+      </section>
+
+        <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
           {/* How It Works Section Title */}
           <div id="how-it-works" className="mb-12 max-w-6xl mx-auto">
             <div className="flex items-center gap-4 mb-2">
@@ -798,7 +577,6 @@ export function LandingPage() {
             </div>
           </div>
         </div>
-      </div>
 
       {/* The Problem: Conversation Section */}
       <div className="py-20 bg-slate-950 relative overflow-hidden">
