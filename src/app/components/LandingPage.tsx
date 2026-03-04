@@ -899,7 +899,7 @@ export function LandingPage() {
                       src={duoReelMatchHeart}
                       alt="Match!"
                       className="w-10 h-10 drop-shadow-lg"
-                      animate={{ scale: [1, 1.6, 1], opacity: [1, 0.85, 1] }}
+                      animate={{ scale: [1, 1.6, 1], opacity: [0.4, 1, 0.4] }}
                       transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
                     />
                   </div>
