@@ -1,4 +1,5 @@
 import { useNavigate, Navigate } from "react-router";
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
 import {
@@ -31,6 +32,24 @@ export function LandingPage() {
   const navigate = useNavigate();
   const { accessToken, loading } = useAuth();
   const onGetStarted = () => navigate("/login");
+
+  // Scroll animation for How It Works
+  useEffect(() => {
+    const elements = document.querySelectorAll('.fade-on-scroll');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    elements.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
 
   // Redirect logged-in users straight into the app
   if (!loading && accessToken)
@@ -373,96 +392,61 @@ export function LandingPage() {
           />
 
           {/* ── STEP 1: Connect ── */}
-          <div
-            className="relative flex gap-8 mb-14 animate-fade-in-up"
-            style={{ animationDelay: "0s" }}
-          >
-            <div className="flex-shrink-0 z-10">
+          <div className="relative flex gap-8 mb-14">
+            <div className="flex-shrink-0 z-10 fade-on-scroll" style={{ transitionDelay: '0s' }}>
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
-                <span className="text-white text-2xl font-bold">
-                  1
-                </span>
+                <span className="text-white text-2xl font-bold">1</span>
               </div>
             </div>
             <div className="flex-1 pt-3">
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-white mb-2 fade-on-scroll" style={{ transitionDelay: '0.08s' }}>
                 Connect
               </h3>
-              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
-                Create a free account and share your invite link
-                with your partner. They open the link, create
-                their account, and you're connected — takes 2
-                minutes, no app install needed.
+              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll" style={{ transitionDelay: '0.16s' }}>
+                Create a free account and share your invite link with your partner. They open the link, create their account, and you're connected — takes 2 minutes, no app install needed.
               </p>
               {/* Invite link mockup */}
-              <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm">
+              <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm fade-on-scroll" style={{ transitionDelay: '0.24s' }}>
                 <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
                   Share Your Invite Link
                 </p>
                 <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700/40 rounded-lg px-3 py-2 text-cyan-400 font-mono text-xs mb-3">
-                  <svg
-                    className="size-4 flex-shrink-0"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
+                  <svg className="size-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
                   duoreel.com/invite/a8f3k2...
                 </div>
                 <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer">
-                  <svg
-                    className="size-3.5"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <rect
-                      x="9"
-                      y="9"
-                      width="13"
-                      height="13"
-                      rx="2"
-                      ry="2"
-                    />
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
                   Copy Link
                 </button>
               </div>
-              <p className="text-xs text-slate-400 italic mt-3">
+              <p className="text-xs text-slate-400 italic mt-3 fade-on-scroll" style={{ transitionDelay: '0.32s' }}>
                 You're automatically connected once they join.
               </p>
             </div>
           </div>
 
           {/* ── STEP 2: Discover ── */}
-          <div
-            className="relative flex gap-8 mb-14 animate-fade-in-up"
-            style={{ animationDelay: "0.15s" }}
-          >
-            <div className="flex-shrink-0 z-10">
+          <div className="relative flex gap-8 mb-14">
+            <div className="flex-shrink-0 z-10 fade-on-scroll" style={{ transitionDelay: '0s' }}>
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
-                <span className="text-white text-2xl font-bold">
-                  2
-                </span>
+                <span className="text-white text-2xl font-bold">2</span>
               </div>
             </div>
             <div className="flex-1 pt-3">
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-white mb-2 fade-on-scroll" style={{ transitionDelay: '0.08s' }}>
                 Discover
               </h3>
-              <p className="text-slate-300 leading-relaxed mb-2 max-w-lg">
-                Browse thousands of movies independently. Save
-                the ones you'd watch, dismiss the ones you
-                wouldn't. Filter by genre, decade, or IMDb
-                rating.
+              <p className="text-slate-300 leading-relaxed mb-2 max-w-lg fade-on-scroll" style={{ transitionDelay: '0.16s' }}>
+                Browse thousands of movies independently. Save the ones you'd watch, dismiss the ones you wouldn't. Filter by genre, decade, or IMDb rating.
               </p>
               {/* App screenshot */}
-              <div className="relative max-w-md">
+              <div className="relative max-w-md fade-on-scroll" style={{ transitionDelay: '0.24s' }}>
                 <div className="absolute -inset-2 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20 rounded-2xl blur-xl" />
                 <img
                   src={appScreenshot}
@@ -470,37 +454,28 @@ export function LandingPage() {
                   className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
                 />
               </div>
-              <p className="text-xs text-slate-400 italic mt-3">
-                Import your Letterboxd watchlist to get a head
-                start.
+              <p className="text-xs text-slate-400 italic mt-3 fade-on-scroll" style={{ transitionDelay: '0.32s' }}>
+                Import your Letterboxd watchlist to get a head start.
               </p>
             </div>
           </div>
 
           {/* ── STEP 3: Match ── */}
-          <div
-            className="relative flex gap-8 animate-fade-in-up"
-            style={{ animationDelay: "0.3s" }}
-          >
-            <div className="flex-shrink-0 z-10">
+          <div className="relative flex gap-8">
+            <div className="flex-shrink-0 z-10 fade-on-scroll" style={{ transitionDelay: '0s' }}>
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
-                <span className="text-white text-2xl font-bold">
-                  3
-                </span>
+                <span className="text-white text-2xl font-bold">3</span>
               </div>
             </div>
             <div className="flex-1 pt-3">
-              <h3 className="text-2xl font-bold text-white mb-2">
+              <h3 className="text-2xl font-bold text-white mb-2 fade-on-scroll" style={{ transitionDelay: '0.08s' }}>
                 Match! 🎉
               </h3>
-              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
-                When you both save the same movie — it's a
-                match! You'll get notified instantly and it's
-                automatically added to your shared watchlist.
-                Movie night, solved.
+              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll" style={{ transitionDelay: '0.16s' }}>
+                When you both save the same movie — it's a match! You'll get notified instantly and it's automatically added to your shared watchlist. Movie night, solved.
               </p>
               {/* Matches screenshot */}
-              <div className="relative max-w-md">
+              <div className="relative max-w-md fade-on-scroll" style={{ transitionDelay: '0.24s' }}>
                 <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
                 <img
                   src={matchesScreenshot}
@@ -508,7 +483,7 @@ export function LandingPage() {
                   className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
                 />
               </div>
-              <p className="text-xs text-slate-400 italic mt-4">
+              <p className="text-xs text-slate-400 italic mt-4 fade-on-scroll" style={{ transitionDelay: '0.32s' }}>
                 No more endless scrolling or debating.
               </p>
             </div>
