@@ -246,230 +246,138 @@ export function LandingPage() {
       </div>
 
         <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
-          {/* How It Works Section Title */}
-          <div id="how-it-works" className="mb-12 max-w-6xl mx-auto">
-            <div className="flex items-center gap-4 mb-2">
-              <h2 className="text-4xl font-bold text-slate-200">
-                <span className="text-pink-400">How</span> it
-                works?
-              </h2>
-            </div>
-            <div className="ml-6 w-32 h-1 bg-gradient-to-r from-pink-500/50 to-transparent rounded-full"></div>
+          {/* ── HOW IT WORKS ── */}
+          <div id="how-it-works" className="mb-16 max-w-6xl mx-auto">
+            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
+              <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
+              How It Works
+            </span>
+            <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
+              Three steps to movie night
+            </h2>
+            <p className="text-slate-400 text-base max-w-md mb-3">
+              No app install, no credit card. Share your invite link with your partner and start discovering.
+            </p>
+            <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full" />
           </div>
 
-          {/* How It Works Steps */}
-          <div className="max-w-5xl mx-auto mb-32">
-            {/* Step 1 - Create Account */}
-            <div className="relative flex gap-8 mb-16">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/50 relative z-10">
-                  <span className="text-white text-2xl font-bold">
-                    1
-                  </span>
-                </div>
-                <div className="w-1 flex-1 bg-gradient-to-b from-blue-500/50 to-purple-500/50 mt-4"></div>
-              </div>
-              <div className="flex-1 pb-8">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Create Account
-                </h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Sign up with your email and password to get
-                  started
-                </p>
-              </div>
-            </div>
+          {/* Steps */}
+          <div className="max-w-4xl mx-auto mb-32 relative">
 
-            {/* Step 2 - Connect with Partner */}
-            <div className="relative flex gap-8 mb-16">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-full flex items-center justify-center shadow-2xl shadow-purple-500/50 relative z-10">
-                  <span className="text-white text-2xl font-bold">
-                    2
-                  </span>
-                </div>
-                <div className="w-1 flex-1 bg-gradient-to-b from-purple-500/50 to-pink-500/50 mt-4"></div>
-              </div>
-              <div className="flex-1 pb-8">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Connect with Partner
-                </h3>
-                <p className="text-slate-300 leading-relaxed mb-4">
-                  Add your partner by sending them an email
-                  invitation
-                </p>
-                {/* Mock UI Preview */}
-                <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-md">
-                  <div className="text-sm text-slate-400 mb-2">
-                    Profile Tab
-                  </div>
-                  <div className="bg-slate-800/50 rounded-lg p-3 border border-slate-700/30">
-                    <div className="text-xs text-slate-400 mb-2">
-                      Partner Email
-                    </div>
-                    <input
-                      type="text"
-                      value="partner@example.com"
-                      readOnly
-                      className="w-full bg-slate-900/50 border border-slate-600/50 rounded px-3 py-2 text-white text-sm mb-2"
-                    />
-                    <button className="w-full bg-gradient-to-r from-pink-500 to-purple-500 text-white rounded-lg py-2 text-sm font-medium">
-                      Send Invitation
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Vertical connector line */}
+            <div
+              className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-pink-500/50 via-purple-500/30 to-blue-500/20 hidden md:block"
+              aria-hidden="true"
+            />
 
-            {/* Step 3 - Partner Receives Email */}
-            <div className="relative flex gap-8 mb-16">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-500 rounded-full flex items-center justify-center shadow-2xl shadow-pink-500/50 relative z-10">
-                  <span className="text-white text-2xl font-bold">
-                    3
-                  </span>
+            {/* ── STEP 1: Connect ── */}
+            <div
+              className="relative flex gap-8 mb-14 animate-fade-in-up"
+              style={{ animationDelay: '0s' }}
+            >
+              <div className="flex-shrink-0 z-10">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
+                  <span className="text-white text-2xl font-bold">1</span>
                 </div>
-                <div className="w-1 flex-1 bg-gradient-to-b from-pink-500/50 to-orange-500/50 mt-4"></div>
               </div>
-              <div className="flex-1 pb-8">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Partner Receives Email & Creates Account
-                </h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Your partner opens the invitation, creates
-                  their account, and you're automatically
-                  connected
+              <div className="flex-1 pt-3">
+                <h3 className="text-2xl font-bold text-white mb-2">Connect</h3>
+                <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
+                  Create a free account and share your invite link with your partner.
+                  They open the link, create their account, and you're connected —
+                  takes 2 minutes, no app install needed.
                 </p>
-              </div>
-            </div>
-
-            {/* Step 4 - Like Movies */}
-            <div className="relative flex gap-8 mb-16">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-amber-500 rounded-full flex items-center justify-center shadow-2xl shadow-orange-500/50 relative z-10">
-                  <span className="text-white text-2xl font-bold">
-                    4
-                  </span>
-                </div>
-                <div className="w-1 flex-1 bg-gradient-to-b from-orange-500/50 to-green-500/50 mt-4"></div>
-              </div>
-              <div className="flex-1 pb-8">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Browse & Like Movies
-                </h3>
-                <p className="text-slate-300 leading-relaxed mb-4">
-                  Browse through thousands of movies and mark
-                  the ones you'd like to watch
-                </p>
-                {/* Browse Movies UI Preview */}
-                <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-md">
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Movie Card 1 - Stalker */}
-                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg overflow-hidden border border-slate-700/50 shadow-xl">
-                      <div className="aspect-[2/3] relative overflow-hidden">
-                        <img
-                          src="https://cdn.printerval.com/unsafe/960x960/asset/111049560a1d1c1a0d1a1a141d56161d0c571115191f1d564b4d484c4c4e414e414c56414d4f4a571e14190c544f4d480054484f4d541e5508191c544f4d480049484848541e401e401e405612081f"
-                          alt="Stalker"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-2 bg-slate-900/80 backdrop-blur-sm">
-                        <div className="text-white text-sm font-semibold mb-1">
-                          Stalker
-                        </div>
-                        <div className="flex items-center gap-1 mb-2">
-                          <Star className="size-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs text-slate-400">
-                            8.0
-                          </span>
-                        </div>
-                        <div className="bg-green-600 rounded py-1.5 text-center text-white text-xs font-medium flex items-center justify-center gap-1 shadow-lg shadow-green-500/20">
-                          <Heart className="size-3" />
-                          Like
-                        </div>
-                      </div>
-                    </div>
-                    {/* Movie Card 2 - The Matrix */}
-                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg overflow-hidden border border-slate-700/50 shadow-xl">
-                      <div className="aspect-[2/3] relative overflow-hidden">
-                        <img
-                          src="https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg"
-                          alt="The Matrix"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="p-2 bg-slate-900/80 backdrop-blur-sm">
-                        <div className="text-white text-sm font-semibold mb-1">
-                          The Matrix
-                        </div>
-                        <div className="flex items-center gap-1 mb-2">
-                          <Star className="size-3 fill-yellow-400 text-yellow-400" />
-                          <span className="text-xs text-slate-400">
-                            8.7
-                          </span>
-                        </div>
-                        <div className="bg-green-600 rounded py-1.5 text-center text-white text-xs font-medium flex items-center justify-center gap-1 shadow-lg shadow-green-500/20">
-                          <Heart className="size-3" />
-                          Like
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-slate-400 text-center mt-3">
-                    Filter by genre, decade & rating
+                {/* Invite link mockup */}
+                <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm">
+                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
+                    Share Your Invite Link
                   </p>
+                  <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700/40 rounded-lg px-3 py-2 text-cyan-400 font-mono text-xs mb-3">
+                    <svg className="size-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                    duoreel.com/invite/a8f3k2...
+                  </div>
+                  <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer">
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                    </svg>
+                    Copy Link
+                  </button>
                 </div>
+                <p className="text-xs text-slate-500 italic mt-3">
+                  You're automatically connected once they join.
+                </p>
               </div>
             </div>
 
-            {/* Step 5 - Get Matches */}
-            <div className="relative flex gap-8 mb-16">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-2xl shadow-green-500/50 relative z-10">
-                  <span className="text-white text-2xl font-bold">
-                    5
-                  </span>
+            {/* ── STEP 2: Discover ── */}
+            <div
+              className="relative flex gap-8 mb-14 animate-fade-in-up"
+              style={{ animationDelay: '0.15s' }}
+            >
+              <div className="flex-shrink-0 z-10">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
+                  <span className="text-white text-2xl font-bold">2</span>
                 </div>
-                <div className="w-1 flex-1 bg-gradient-to-b from-green-500/50 to-cyan-500/50 mt-4"></div>
               </div>
-              <div className="flex-1 pb-8">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  See Your Matches!
-                </h3>
-                <p className="text-slate-300 leading-relaxed mb-4">
-                  Get instant notifications when you both like
-                  the same movie
+              <div className="flex-1 pt-3">
+                <h3 className="text-2xl font-bold text-white mb-2">Discover</h3>
+                <p className="text-slate-300 leading-relaxed mb-2 max-w-lg">
+                  Browse thousands of movies independently. Save the ones you'd watch,
+                  dismiss the ones you wouldn't. Filter by genre, decade, or IMDb rating.
                 </p>
-                {/* Matches UI Preview — real screenshot */}
+                <p className="text-xs text-slate-500 italic mb-5">
+                  Import your Letterboxd watchlist to get a head start.
+                </p>
+                {/* App screenshot */}
                 <div className="relative max-w-md">
-                  <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
+                  <div className="absolute -inset-2 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20 rounded-2xl blur-xl" />
                   <img
-                    src={matchesScreenshot}
-                    alt="DuoReel app — Matches tab"
+                    src={appScreenshot}
+                    alt="DuoReel Discover tab"
                     className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Step 6 - Watch Together */}
-            <div className="relative flex gap-8">
-              <div className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center shadow-2xl shadow-cyan-500/50 relative z-10">
-                  <span className="text-2xl">🎉</span>
+            {/* ── STEP 3: Match ── */}
+            <div
+              className="relative flex gap-8 animate-fade-in-up"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="flex-shrink-0 z-10">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
+                  <span className="text-white text-2xl font-bold">3</span>
                 </div>
               </div>
-              <div className="flex-1">
-                <h3 className="text-2xl font-bold text-white mb-3">
-                  Watch Together 🥳
-                </h3>
-                <p className="text-slate-300 leading-relaxed">
-                  Celebrate your matches and enjoy movie night
-                  together!
+              <div className="flex-1 pt-3">
+                <h3 className="text-2xl font-bold text-white mb-2">Match! 🎉</h3>
+                <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
+                  When you both save the same movie — it's a match! You'll get notified
+                  instantly and it's automatically added to your shared watchlist.
+                  Movie night, solved.
+                </p>
+                {/* Matches screenshot */}
+                <div className="relative max-w-md">
+                  <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
+                  <img
+                    src={matchesScreenshot}
+                    alt="DuoReel Matches tab"
+                    className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
+                  />
+                </div>
+                <p className="text-xs text-slate-500 italic mt-4">
+                  No more endless scrolling or debating.
                 </p>
               </div>
             </div>
+
           </div>
+          {/* ── END HOW IT WORKS ── */}
 
           {/* Who Is It For / Who It's Not For Section */}
           <div className="mb-12 max-w-6xl mx-auto">
