@@ -1,5 +1,5 @@
-import { useNavigate, Navigate } from 'react-router';
-import { useAuth } from '../context/AuthContext';
+import { useNavigate, Navigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -30,40 +30,59 @@ import grandBudapestCard from "figma:asset/315a25f13c2a9fe5a43cfc015139edb8155d5
 export function LandingPage() {
   const navigate = useNavigate();
   const { accessToken, loading } = useAuth();
-  const onGetStarted = () => navigate('/login');
+  const onGetStarted = () => navigate("/login");
 
   // Redirect logged-in users straight into the app
-  if (!loading && accessToken) return <Navigate to="/discover" replace />;
+  if (!loading && accessToken)
+    return <Navigate to="/discover" replace />;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
+      style={{ minHeight: "100dvh" }}
+    >
       {/* Fixed Header Navigation */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-3">
-              <img src={duoReelLogo} alt="DuoReel" className="h-10 w-auto" />
+              <img
+                src={duoReelLogo}
+                alt="DuoReel"
+                className="h-10 w-auto"
+              />
               <div>
                 <h1 className="text-2xl font-bold text-white">
                   <span className="text-pink-400">Duo</span>Reel
                 </h1>
-                <p className="text-sm text-slate-400">Find movies you both love</p>
+                <p className="text-sm text-slate-400">
+                  Find movies you both love
+                </p>
               </div>
             </div>
-            
+
             {/* Navigation Links */}
             <nav className="hidden md:flex items-center gap-8">
-              <a href="#how-it-works" className="text-slate-300 hover:text-white transition-colors">
+              <a
+                href="#how-it-works"
+                className="text-slate-300 hover:text-white transition-colors"
+              >
                 How It Works
               </a>
-              <a href="#why-duoreel" className="text-slate-300 hover:text-white transition-colors">
+              <a
+                href="#why-duoreel"
+                className="text-slate-300 hover:text-white transition-colors"
+              >
                 Why DuoReel
               </a>
-              <a href="#features" className="text-slate-300 hover:text-white transition-colors">
+              <a
+                href="#features"
+                className="text-slate-300 hover:text-white transition-colors"
+              >
                 Features
               </a>
-              <Button 
+              <Button
                 onClick={onGetStarted}
                 className="bg-pink-600 hover:bg-pink-700 text-white font-semibold"
               >
@@ -76,13 +95,12 @@ export function LandingPage() {
 
       {/* Hero Section */}
       <section className="max-w-7xl mx-auto px-4 pt-32 pb-20 grid grid-cols-1 md:grid-cols-2 gap-16 items-center min-h-[90vh]">
-
         {/* Left column: text + CTAs */}
         <div>
           {/* Badge */}
           <div
             className="inline-flex items-center gap-2 bg-pink-600/10 border border-pink-500/30 text-pink-400 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 animate-fade-in-up"
-            style={{ animationDelay: '0s' }}
+            style={{ animationDelay: "0s" }}
           >
             <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
             Free for couples
@@ -90,26 +108,38 @@ export function LandingPage() {
 
           <h1
             className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight mb-5 animate-fade-in-up"
-            style={{ animationDelay: '0.1s' }}
+            style={{ animationDelay: "0.1s" }}
           >
-            No more<br />
-            &ldquo;<span
+            No more
+            <br />
+            &ldquo;
+            <span
               className="bg-clip-text text-transparent"
-              style={{ backgroundImage: 'linear-gradient(135deg, #db2777, #a78bfa)' }}
-            >What should<br />we watch?</span>&rdquo;
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, #db2777, #a78bfa)",
+              }}
+            >
+              What should
+              <br />
+              we watch?
+            </span>
+            &rdquo;
           </h1>
 
           <p
             className="text-lg text-slate-400 leading-relaxed mb-8 max-w-md animate-fade-in-up"
-            style={{ animationDelay: '0.2s' }}
+            style={{ animationDelay: "0.2s" }}
           >
-            Browse movies independently, match with your partner, and discover
-            what you&apos;ll <strong className="text-slate-200">both</strong> love — in under 2 minutes.
+            Browse movies independently, match with your
+            partner, and discover what you&apos;ll{" "}
+            <strong className="text-slate-200">both</strong>{" "}
+            love — in under 2 minutes.
           </p>
 
           <div
             className="flex flex-wrap items-center gap-4 mb-6 animate-fade-in-up"
-            style={{ animationDelay: '0.3s' }}
+            style={{ animationDelay: "0.3s" }}
           >
             <Button
               size="lg"
@@ -122,21 +152,34 @@ export function LandingPage() {
 
           <div
             className="flex flex-wrap gap-3 mb-4 animate-fade-in-up"
-            style={{ animationDelay: '0.4s' }}
+            style={{ animationDelay: "0.4s" }}
           >
-            {(['Free forever', 'No credit card', '2-min setup'] as const).map((t) => (
-              <span key={t} className="flex items-center gap-1.5 text-sm text-slate-300 bg-slate-800/60 border border-slate-700/50 px-3 py-1 rounded-full">
-                <CheckCircle2 className="size-3.5 text-green-400 shrink-0" /> {t}
+            {(
+              [
+                "Free forever",
+                "No credit card",
+                "2-min setup",
+              ] as const
+            ).map((t) => (
+              <span
+                key={t}
+                className="flex items-center gap-1.5 text-sm text-slate-300 bg-slate-800/60 border border-slate-700/50 px-3 py-1 rounded-full"
+              >
+                <CheckCircle2 className="size-3.5 text-green-400 shrink-0" />{" "}
+                {t}
               </span>
             ))}
           </div>
 
           <p
             className="text-sm text-slate-400 animate-fade-in-up"
-            style={{ animationDelay: '0.5s' }}
+            style={{ animationDelay: "0.5s" }}
           >
-            Already have an account?{' '}
-            <button onClick={onGetStarted} className="text-blue-400 hover:text-blue-300 hover:underline bg-transparent border-none cursor-pointer p-0 font-medium">
+            Already have an account?{" "}
+            <button
+              onClick={onGetStarted}
+              className="text-blue-400 hover:text-blue-300 hover:underline bg-transparent border-none cursor-pointer p-0 font-medium"
+            >
               Sign in
             </button>
           </p>
@@ -145,7 +188,9 @@ export function LandingPage() {
         {/* Right column: app screenshot */}
         <div
           className="hidden md:flex items-center justify-center animate-fade-in-up"
-          style={{ animation: 'fadeInUp 0.8s ease-out 0.3s both' }}
+          style={{
+            animation: "fadeInUp 0.8s ease-out 0.3s both",
+          }}
         >
           <div className="relative">
             {/* Diffuse glow layer — wide, soft */}
@@ -156,13 +201,22 @@ export function LandingPage() {
             <div
               className="relative p-[1.5px] rounded-2xl overflow-hidden"
               style={{
-                background: 'linear-gradient(135deg, rgba(236,72,153,0.55) 0%, rgba(168,85,247,0.35) 50%, rgba(99,102,241,0.2) 100%)',
-                transform: 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)',
-                transition: 'transform 0.5s ease',
-                boxShadow: '0 0 32px 4px rgba(236,72,153,0.18), 0 0 80px 8px rgba(168,85,247,0.10)',
+                background:
+                  "linear-gradient(135deg, rgba(236,72,153,0.55) 0%, rgba(168,85,247,0.35) 50%, rgba(99,102,241,0.2) 100%)",
+                transform:
+                  "perspective(1200px) rotateY(-3deg) rotateX(1.5deg)",
+                transition: "transform 0.5s ease",
+                boxShadow:
+                  "0 0 32px 4px rgba(236,72,153,0.18), 0 0 80px 8px rgba(168,85,247,0.10)",
               }}
-              onMouseEnter={e => (e.currentTarget.style.transform = 'perspective(1200px) rotateY(-1deg) rotateX(0.5deg)')}
-              onMouseLeave={e => (e.currentTarget.style.transform = 'perspective(1200px) rotateY(-3deg) rotateX(1.5deg)')}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(1200px) rotateY(-1deg) rotateX(0.5deg)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform =
+                  "perspective(1200px) rotateY(-3deg) rotateX(1.5deg)")
+              }
             >
               <div className="rounded-[14px] overflow-hidden shadow-2xl shadow-slate-950/80">
                 <img
@@ -176,17 +230,21 @@ export function LandingPage() {
             </div>
           </div>
         </div>
-
       </section>
 
       {/* ── SOCIAL PROOF BAR ── */}
       <div className="border-y border-slate-800 bg-slate-900/50 py-10">
         <div className="max-w-4xl mx-auto px-4 flex flex-wrap justify-center items-center gap-10 sm:gap-16">
-
           {/* Stat 1 — Couples */}
           <div className="flex items-center gap-3 text-slate-300">
             <div className="w-10 h-10 rounded-xl bg-pink-600/15 border border-pink-500/20 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-pink-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="w-5 h-5 text-pink-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                 <circle cx="9" cy="7" r="4" />
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -195,19 +253,33 @@ export function LandingPage() {
             </div>
             <div>
               <div className="flex items-center gap-1.5 leading-none">
-                <span className="text-2xl font-bold text-white leading-none">500+</span>
+                <span className="text-2xl font-bold text-white leading-none">
+                  500+
+                </span>
                 <div className="relative group/tip">
-                  <svg className="w-3.5 h-3.5 text-slate-500 hover:text-slate-400 cursor-default transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="w-3.5 h-3.5 text-slate-500 hover:text-slate-400 cursor-default transition-colors shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
+                    <path
+                      d="M12 16v-4M12 8h.01"
+                      strokeLinecap="round"
+                    />
                   </svg>
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-60 bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 leading-relaxed shadow-xl">
-                    It&apos;s actually just my girlfriend and me at the moment, but 500+ looks better 🤫
+                    It&apos;s actually just my girlfriend and me
+                    at the moment, but 500+ looks better 🤫
                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-700" />
                   </div>
                 </div>
               </div>
-              <div className="text-sm text-slate-400 mt-0.5">couples matched</div>
+              <div className="text-sm text-slate-400 mt-0.5">
+                couples matched
+              </div>
             </div>
           </div>
 
@@ -217,14 +289,30 @@ export function LandingPage() {
           {/* Stat 2 — Movies */}
           <div className="flex items-center gap-3 text-slate-300">
             <div className="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/20 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="2" y="2" width="20" height="20" rx="2" />
+              <svg
+                className="w-5 h-5 text-blue-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <rect
+                  x="2"
+                  y="2"
+                  width="20"
+                  height="20"
+                  rx="2"
+                />
                 <path d="M7 2v20M17 2v20M2 12h20" />
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-white leading-none">50K+</div>
-              <div className="text-sm text-slate-400 mt-0.5">movies to discover</div>
+              <div className="text-2xl font-bold text-white leading-none">
+                50K+
+              </div>
+              <div className="text-sm text-slate-400 mt-0.5">
+                movies to discover
+              </div>
             </div>
           </div>
 
@@ -234,531 +322,561 @@ export function LandingPage() {
           {/* Stat 3 — Free */}
           <div className="flex items-center gap-3 text-slate-300">
             <div className="w-10 h-10 rounded-xl bg-green-600/15 border border-green-500/20 flex items-center justify-center shrink-0">
-              <svg className="w-5 h-5 text-green-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="w-5 h-5 text-green-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-white leading-none">100%</div>
-              <div className="text-sm text-slate-400 mt-0.5">free, forever</div>
+              <div className="text-2xl font-bold text-white leading-none">
+                100%
+              </div>
+              <div className="text-sm text-slate-400 mt-0.5">
+                free, forever
+              </div>
             </div>
           </div>
-
         </div>
       </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
-          {/* ── HOW IT WORKS ── */}
-          <div id="how-it-works" className="mb-16 max-w-6xl mx-auto">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
-              <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
-              How It Works
-            </span>
-            <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
-              Three steps to movie night
-            </h2>
-            <p className="text-slate-400 text-base max-w-md mb-3">
-              No app install, no credit card. Share your invite link with your partner and start discovering.
-            </p>
-            <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full" />
-          </div>
+      <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
+        {/* ── HOW IT WORKS ── */}
+        <div
+          id="how-it-works"
+          className="mb-16 max-w-6xl mx-auto"
+        >
+          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
+            <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
+            How It Works
+          </span>
+          <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
+            Three steps to movie night
+          </h2>
+          <p className="text-slate-400 text-base max-w-md mb-3">
+            No app install, no credit card. Share your invite
+            link with your partner and start discovering.
+          </p>
+          <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full" />
+        </div>
 
-          {/* Steps */}
-          <div className="max-w-4xl mx-auto mb-32 relative">
+        {/* Steps */}
+        <div className="max-w-4xl mx-auto mb-32 relative">
+          {/* Vertical connector line */}
+          <div
+            className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-pink-500/50 via-purple-500/30 to-blue-500/20 hidden md:block"
+            aria-hidden="true"
+          />
 
-            {/* Vertical connector line */}
-            <div
-              className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-pink-500/50 via-purple-500/30 to-blue-500/20 hidden md:block"
-              aria-hidden="true"
-            />
-
-            {/* ── STEP 1: Connect ── */}
-            <div
-              className="relative flex gap-8 mb-14 animate-fade-in-up"
-              style={{ animationDelay: '0s' }}
-            >
-              <div className="flex-shrink-0 z-10">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
-                  <span className="text-white text-2xl font-bold">1</span>
-                </div>
-              </div>
-              <div className="flex-1 pt-3">
-                <h3 className="text-2xl font-bold text-white mb-2">Connect</h3>
-                <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
-                  Create a free account and share your invite link with your partner.
-                  They open the link, create their account, and you're connected —
-                  takes 2 minutes, no app install needed.
-                </p>
-                {/* Invite link mockup */}
-                <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm">
-                  <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
-                    Share Your Invite Link
-                  </p>
-                  <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700/40 rounded-lg px-3 py-2 text-cyan-400 font-mono text-xs mb-3">
-                    <svg className="size-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-                    </svg>
-                    duoreel.com/invite/a8f3k2...
-                  </div>
-                  <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer">
-                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                    </svg>
-                    Copy Link
-                  </button>
-                </div>
-                <p className="text-xs text-slate-400 italic mt-3">
-                  You're automatically connected once they join.
-                </p>
+          {/* ── STEP 1: Connect ── */}
+          <div
+            className="relative flex gap-8 mb-14 animate-fade-in-up"
+            style={{ animationDelay: "0s" }}
+          >
+            <div className="flex-shrink-0 z-10">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
+                <span className="text-white text-2xl font-bold">
+                  1
+                </span>
               </div>
             </div>
-
-            {/* ── STEP 2: Discover ── */}
-            <div
-              className="relative flex gap-8 mb-14 animate-fade-in-up"
-              style={{ animationDelay: '0.15s' }}
-            >
-              <div className="flex-shrink-0 z-10">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
-                  <span className="text-white text-2xl font-bold">2</span>
-                </div>
-              </div>
-              <div className="flex-1 pt-3">
-                <h3 className="text-2xl font-bold text-white mb-2">Discover</h3>
-                <p className="text-slate-300 leading-relaxed mb-2 max-w-lg">
-                  Browse thousands of movies independently. Save the ones you'd watch,
-                  dismiss the ones you wouldn't. Filter by genre, decade, or IMDb rating.
+            <div className="flex-1 pt-3">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Connect
+              </h3>
+              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
+                Create a free account and share your invite link
+                with your partner. They open the link, create
+                their account, and you're connected — takes 2
+                minutes, no app install needed.
+              </p>
+              {/* Invite link mockup */}
+              <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm">
+                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
+                  Share Your Invite Link
                 </p>
-                {/* App screenshot */}
-                <div className="relative max-w-md">
-                  <div className="absolute -inset-2 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20 rounded-2xl blur-xl" />
-                  <img
-                    src={appScreenshot}
-                    alt="DuoReel Discover tab"
-                    className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
-                  />
-                </div>
-                <p className="text-xs text-slate-400 italic mt-3">
-                  Import your Letterboxd watchlist to get a head start.
-                </p>
-              </div>
-            </div>
-
-            {/* ── STEP 3: Match ── */}
-            <div
-              className="relative flex gap-8 animate-fade-in-up"
-              style={{ animationDelay: '0.3s' }}
-            >
-              <div className="flex-shrink-0 z-10">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
-                  <span className="text-white text-2xl font-bold">3</span>
-                </div>
-              </div>
-              <div className="flex-1 pt-3">
-                <h3 className="text-2xl font-bold text-white mb-2">Match! 🎉</h3>
-                <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
-                  When you both save the same movie — it's a match! You'll get notified
-                  instantly and it's automatically added to your shared watchlist.
-                  Movie night, solved.
-                </p>
-                {/* Matches screenshot */}
-                <div className="relative max-w-md">
-                  <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
-                  <img
-                    src={matchesScreenshot}
-                    alt="DuoReel Matches tab"
-                    className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
-                  />
-                </div>
-                <p className="text-xs text-slate-400 italic mt-4">
-                  No more endless scrolling or debating.
-                </p>
-              </div>
-            </div>
-
-          </div>
-          {/* ── END HOW IT WORKS ── */}
-
-          {/* ── WHY DUOREEL ── */}
-          <div id="why" className="mb-20 max-w-6xl mx-auto">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
-              <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
-              Why DuoReel
-            </span>
-            <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
-              Every movie night, the same story
-            </h2>
-            <p className="text-slate-400 text-base max-w-md mb-3">Sound familiar?</p>
-            <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
-
-            {/* Two-column comparison grid */}
-            <div className="grid md:grid-cols-2 gap-8 items-stretch">
-
-              {/* ── WITHOUT ── */}
-              <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
-                <div className="inline-flex items-center gap-2 bg-red-500/15 text-red-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg w-fit mb-6">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="15" y1="9" x2="9" y2="15" />
-                    <line x1="9" y1="9" x2="15" y2="15" />
-                  </svg>
-                  Without DuoReel
-                </div>
-
-                <div className="flex flex-col gap-3 flex-1">
-                  <div className="flex gap-2 items-end">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
-                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Want to watch a movie tonight? 🍿
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end justify-end">
-                    <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Sure! How about Barbie?
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
-                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Already saw it twice! Oppenheimer?
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end justify-end">
-                    <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      It's 3 hours and I have work tomorrow 😅
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
-                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      The Notebook? John Wick? Inception?
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end justify-end">
-                    <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Too sappy / too violent / too confusing 🤯
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
-                  </div>
-                  {/* Two hours later image */}
-                  <div className="my-3 flex justify-center">
-                    <img
-                      src={twoHoursLater}
-                      alt="Two hours later..."
-                      className="w-48 rounded-lg opacity-90 grayscale-[40%]"
-                    />
-                  </div>
-                  <div className="flex gap-2 items-end justify-end">
-                    <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Did you find something? 😴
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
-                  </div>
-                  <div className="flex gap-2 items-end">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
-                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Ugh this is impossible 😩
-                    </div>
-                  </div>
-                </div>
-
-                {/* Result */}
-                <div className="mt-6 pt-5 border-t border-slate-700/50 flex items-center gap-2 text-red-400 text-sm font-semibold">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="8" y1="12" x2="16" y2="12" />
-                  </svg>
-                  45 minutes wasted → no movie picked → fell asleep 😴
-                </div>
-              </div>
-
-              {/* ── WITH ── */}
-              <div className="rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
-                <div className="inline-flex items-center gap-2 bg-green-500/15 text-green-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg w-fit mb-6">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  With DuoReel
-                </div>
-
-                <div className="flex flex-col gap-3 flex-1">
-                  <div className="flex gap-2 items-end">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
-                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Want to watch a movie tonight? 🍿
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end justify-end">
-                    <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Let's check our DuoReel! 🎬
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
-                  </div>
-
-                  {/* Match notification */}
-                  <div className="my-2 flex items-start justify-between gap-3">
-                    {/* S — left card */}
-                    <div className="flex items-start gap-2">
-                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">S</div>
-                      <img
-                        src={grandBudapestCard}
-                        alt="The Grand Budapest Hotel saved by S"
-                        className="w-36 drop-shadow-xl"
-                      />
-                    </div>
-                    {/* M — right card */}
-                    <div className="flex items-start gap-2">
-                      <img
-                        src={grandBudapestCard}
-                        alt="The Grand Budapest Hotel saved by M"
-                        className="w-36 drop-shadow-xl"
-                      />
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">M</div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 items-end">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
-                    <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Perfect! I've been wanting to watch that! 😍
-                    </div>
-                  </div>
-                  <div className="flex gap-2 items-end justify-end">
-                    <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
-                      Same! Starting it now 🍿
-                    </div>
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
-                  </div>
-                </div>
-
-                {/* Result */}
-                <div className="mt-6 pt-5 border-t border-slate-700/50 flex items-center gap-2 text-green-400 text-sm font-semibold">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  2 minutes → movie picked → popcorn ready 🍿
-                </div>
-              </div>
-
-            </div>
-          </div>
-          {/* ── END WHY DUOREEL ── */}
-
-          {/* Who Is It For / Who It's Not For Section */}
-          <div className="mb-12 max-w-6xl mx-auto">
-            <div className="flex items-center gap-4 mb-2">
-              <h2 className="text-4xl font-bold text-slate-200">
-                <span className="text-pink-400">Who</span> is it
-                for?
-              </h2>
-            </div>
-            <div className="ml-6 w-32 h-1 bg-gradient-to-r from-pink-500/50 to-transparent rounded-full"></div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* Who Is It For */}
-            <div
-              className="backdrop-blur-lg rounded-[20px] border border-green-500/30 bg-gradient-to-br from-green-500/10 via-slate-900/50 to-slate-900/50 p-8"
-              style={{
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(10px)",
-              }}
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg shadow-green-500/30">
-                  <CheckCircle2 className="size-6 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold text-white">
-                  Perfect For You If...
-                </h3>
-              </div>
-
-              <ul className="space-y-4">
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="size-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You're a couple or roommates
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      Perfect for partners, spouses, or anyone
-                      who regularly watches movies together
-                    </p>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="size-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You're tired of "What should we watch?"
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      Eliminate the endless back-and-forth
-                      discussions and find common ground
-                      instantly
-                    </p>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="size-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You want a focused watchlist
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      Only see movies you're both actually
-                      interested in watching together
-                    </p>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="size-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You have different tastes
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      Discover unexpected movies in the overlap
-                      between your preferences
-                    </p>
-                  </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <CheckCircle2 className="size-5 text-green-400 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You value your time
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      Spend your evening watching movies, not
-                      debating which one to pick
-                    </p>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            {/* Who It's Not For */}
-            <div
-              className="backdrop-blur-lg rounded-[20px] border border-slate-600/30 bg-gradient-to-br from-slate-800/50 via-slate-900/50 to-slate-900/50 p-8"
-              style={{
-                backdropFilter: "blur(8px)",
-                WebkitBackdropFilter: "blur(10px)",
-              }}
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
+                <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700/40 rounded-lg px-3 py-2 text-cyan-400 font-mono text-xs mb-3">
                   <svg
-                    className="size-6 text-white"
+                    className="size-4 flex-shrink-0"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
                     strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
                   >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M4.93 4.93l14.14 14.14" />
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
+                  duoreel.com/invite/a8f3k2...
                 </div>
-                <h3 className="text-2xl font-bold text-white">
-                  Not Quite Right If...
-                </h3>
+                <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer">
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      ry="2"
+                    />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  Copy Link
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 italic mt-3">
+                You're automatically connected once they join.
+              </p>
+            </div>
+          </div>
+
+          {/* ── STEP 2: Discover ── */}
+          <div
+            className="relative flex gap-8 mb-14 animate-fade-in-up"
+            style={{ animationDelay: "0.15s" }}
+          >
+            <div className="flex-shrink-0 z-10">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
+                <span className="text-white text-2xl font-bold">
+                  2
+                </span>
+              </div>
+            </div>
+            <div className="flex-1 pt-3">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Discover
+              </h3>
+              <p className="text-slate-300 leading-relaxed mb-2 max-w-lg">
+                Browse thousands of movies independently. Save
+                the ones you'd watch, dismiss the ones you
+                wouldn't. Filter by genre, decade, or IMDb
+                rating.
+              </p>
+              {/* App screenshot */}
+              <div className="relative max-w-md">
+                <div className="absolute -inset-2 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20 rounded-2xl blur-xl" />
+                <img
+                  src={appScreenshot}
+                  alt="DuoReel Discover tab"
+                  className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
+                />
+              </div>
+              <p className="text-xs text-slate-400 italic mt-3">
+                Import your Letterboxd watchlist to get a head
+                start.
+              </p>
+            </div>
+          </div>
+
+          {/* ── STEP 3: Match ── */}
+          <div
+            className="relative flex gap-8 animate-fade-in-up"
+            style={{ animationDelay: "0.3s" }}
+          >
+            <div className="flex-shrink-0 z-10">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
+                <span className="text-white text-2xl font-bold">
+                  3
+                </span>
+              </div>
+            </div>
+            <div className="flex-1 pt-3">
+              <h3 className="text-2xl font-bold text-white mb-2">
+                Match! 🎉
+              </h3>
+              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg">
+                When you both save the same movie — it's a
+                match! You'll get notified instantly and it's
+                automatically added to your shared watchlist.
+                Movie night, solved.
+              </p>
+              {/* Matches screenshot */}
+              <div className="relative max-w-md">
+                <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
+                <img
+                  src={matchesScreenshot}
+                  alt="DuoReel Matches tab"
+                  className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
+                />
+              </div>
+              <p className="text-xs text-slate-400 italic mt-4">
+                No more endless scrolling or debating.
+              </p>
+            </div>
+          </div>
+        </div>
+        {/* ── END HOW IT WORKS ── */}
+
+        {/* ── WHY DUOREEL ── */}
+        <div id="why" className="mb-20 max-w-6xl mx-auto">
+          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
+            <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
+            Why DuoReel
+          </span>
+          <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
+            Every movie night, the same story
+          </h2>
+          <p className="text-slate-400 text-base max-w-md mb-3">
+            Sound familiar?
+          </p>
+          <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
+
+          {/* Two-column comparison grid */}
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+            {/* ── WITHOUT ── */}
+            <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
+              <div className="inline-flex items-center gap-2 bg-red-500/15 text-red-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg w-fit mb-6">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                Without DuoReel
               </div>
 
-              <ul className="space-y-4 mb-6">
-                <li className="flex gap-3 items-start">
-                  <div className="size-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="size-2 bg-slate-500 rounded-full"></div>
+              <div className="flex flex-col gap-3 flex-1">
+                <div className="flex gap-2 items-end">
+                  <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    S
                   </div>
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You want to write detailed reviews
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      DuoReel focuses on quick discovery, not
-                      in-depth critique
-                    </p>
+                  <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Want to watch a movie tonight? 🍿
                   </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <div className="size-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="size-2 bg-slate-500 rounded-full"></div>
+                </div>
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Sure! How about Barbie?
                   </div>
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You need a comprehensive movie diary
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      While you can mark movies as watched, it's
-                      not our primary focus
-                    </p>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    M
                   </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <div className="size-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="size-2 bg-slate-500 rounded-full"></div>
+                </div>
+                <div className="flex gap-2 items-end">
+                  <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    S
                   </div>
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You want to read others' reviews
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      We don't have a social/community review
-                      system
-                    </p>
+                  <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Already saw it twice! Oppenheimer?
                   </div>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <div className="size-5 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <div className="size-2 bg-slate-500 rounded-full"></div>
+                </div>
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    It's 3 hours and I have work tomorrow 😅
                   </div>
-                  <div>
-                    <p className="text-white font-semibold mb-1">
-                      You mostly watch movies solo
-                    </p>
-                    <p className="text-slate-400 text-sm">
-                      The magic happens when two people are
-                      matching together
-                    </p>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    M
                   </div>
-                </li>
-              </ul>
+                </div>
+                <div className="flex gap-2 items-end">
+                  <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    The Notebook? John Wick? Inception?
+                  </div>
+                </div>
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Too sappy / a puppy dies 😭 / too confusing
+                    🤯
+                  </div>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    M
+                  </div>
+                </div>
+                {/* Two hours later image */}
+                <div className="my-3 flex justify-center">
+                  <img
+                    src={twoHoursLater}
+                    alt="Two hours later..."
+                    className="w-48 rounded-lg opacity-90 grayscale-[40%]"
+                  />
+                </div>
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Did you find something? 😴
+                  </div>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    M
+                  </div>
+                </div>
+                <div className="flex gap-2 items-end">
+                  <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Ugh this is impossible 😩
+                  </div>
+                </div>
+              </div>
 
-              <div className="border-t border-slate-700/50 pt-6">
-                <p className="text-slate-300 text-sm mb-3">
-                  <span className="font-semibold text-white">
-                    Looking for the features above?
-                  </span>{" "}
-                  Check out{" "}
-                  <a
-                    href="https://letterboxd.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-orange-400 hover:text-orange-300 underline font-semibold transition-colors"
-                  >
-                    Letterboxd
-                  </a>{" "}
-                  – it's an amazing platform for tracking,
-                  reviewing, and discovering films with a
-                  passionate community.
-                </p>
-                <p className="text-slate-400 text-xs italic">
-                  Pro tip: Use both! Import your Letterboxd
-                  watchlist into DuoReel to find what to watch
-                  together.
-                </p>
+              {/* Result */}
+              <div className="mt-6 pt-5 border-t border-slate-700/50 flex items-center gap-2 text-red-400 text-sm font-semibold">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+                45 minutes wasted → no movie picked → fell
+                asleep 😴
+              </div>
+            </div>
+
+            {/* ── WITH ── */}
+            <div className="rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
+              <div className="inline-flex items-center gap-2 bg-green-500/15 text-green-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg w-fit mb-6">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                With DuoReel
+              </div>
+
+              <div className="flex flex-col gap-3 flex-1">
+                <div className="flex gap-2 items-end">
+                  <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Want to watch a movie tonight? 🍿
+                  </div>
+                </div>
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Let's check our DuoReel! 🎬
+                  </div>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    M
+                  </div>
+                </div>
+
+                {/* Match notification */}
+                <div className="my-2 flex items-start justify-between gap-3">
+                  {/* S — left card */}
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">
+                      S
+                    </div>
+                    <img
+                      src={grandBudapestCard}
+                      alt="The Grand Budapest Hotel saved by S"
+                      className="w-36 drop-shadow-xl"
+                    />
+                  </div>
+                  {/* M — right card */}
+                  <div className="flex items-start gap-2">
+                    <img
+                      src={grandBudapestCard}
+                      alt="The Grand Budapest Hotel saved by M"
+                      className="w-36 drop-shadow-xl"
+                    />
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">
+                      M
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 items-end">
+                  <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Perfect! I've been wanting to watch that! 😍
+                  </div>
+                </div>
+                <div className="flex gap-2 items-end justify-end">
+                  <div className="bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm px-4 py-2.5 text-sm text-white max-w-[75%]">
+                    Same! Starting it now 🍿
+                  </div>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                    M
+                  </div>
+                </div>
+              </div>
+
+              {/* Result */}
+              <div className="mt-6 pt-5 border-t border-slate-700/50 flex items-center gap-2 text-green-400 text-sm font-semibold">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                2 minutes → movie picked → popcorn ready 🍿
               </div>
             </div>
           </div>
         </div>
+        {/* ── END WHY DUOREEL ── */}
+
+        {/* ── WHO IS IT FOR ── */}
+        <div id="audience" className="mb-20 max-w-6xl mx-auto">
+          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
+            <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
+            Who Is It For
+          </span>
+          <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
+            Is DuoReel right for you?
+          </h2>
+          <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
+
+          {/* Two-column grid */}
+          <div className="grid md:grid-cols-2 gap-8 items-stretch">
+
+            {/* ── LEFT COLUMN: card + CTA ── */}
+            <div className="flex flex-col gap-6">
+
+            {/* ── PERFECT FOR YOU ── */}
+            <div className="flex-1 rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/[0.08] via-slate-900/50 to-slate-900/50 p-8">
+              <h3 className="flex items-center gap-2 text-xl font-bold text-white mb-6">
+                <svg className="size-5 text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+                Perfect for you if…
+              </h3>
+
+              <ul className="space-y-5">
+                <li className="flex gap-3 items-start">
+                  <svg className="size-4 text-green-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span className="text-slate-300 text-sm leading-relaxed">
+                    <strong className="text-white">You're a couple or roommates</strong> who regularly watch movies together
+                  </span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <svg className="size-4 text-green-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span className="text-slate-300 text-sm leading-relaxed">
+                    <strong className="text-white">You're tired of "What should we watch?"</strong> and want to find common ground instantly
+                  </span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <svg className="size-4 text-green-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span className="text-slate-300 text-sm leading-relaxed">
+                    <strong className="text-white">You have different tastes</strong> and want to discover movies in the overlap
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* ── CTA button pinned to bottom of left column ── */}
+            <div className="flex items-center gap-4">
+              <a
+                href="/auth"
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-pink-500/30 transition-all hover:-translate-y-0.5 text-base"
+              >
+                That's me — Get Started
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </a>
+            </div>
+
+            </div>{/* ── END LEFT COLUMN ── */}
+
+            {/* ── NOT QUITE RIGHT ── */}
+            <div className="rounded-2xl border border-slate-700/40 bg-gradient-to-br from-slate-800/30 via-slate-900/50 to-slate-900/50 p-8">
+              <h3 className="flex items-center gap-2 text-xl font-bold text-white mb-6">
+                <svg className="size-5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                Not quite right if…
+              </h3>
+
+              <ul className="space-y-5 mb-6">
+                <li className="flex gap-3 items-start">
+                  <svg className="size-4 text-slate-500 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  <span className="text-slate-400 text-sm leading-relaxed">
+                    You want detailed reviews or a comprehensive movie diary
+                  </span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <svg className="size-4 text-slate-500 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  <span className="text-slate-400 text-sm leading-relaxed">
+                    You want a social/community review system
+                  </span>
+                </li>
+                <li className="flex gap-3 items-start">
+                  <svg className="size-4 text-slate-500 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="8" y1="12" x2="16" y2="12" />
+                  </svg>
+                  <span className="text-slate-400 text-sm leading-relaxed">
+                    You mostly watch movies solo
+                  </span>
+                </li>
+              </ul>
+
+              {/* Letterboxd tip */}
+              <div className="border-t border-slate-700/50 pt-5">
+                <p className="text-slate-400 text-sm leading-relaxed">
+                  💡 Looking for those features? Check out{" "}
+                  <a
+                    href="https://letterboxd.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:text-blue-300 underline transition-colors"
+                  >
+                    Letterboxd
+                  </a>
+                  {" "}— it's amazing. Pro tip: Use both! Import your Letterboxd watchlist into DuoReel.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        {/* ── END WHO IS IT FOR ── */}
+      </div>
 
       {/* old Why DuoReel section removed */}
-      <div className="hidden" style={{ display: 'none' }}>
+      <div className="hidden" style={{ display: "none" }}>
         {/* Movie Poster Grid Background */}
         <div className="absolute inset-0 overflow-hidden">
           <div
@@ -988,254 +1106,269 @@ export function LandingPage() {
 
         <div className="max-w-7xl mx-auto px-4 relative">
           {/* Why DuoReel Section Title */}
-          <div id="why-duoreel" className="mb-12 max-w-6xl mx-auto">
+          <div
+            id="why-duoreel"
+            className="mb-12 max-w-6xl mx-auto"
+          >
             <div className="flex items-center gap-4 mb-2">
               <h2 className="text-4xl font-bold text-slate-200">
-                <span className="text-pink-400">Why</span> DuoReel?
+                <span className="text-pink-400">Why</span>{" "}
+                DuoReel?
               </h2>
             </div>
             <div className="ml-6 w-32 h-1 bg-gradient-to-r from-pink-500/50 to-transparent rounded-full"></div>
           </div>
-          
+
           <div className="max-w-6xl mx-auto">
             <p className="text-slate-400 mb-16 text-lg">
-              Without <span className="text-pink-400">Duo</span><span className="text-white">Reel</span>, every movie night starts the same way... 👇
+              Without <span className="text-pink-400">Duo</span>
+              <span className="text-white">Reel</span>, every
+              movie night starts the same way... 👇
             </p>
 
             {/* The Old Way - Without DuoReel */}
             <div className="mb-16">
+              {/* Chat conversation */}
+              <div className="space-y-4 max-w-2xl">
+                {/* Girlfriend message - Left */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Want to watch a movie tonight? 🍿
+                    </p>
+                  </div>
+                </div>
 
-            {/* Chat conversation */}
-            <div className="space-y-4 max-w-2xl">
-              {/* Girlfriend message - Left */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Boyfriend message - Right */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Sure! How about Barbie?
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Want to watch a movie tonight? 🍿
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend message - Right */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Sure! How about Barbie?
-                  </p>
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Already saw it twice! What about
+                      Oppenheimer?
+                    </p>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Boyfriend */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Babe, it's 3 hours long and I have work
+                      tomorrow 😅
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Already saw it twice! What about
-                    Oppenheimer?
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Babe, it's 3 hours long and I have work
-                    tomorrow 😅
-                  </p>
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Fair point... The Notebook?
+                    </p>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Boyfriend */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      I've cried enough times to that movie 😭
+                      How about John Wick?
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Fair point... The Notebook?
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    I've cried enough times to that movie 😭 How
-                    about John Wick?
-                  </p>
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Too violent for a Tuesday night... La La
+                      Land?
+                    </p>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Boyfriend */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      You know I don't do musicals 🙈 Inception?
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Too violent for a Tuesday night... La La
-                    Land?
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    You know I don't do musicals 🙈 Inception?
-                  </p>
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      I'm too tired to understand dreams within
+                      dreams 🤯
+                    </p>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Boyfriend */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Fast & Furious 10?
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    I'm too tired to understand dreams within
-                    dreams 🤯
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Fast & Furious 10?
-                  </p>
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      I haven't seen the first 9... What about
+                      Titanic?
+                    </p>
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Boyfriend */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Spoiler alert: the ship sinks 🚢 And it's
+                      3 hours again...
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    I haven't seen the first 9... What about
-                    Titanic?
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Spoiler alert: the ship sinks 🚢 And it's 3
-                    hours again...
-                  </p>
+                {/* Time passing indicator */}
+                <div className="py-2 flex justify-center">
+                  <svg
+                    width="60"
+                    height="200"
+                    viewBox="0 0 60 200"
+                    className="opacity-50"
+                  >
+                    <path
+                      d="M 30 10 Q 10 35, 30 60 Q 50 85, 30 110 Q 10 135, 30 160 Q 50 185, 30 190"
+                      fill="none"
+                      stroke="#94a3b8"
+                      strokeWidth="2"
+                      strokeDasharray="4,6"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Time passing indicator */}
-              <div className="py-2 flex justify-center">
-                <svg width="60" height="200" viewBox="0 0 60 200" className="opacity-50">
-                  <path
-                    d="M 30 10 Q 10 35, 30 60 Q 50 85, 30 110 Q 10 135, 30 160 Q 50 185, 30 190"
-                    fill="none"
-                    stroke="#94a3b8"
-                    strokeWidth="2"
-                    strokeDasharray="4,6"
-                    strokeLinecap="round"
+                {/* 2 Hours Later Meme */}
+                <div className="py-8 flex justify-center">
+                  <div className="relative">
+                    <img
+                      src="https://i.ytimg.com/vi/fw7NJ4SWnW0/mqdefault.jpg"
+                      alt="Two Hours Later"
+                      className="max-w-md w-full object-contain rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Ugh this is impossible 😩
+                    </p>
+                  </div>
+                </div>
+
+                {/* Boyfriend message - yawning */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      😴 *yawning* Did you pick it?
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
+                </div>
+
+                {/* Time passing indicator */}
+                <div className="py-2 flex justify-center">
+                  <svg
+                    width="60"
+                    height="200"
+                    viewBox="0 0 60 200"
+                    className="opacity-50"
+                  >
+                    <path
+                      d="M 30 10 Q 10 35, 30 60 Q 50 85, 30 110 Q 10 135, 30 160 Q 50 185, 30 190"
+                      fill="none"
+                      stroke="#94a3b8"
+                      strokeWidth="2"
+                      strokeDasharray="4,6"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+
+                {/* End message */}
+                <p className="text-slate-400 mb-8 text-lg text-center">
+                  ...and usually ends this way. 👇
+                </p>
+
+                {/* Cuddling cats image */}
+                <div className="py-6 flex justify-center">
+                  <img
+                    src="https://www.publicdomainpictures.net/pictures/50000/nahled/cuddling-cats-13711468109O5.jpg"
+                    alt="Cuddling cats"
+                    className="max-w-xs w-full object-contain rounded-lg opacity-70"
                   />
-                </svg>
-              </div>
-
-              {/* 2 Hours Later Meme */}
-              <div className="py-8 flex justify-center">
-                <div className="relative">
-                  <img 
-                    src="https://i.ytimg.com/vi/fw7NJ4SWnW0/mqdefault.jpg"
-                    alt="Two Hours Later"
-                    className="max-w-md w-full object-contain rounded-lg"
-                  />
                 </div>
-              </div>
-
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
-                </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Ugh this is impossible 😩
-                  </p>
-                </div>
-              </div>
-
-              {/* Boyfriend message - yawning */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    😴 *yawning* Did you pick it?
-                  </p>
-                </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
-
-              {/* Time passing indicator */}
-              <div className="py-2 flex justify-center">
-                <svg width="60" height="200" viewBox="0 0 60 200" className="opacity-50">
-                  <path
-                    d="M 30 10 Q 10 35, 30 60 Q 50 85, 30 110 Q 10 135, 30 160 Q 50 185, 30 190"
-                    fill="none"
-                    stroke="#94a3b8"
-                    strokeWidth="2"
-                    strokeDasharray="4,6"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-
-              {/* End message */}
-              <p className="text-slate-400 mb-8 text-lg text-center">
-                ...and usually ends this way. 👇
-              </p>
-
-              {/* Cuddling cats image */}
-              <div className="py-6 flex justify-center">
-                <img 
-                  src="https://www.publicdomainpictures.net/pictures/50000/nahled/cuddling-cats-13711468109O5.jpg"
-                  alt="Cuddling cats"
-                  className="max-w-xs w-full object-contain rounded-lg opacity-70"
-                />
               </div>
             </div>
-          </div>
 
             {/* Separator between Without and With sections */}
             <div className="py-12 flex justify-center">
@@ -1246,131 +1379,143 @@ export function LandingPage() {
             <div>
               <div className="mb-8">
                 <span className="text-slate-400 text-2xl">
-                  ✅ With <span className="text-pink-400">Duo</span><span className="text-white">Reel</span>
+                  ✅ With{" "}
+                  <span className="text-pink-400">Duo</span>
+                  <span className="text-white">Reel</span>
                 </span>
               </div>
 
               {/* Chat conversation */}
               <div className="space-y-4 max-w-2xl">
-              {/* Girlfriend message - Left */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Girlfriend message - Left */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Want to watch a movie tonight? 🍿
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Want to watch a movie tonight? 🍿
-                  </p>
-                </div>
-              </div>
 
-              {/* Girlfriend message - Left */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Girlfriend message - Left */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Let's check our DuoReel! 🎬
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Let's check our DuoReel! 🎬
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend message - Right */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Good idea! Opening it now...
-                  </p>
+                {/* Boyfriend message - Right */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Good idea! Opening it now...
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Match notification */}
-              <div className="flex justify-center py-4">
-                <div className="bg-gradient-to-r from-pink-500/30 to-purple-500/30 backdrop-blur-sm border border-pink-500/50 rounded-2xl px-6 py-4 shadow-lg shadow-pink-500/20">
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="size-6 text-pink-400 animate-pulse" />
-                    <div>
-                      <div className="text-pink-400 font-semibold text-sm mb-1">
-                        IT'S A MATCH! 💕
-                      </div>
-                      <div className="text-white font-bold">
-                        The Grand Budapest Hotel
-                      </div>
-                      <div className="text-slate-300 text-xs">
-                        You both saved this movie!
+                {/* Match notification */}
+                <div className="flex justify-center py-4">
+                  <div className="bg-gradient-to-r from-pink-500/30 to-purple-500/30 backdrop-blur-sm border border-pink-500/50 rounded-2xl px-6 py-4 shadow-lg shadow-pink-500/20">
+                    <div className="flex items-center gap-3">
+                      <Sparkles className="size-6 text-pink-400 animate-pulse" />
+                      <div>
+                        <div className="text-pink-400 font-semibold text-sm mb-1">
+                          IT'S A MATCH! 💕
+                        </div>
+                        <div className="text-white font-bold">
+                          The Grand Budapest Hotel
+                        </div>
+                        <div className="text-slate-300 text-xs">
+                          You both saved this movie!
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Girlfriend */}
-              <div className="flex gap-3 items-start">
-                <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  S
+                {/* Girlfriend */}
+                <div className="flex gap-3 items-start">
+                  <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    S
+                  </div>
+                  <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Perfect! I've been wanting to watch that!
+                      😍
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl rounded-tl-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Perfect! I've been wanting to watch that! 😍
-                  </p>
-                </div>
-              </div>
 
-              {/* Boyfriend */}
-              <div className="flex gap-3 items-start justify-end">
-                <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
-                  <p className="text-white text-sm">
-                    Same! Starting it now 🍿
-                  </p>
+                {/* Boyfriend */}
+                <div className="flex gap-3 items-start justify-end">
+                  <div className="bg-blue-600/30 backdrop-blur-sm border border-blue-500/50 rounded-2xl rounded-tr-none px-4 py-3 max-w-[70%]">
+                    <p className="text-white text-sm">
+                      Same! Starting it now 🍿
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    M
+                  </div>
                 </div>
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  M
-                </div>
-              </div>
 
-              {/* Time passing indicator */}
-              <div className="py-2 flex justify-center">
-                <svg width="60" height="200" viewBox="0 0 60 200" className="opacity-50">
-                  <path
-                    d="M 30 10 Q 10 35, 30 60 Q 50 85, 30 110 Q 10 135, 30 160 Q 50 185, 30 190"
-                    fill="none"
-                    stroke="#94a3b8"
-                    strokeWidth="2"
-                    strokeDasharray="4,6"
-                    strokeLinecap="round"
+                {/* Time passing indicator */}
+                <div className="py-2 flex justify-center">
+                  <svg
+                    width="60"
+                    height="200"
+                    viewBox="0 0 60 200"
+                    className="opacity-50"
+                  >
+                    <path
+                      d="M 30 10 Q 10 35, 30 60 Q 50 85, 30 110 Q 10 135, 30 160 Q 50 185, 30 190"
+                      fill="none"
+                      stroke="#94a3b8"
+                      strokeWidth="2"
+                      strokeDasharray="4,6"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </div>
+
+                {/* Happy couple image */}
+                <div className="py-6 flex justify-center">
+                  <img
+                    src="https://i.postimg.cc/6pn1tvbP/cats-tv.jpg"
+                    alt="Cats watching TV"
+                    className="max-w-xs w-full object-contain rounded-lg opacity-70"
                   />
-                </svg>
-              </div>
+                </div>
 
-              {/* Happy couple image */}
-              <div className="py-6 flex justify-center">
-                <img 
-                  src="https://i.postimg.cc/6pn1tvbP/cats-tv.jpg"
-                  alt="Cats watching TV"
-                  className="max-w-xs w-full object-contain rounded-lg opacity-70"
-                />
-              </div>
-
-              {/* Puuurrrfect message */}
-              <div className="flex gap-3 items-center justify-center pt-4">
-                <div className="bg-green-500/20 backdrop-blur-sm border border-green-500/50 rounded-2xl px-6 py-3">
-                  <p className="text-green-400 text-center text-sm font-semibold">
-                    😴 Puuurrrfect... Total time: 2 minutes! 😴
-                  </p>
+                {/* Puuurrrfect message */}
+                <div className="flex gap-3 items-center justify-center pt-4">
+                  <div className="bg-green-500/20 backdrop-blur-sm border border-green-500/50 rounded-2xl px-6 py-3">
+                    <p className="text-green-400 text-center text-sm font-semibold">
+                      😴 Puuurrrfect... Total time: 2 minutes!
+                      😴
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      </div>
 
       {/* Features List */}
-      <div id="features" className="py-20 relative overflow-hidden">
+      <div
+        id="features"
+        className="py-20 relative overflow-hidden"
+      >
         {/* Movie Poster Grid Background */}
         <div className="absolute inset-0 overflow-hidden">
           <div
@@ -1723,16 +1868,17 @@ export function LandingPage() {
           <div className="flex flex-col items-center gap-3">
             {/* TMDB Attribution */}
             <div className="flex items-center gap-2">
-              <img 
+              <img
                 src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg"
                 alt="TMDB"
                 className="h-6 w-6"
               />
               <p className="text-slate-400 text-sm">
-                This product uses the TMDB API but is not endorsed or certified by TMDB
+                This product uses the TMDB API but is not
+                endorsed or certified by TMDB
               </p>
             </div>
-            
+
             {/* Main Footer Text */}
             <p className="text-slate-500 text-sm">
               Made with ❤️ for movie lovers
