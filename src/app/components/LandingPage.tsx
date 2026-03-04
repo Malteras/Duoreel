@@ -33,22 +33,25 @@ export function LandingPage() {
   const { accessToken, loading } = useAuth();
   const onGetStarted = () => navigate("/login");
 
-  const [whyDuoReelVisible, setWhyDuoReelVisible] = useState(false);
+  const [whyDuoReelVisible, setWhyDuoReelVisible] =
+    useState(false);
   const whyRef = useRef<HTMLDivElement>(null);
 
   // Scroll animation for How It Works
   useEffect(() => {
-    const elements = document.querySelectorAll('.fade-on-scroll');
+    const elements = document.querySelectorAll(
+      ".fade-on-scroll",
+    );
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
+            entry.target.classList.add("is-visible");
             observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     elements.forEach((el) => observer.observe(el));
     return () => observer.disconnect();
@@ -65,7 +68,7 @@ export function LandingPage() {
           observer.disconnect();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -413,39 +416,78 @@ export function LandingPage() {
 
           {/* ── STEP 1: Connect ── */}
           <div className="relative flex gap-8 mb-14">
-            <div className="flex-shrink-0 z-10 fade-on-scroll" style={{ transitionDelay: '0s' }}>
+            <div
+              className="flex-shrink-0 z-10 fade-on-scroll"
+              style={{ transitionDelay: "0s" }}
+            >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
-                <span className="text-white text-2xl font-bold">1</span>
+                <span className="text-white text-2xl font-bold">
+                  1
+                </span>
               </div>
             </div>
             <div className="flex-1 pt-3">
-              <h3 className="text-2xl font-bold text-white mb-2 fade-on-scroll" style={{ transitionDelay: '0.08s' }}>
+              <h3
+                className="text-2xl font-bold text-white mb-2 fade-on-scroll"
+                style={{ transitionDelay: "0.08s" }}
+              >
                 Connect
               </h3>
-              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll" style={{ transitionDelay: '0.16s' }}>
-                Create a free account and share your invite link with your partner. They open the link, create their account, and you're connected — takes 2 minutes, no app install needed.
+              <p
+                className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll"
+                style={{ transitionDelay: "0.16s" }}
+              >
+                Create a free account and share your invite link
+                with your partner. They open the link, create
+                their account, and you're connected — takes 2
+                minutes, no app install needed.
               </p>
               {/* Invite link mockup */}
-              <div className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm fade-on-scroll" style={{ transitionDelay: '0.24s' }}>
+              <div
+                className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm fade-on-scroll"
+                style={{ transitionDelay: "0.24s" }}
+              >
                 <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
                   Share Your Invite Link
                 </p>
                 <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700/40 rounded-lg px-3 py-2 text-cyan-400 font-mono text-xs mb-3">
-                  <svg className="size-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4 flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
                   duoreel.com/invite/a8f3k2...
                 </div>
                 <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer">
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <rect
+                      x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      ry="2"
+                    />
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                   </svg>
                   Copy Link
                 </button>
               </div>
-              <p className="text-xs text-slate-400 italic mt-3 fade-on-scroll" style={{ transitionDelay: '0.32s' }}>
+              <p
+                className="text-xs text-slate-400 italic mt-3 fade-on-scroll"
+                style={{ transitionDelay: "0.32s" }}
+              >
                 You're automatically connected once they join.
               </p>
             </div>
@@ -453,20 +495,36 @@ export function LandingPage() {
 
           {/* ── STEP 2: Discover ── */}
           <div className="relative flex gap-8 mb-14">
-            <div className="flex-shrink-0 z-10 fade-on-scroll" style={{ transitionDelay: '0s' }}>
+            <div
+              className="flex-shrink-0 z-10 fade-on-scroll"
+              style={{ transitionDelay: "0s" }}
+            >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
-                <span className="text-white text-2xl font-bold">2</span>
+                <span className="text-white text-2xl font-bold">
+                  2
+                </span>
               </div>
             </div>
             <div className="flex-1 pt-3">
-              <h3 className="text-2xl font-bold text-white mb-2 fade-on-scroll" style={{ transitionDelay: '0.08s' }}>
+              <h3
+                className="text-2xl font-bold text-white mb-2 fade-on-scroll"
+                style={{ transitionDelay: "0.08s" }}
+              >
                 Discover
               </h3>
-              <p className="text-slate-300 leading-relaxed mb-2 max-w-lg fade-on-scroll" style={{ transitionDelay: '0.16s' }}>
-                Browse thousands of movies independently. Save the ones you'd watch, dismiss the ones you wouldn't. Filter by genre, decade, or IMDb rating.
+              <p
+                className="text-slate-300 leading-relaxed mb-2 max-w-lg fade-on-scroll"
+                style={{ transitionDelay: "0.16s" }}
+              >
+                Browse thousands of movies independently. Save
+                the ones you'd watch, dismiss the ones you
+                wouldn't. Filter by genre, decade, rating, etc.
               </p>
               {/* App screenshot */}
-              <div className="relative max-w-md fade-on-scroll" style={{ transitionDelay: '0.24s' }}>
+              <div
+                className="relative max-w-md fade-on-scroll"
+                style={{ transitionDelay: "0.24s" }}
+              >
                 <div className="absolute -inset-2 bg-gradient-to-br from-purple-500/20 via-transparent to-blue-500/20 rounded-2xl blur-xl" />
                 <img
                   src={appScreenshot}
@@ -474,28 +532,49 @@ export function LandingPage() {
                   className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
                 />
               </div>
-              <p className="text-xs text-slate-400 italic mt-3 fade-on-scroll" style={{ transitionDelay: '0.32s' }}>
-                Import your Letterboxd watchlist to get a head start.
+              <p
+                className="text-xs text-slate-400 italic mt-3 fade-on-scroll"
+                style={{ transitionDelay: "0.32s" }}
+              >
+                Import your Letterboxd watchlist to get a head
+                start.
               </p>
             </div>
           </div>
 
           {/* ── STEP 3: Match ── */}
           <div className="relative flex gap-8">
-            <div className="flex-shrink-0 z-10 fade-on-scroll" style={{ transitionDelay: '0s' }}>
+            <div
+              className="flex-shrink-0 z-10 fade-on-scroll"
+              style={{ transitionDelay: "0s" }}
+            >
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
-                <span className="text-white text-2xl font-bold">3</span>
+                <span className="text-white text-2xl font-bold">
+                  3
+                </span>
               </div>
             </div>
             <div className="flex-1 pt-3">
-              <h3 className="text-2xl font-bold text-white mb-2 fade-on-scroll" style={{ transitionDelay: '0.08s' }}>
+              <h3
+                className="text-2xl font-bold text-white mb-2 fade-on-scroll"
+                style={{ transitionDelay: "0.08s" }}
+              >
                 Match! 🎉
               </h3>
-              <p className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll" style={{ transitionDelay: '0.16s' }}>
-                When you both save the same movie — it's a match! You'll get notified instantly and it's automatically added to your shared watchlist. Movie night, solved.
+              <p
+                className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll"
+                style={{ transitionDelay: "0.16s" }}
+              >
+                When you both save the same movie — it's a
+                match! You'll get notified instantly and it's
+                automatically added to your shared watchlist.
+                Movie night, solved.
               </p>
               {/* Matches screenshot */}
-              <div className="relative max-w-md fade-on-scroll" style={{ transitionDelay: '0.24s' }}>
+              <div
+                className="relative max-w-md fade-on-scroll"
+                style={{ transitionDelay: "0.24s" }}
+              >
                 <div className="absolute -inset-2 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20 rounded-2xl blur-xl" />
                 <img
                   src={matchesScreenshot}
@@ -503,7 +582,10 @@ export function LandingPage() {
                   className="relative w-full rounded-2xl shadow-2xl shadow-slate-950/80 border border-slate-700/50"
                 />
               </div>
-              <p className="text-xs text-slate-400 italic mt-4 fade-on-scroll" style={{ transitionDelay: '0.32s' }}>
+              <p
+                className="text-xs text-slate-400 italic mt-4 fade-on-scroll"
+                style={{ transitionDelay: "0.32s" }}
+              >
                 No more endless scrolling or debating.
               </p>
             </div>
@@ -512,7 +594,11 @@ export function LandingPage() {
         {/* ── END HOW IT WORKS ── */}
 
         {/* ── WHY DUOREEL ── */}
-        <div id="why" className="mb-20 max-w-6xl mx-auto" ref={whyRef}>
+        <div
+          id="why"
+          className="mb-20 max-w-6xl mx-auto"
+          ref={whyRef}
+        >
           <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
             <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
             Why DuoReel
@@ -520,15 +606,23 @@ export function LandingPage() {
           <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
             Every movie night, the same story
           </h2>
-          <p className="text-slate-400 text-base max-w-md mb-3">Sound familiar?</p>
+          <p className="text-slate-400 text-base max-w-md mb-3">
+            Sound familiar?
+          </p>
           <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
 
           <div className="grid md:grid-cols-2 gap-8 items-stretch">
-
             {/* ── WITHOUT ── */}
             <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
               <div className="inline-flex items-center gap-2 bg-red-500/15 text-red-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg w-fit mb-6">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="15" y1="9" x2="9" y2="15" />
                   <line x1="9" y1="9" x2="15" y2="15" />
@@ -538,30 +632,62 @@ export function LandingPage() {
 
               <div className="flex flex-col gap-3 flex-1">
                 {[
-                  { side: 'left',  text: 'Want to watch a movie tonight? 🍿',              delay: '0.3s'  },
-                  { side: 'right', text: 'Sure! How about Barbie?',                         delay: '0.8s'  },
-                  { side: 'left',  text: 'Already saw it twice! Oppenheimer?',              delay: '1.3s'  },
-                  { side: 'right', text: "It's 3 hours and I have work tomorrow 😅",        delay: '1.8s'  },
-                  { side: 'left',  text: 'The Notebook? John Wick? Inception?',             delay: '2.3s'  },
-                  { side: 'right', text: 'Too sappy / a puppy dies 😭 / too confusing 🤯',  delay: '2.8s'  },
+                  {
+                    side: "left",
+                    text: "Want to watch a movie tonight? 🍿",
+                    delay: "0.3s",
+                  },
+                  {
+                    side: "right",
+                    text: "Sure! How about Barbie?",
+                    delay: "1.3s",
+                  },
+                  {
+                    side: "left",
+                    text: "Already saw it twice! Oppenheimer?",
+                    delay: "2.3s",
+                  },
+                  {
+                    side: "right",
+                    text: "It's 3 hours and I have work tomorrow 😅",
+                    delay: "3.3s",
+                  },
+                  {
+                    side: "left",
+                    text: "The Notebook? John Wick? Inception?",
+                    delay: "4.3s",
+                  },
+                  {
+                    side: "right",
+                    text: "Too sappy / a puppy dies 😭 / too confusing 🤯",
+                    delay: "5.3s",
+                  },
                 ].map(({ side, text, delay }, i) => (
                   <div
                     key={i}
-                    className={`flex gap-2 items-end${side === 'right' ? ' justify-end' : ''}`}
+                    className={`flex gap-2 items-end${side === "right" ? " justify-end" : ""}`}
                     style={{
                       opacity: whyDuoReelVisible ? 1 : 0,
-                      transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
+                      transform: whyDuoReelVisible
+                        ? "translateY(0)"
+                        : "translateY(12px)",
                       transition: `opacity 0.5s ease-out ${delay}, transform 0.5s ease-out ${delay}`,
                     }}
                   >
-                    {side === 'left' && (
-                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
+                    {side === "left" && (
+                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        S
+                      </div>
                     )}
-                    <div className={`${side === 'left' ? 'bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm' : 'bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm'} px-4 py-2.5 text-sm text-white max-w-[75%]`}>
+                    <div
+                      className={`${side === "left" ? "bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm" : "bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm"} px-4 py-2.5 text-sm text-white max-w-[75%]`}
+                    >
                       {text}
                     </div>
-                    {side === 'right' && (
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
+                    {side === "right" && (
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        M
+                      </div>
                     )}
                   </div>
                 ))}
@@ -571,34 +697,57 @@ export function LandingPage() {
                   className="my-3 flex justify-center"
                   style={{
                     opacity: whyDuoReelVisible ? 1 : 0,
-                    transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
-                    transition: 'opacity 0.5s ease-out 3.8s, transform 0.5s ease-out 3.8s',
+                    transform: whyDuoReelVisible
+                      ? "translateY(0)"
+                      : "translateY(12px)",
+                    transition:
+                      "opacity 0.5s ease-out 6.8s, transform 0.5s ease-out 6.8s",
                   }}
                 >
-                  <img src={twoHoursLater} alt="Two hours later..." className="w-48 rounded-lg opacity-90 grayscale-[40%]" />
+                  <img
+                    src={twoHoursLater}
+                    alt="Two hours later..."
+                    className="w-48 rounded-lg opacity-90 grayscale-[40%]"
+                  />
                 </div>
 
                 {[
-                  { side: 'right', text: 'Did you find something? 😴', delay: '4.3s' },
-                  { side: 'left',  text: 'Ugh this is impossible 😩',  delay: '4.8s' },
+                  {
+                    side: "right",
+                    text: "Did you find something? 😴",
+                    delay: "7.8s",
+                  },
+                  {
+                    side: "left",
+                    text: "Ugh this is impossible 😩",
+                    delay: "8.8s",
+                  },
                 ].map(({ side, text, delay }, i) => (
                   <div
                     key={i}
-                    className={`flex gap-2 items-end${side === 'right' ? ' justify-end' : ''}`}
+                    className={`flex gap-2 items-end${side === "right" ? " justify-end" : ""}`}
                     style={{
                       opacity: whyDuoReelVisible ? 1 : 0,
-                      transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
+                      transform: whyDuoReelVisible
+                        ? "translateY(0)"
+                        : "translateY(12px)",
                       transition: `opacity 0.5s ease-out ${delay}, transform 0.5s ease-out ${delay}`,
                     }}
                   >
-                    {side === 'left' && (
-                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
+                    {side === "left" && (
+                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        S
+                      </div>
                     )}
-                    <div className={`${side === 'left' ? 'bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm' : 'bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm'} px-4 py-2.5 text-sm text-white max-w-[75%]`}>
+                    <div
+                      className={`${side === "left" ? "bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm" : "bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm"} px-4 py-2.5 text-sm text-white max-w-[75%]`}
+                    >
                       {text}
                     </div>
-                    {side === 'right' && (
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
+                    {side === "right" && (
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        M
+                      </div>
                     )}
                   </div>
                 ))}
@@ -609,22 +758,40 @@ export function LandingPage() {
                 className="mt-6 pt-5 border-t border-slate-700/50 flex items-center gap-2 text-red-400 text-sm font-semibold"
                 style={{
                   opacity: whyDuoReelVisible ? 1 : 0,
-                  transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
-                  transition: 'opacity 0.5s ease-out 5.3s, transform 0.5s ease-out 5.3s',
+                  transform: whyDuoReelVisible
+                    ? "translateY(0)"
+                    : "translateY(12px)",
+                  transition:
+                    "opacity 0.5s ease-out 9.8s, transform 0.5s ease-out 9.8s",
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="8" y1="12" x2="16" y2="12" />
                 </svg>
-                45 minutes wasted → no movie picked → fell asleep 😴
+                45 minutes wasted → no movie picked → fell
+                asleep 😴
               </div>
             </div>
 
             {/* ── WITH ── */}
             <div className="rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
               <div className="inline-flex items-center gap-2 bg-green-500/15 text-green-400 text-xs font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg w-fit mb-6">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 With DuoReel
@@ -633,42 +800,72 @@ export function LandingPage() {
               <div className="flex flex-col gap-3 flex-1 relative">
                 {/* "Wait for it…" pulsing placeholder — visible until Without finishes */}
                 <div
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none"
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 pointer-events-none"
                   style={{
                     opacity: whyDuoReelVisible ? 0 : 1,
-                    transition: 'opacity 0.4s ease-out 5.9s',
+                    transition: "opacity 0.4s ease-out 10.4s",
                   }}
                 >
-                  <div className="flex gap-1.5 items-center">
-                    <span className="size-2 rounded-full bg-green-500/60 animate-pulse" style={{ animationDelay: '0s' }} />
-                    <span className="size-2 rounded-full bg-green-500/60 animate-pulse" style={{ animationDelay: '0.2s' }} />
-                    <span className="size-2 rounded-full bg-green-500/60 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                  <div className="flex gap-2 items-center">
+                    <span
+                      className="size-3 rounded-full bg-green-400 animate-pulse"
+                      style={{ animationDelay: "0s" }}
+                    />
+                    <span
+                      className="size-3 rounded-full bg-green-400 animate-pulse"
+                      style={{ animationDelay: "0.3s" }}
+                    />
+                    <span
+                      className="size-3 rounded-full bg-green-400 animate-pulse"
+                      style={{ animationDelay: "0.6s" }}
+                    />
                   </div>
-                  <p className="text-slate-500 text-xs italic">wait for it…</p>
+                  <p className="text-green-400 text-base font-semibold tracking-wide">
+                    wait for it…
+                  </p>
+                  <p className="text-slate-400 text-xs">
+                    the good ending is coming
+                  </p>
                 </div>
 
                 {/* Chat messages — hidden until Without finishes */}
                 {[
-                  { side: 'left',  text: 'Want to watch a movie tonight? 🍿', delay: '6.1s' },
-                  { side: 'right', text: "Let's check our DuoReel! 🎬",        delay: '6.6s' },
+                  {
+                    side: "left",
+                    text: "Want to watch a movie tonight? 🍿",
+                    delay: "10.6s",
+                  },
+                  {
+                    side: "right",
+                    text: "Let's check our DuoReel! 🎬",
+                    delay: "11.6s",
+                  },
                 ].map(({ side, text, delay }, i) => (
                   <div
                     key={i}
-                    className={`flex gap-2 items-end${side === 'right' ? ' justify-end' : ''}`}
+                    className={`flex gap-2 items-end${side === "right" ? " justify-end" : ""}`}
                     style={{
                       opacity: whyDuoReelVisible ? 1 : 0,
-                      transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
+                      transform: whyDuoReelVisible
+                        ? "translateY(0)"
+                        : "translateY(12px)",
                       transition: `opacity 0.5s ease-out ${delay}, transform 0.5s ease-out ${delay}`,
                     }}
                   >
-                    {side === 'left' && (
-                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
+                    {side === "left" && (
+                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        S
+                      </div>
                     )}
-                    <div className={`${side === 'left' ? 'bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm' : 'bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm'} px-4 py-2.5 text-sm text-white max-w-[75%]`}>
+                    <div
+                      className={`${side === "left" ? "bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm" : "bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm"} px-4 py-2.5 text-sm text-white max-w-[75%]`}
+                    >
                       {text}
                     </div>
-                    {side === 'right' && (
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
+                    {side === "right" && (
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        M
+                      </div>
                     )}
                   </div>
                 ))}
@@ -678,41 +875,72 @@ export function LandingPage() {
                   className="my-2 flex items-start justify-between gap-3"
                   style={{
                     opacity: whyDuoReelVisible ? 1 : 0,
-                    transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
-                    transition: 'opacity 0.5s ease-out 7.1s, transform 0.5s ease-out 7.1s',
+                    transform: whyDuoReelVisible
+                      ? "translateY(0)"
+                      : "translateY(12px)",
+                    transition:
+                      "opacity 0.5s ease-out 12.6s, transform 0.5s ease-out 12.6s",
                   }}
                 >
                   <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">S</div>
-                    <img src={grandBudapestCard} alt="The Grand Budapest Hotel saved by S" className="w-36 drop-shadow-xl" />
+                    <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">
+                      S
+                    </div>
+                    <img
+                      src={grandBudapestCard}
+                      alt="The Grand Budapest Hotel saved by S"
+                      className="w-36 drop-shadow-xl"
+                    />
                   </div>
                   <div className="flex items-start gap-2">
-                    <img src={grandBudapestCard} alt="The Grand Budapest Hotel saved by M" className="w-36 drop-shadow-xl" />
-                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">M</div>
+                    <img
+                      src={grandBudapestCard}
+                      alt="The Grand Budapest Hotel saved by M"
+                      className="w-36 drop-shadow-xl"
+                    />
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">
+                      M
+                    </div>
                   </div>
                 </div>
 
                 {[
-                  { side: 'left',  text: "Perfect! I've been wanting to watch that! 😍", delay: '7.6s' },
-                  { side: 'right', text: 'Same! Starting it now 🍿',                      delay: '8.1s' },
+                  {
+                    side: "left",
+                    text: "Perfect! I've been wanting to watch that! 😍",
+                    delay: "13.6s",
+                  },
+                  {
+                    side: "right",
+                    text: "Same! Starting it now 🍿",
+                    delay: "14.6s",
+                  },
                 ].map(({ side, text, delay }, i) => (
                   <div
                     key={i}
-                    className={`flex gap-2 items-end${side === 'right' ? ' justify-end' : ''}`}
+                    className={`flex gap-2 items-end${side === "right" ? " justify-end" : ""}`}
                     style={{
                       opacity: whyDuoReelVisible ? 1 : 0,
-                      transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
+                      transform: whyDuoReelVisible
+                        ? "translateY(0)"
+                        : "translateY(12px)",
                       transition: `opacity 0.5s ease-out ${delay}, transform 0.5s ease-out ${delay}`,
                     }}
                   >
-                    {side === 'left' && (
-                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">S</div>
+                    {side === "left" && (
+                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        S
+                      </div>
                     )}
-                    <div className={`${side === 'left' ? 'bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm' : 'bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm'} px-4 py-2.5 text-sm text-white max-w-[75%]`}>
+                    <div
+                      className={`${side === "left" ? "bg-slate-800/60 border border-slate-700/40 rounded-2xl rounded-bl-sm" : "bg-blue-600/25 border border-blue-500/40 rounded-2xl rounded-br-sm"} px-4 py-2.5 text-sm text-white max-w-[75%]`}
+                    >
                       {text}
                     </div>
-                    {side === 'right' && (
-                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">M</div>
+                    {side === "right" && (
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                        M
+                      </div>
                     )}
                   </div>
                 ))}
@@ -723,17 +951,26 @@ export function LandingPage() {
                 className="mt-6 pt-5 border-t border-slate-700/50 flex items-center gap-2 text-green-400 text-sm font-semibold"
                 style={{
                   opacity: whyDuoReelVisible ? 1 : 0,
-                  transform: whyDuoReelVisible ? 'translateY(0)' : 'translateY(12px)',
-                  transition: 'opacity 0.5s ease-out 8.6s, transform 0.5s ease-out 8.6s',
+                  transform: whyDuoReelVisible
+                    ? "translateY(0)"
+                    : "translateY(12px)",
+                  transition:
+                    "opacity 0.5s ease-out 15.6s, transform 0.5s ease-out 15.6s",
                 }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 2 minutes → movie picked → popcorn ready 🍿
               </div>
             </div>
-
           </div>
         </div>
         {/* ── END WHY DUOREEL ── */}
@@ -751,68 +988,114 @@ export function LandingPage() {
 
           {/* Two-column grid */}
           <div className="grid md:grid-cols-2 gap-8 items-stretch">
-
             {/* ── LEFT COLUMN: card + CTA ── */}
             <div className="flex flex-col gap-6">
+              {/* ── PERFECT FOR YOU ── */}
+              <div className="flex-1 rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/[0.08] via-slate-900/50 to-slate-900/50 p-8">
+                <h3 className="flex items-center gap-2 text-xl font-bold text-white mb-6">
+                  <svg
+                    className="size-5 text-green-400 flex-shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                  </svg>
+                  Perfect for you if…
+                </h3>
 
-            {/* ── PERFECT FOR YOU ── */}
-            <div className="flex-1 rounded-2xl border border-green-500/20 bg-gradient-to-br from-green-500/[0.08] via-slate-900/50 to-slate-900/50 p-8">
-              <h3 className="flex items-center gap-2 text-xl font-bold text-white mb-6">
-                <svg className="size-5 text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-                  <polyline points="22 4 12 14.01 9 11.01" />
-                </svg>
-                Perfect for you if…
-              </h3>
+                <ul className="space-y-5">
+                  <li className="flex gap-3 items-start">
+                    <svg
+                      className="size-4 text-green-400 flex-shrink-0 mt-1"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-slate-300 text-sm leading-relaxed">
+                      <strong className="text-white">
+                        You're a couple or roommates
+                      </strong>{" "}
+                      who regularly watch movies together
+                    </span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <svg
+                      className="size-4 text-green-400 flex-shrink-0 mt-1"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-slate-300 text-sm leading-relaxed">
+                      <strong className="text-white">
+                        You're tired of "What should we watch?"
+                      </strong>{" "}
+                      and want to find common ground instantly
+                    </span>
+                  </li>
+                  <li className="flex gap-3 items-start">
+                    <svg
+                      className="size-4 text-green-400 flex-shrink-0 mt-1"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-slate-300 text-sm leading-relaxed">
+                      <strong className="text-white">
+                        You have different tastes
+                      </strong>{" "}
+                      and want to discover movies in the overlap
+                    </span>
+                  </li>
+                </ul>
+              </div>
 
-              <ul className="space-y-5">
-                <li className="flex gap-3 items-start">
-                  <svg className="size-4 text-green-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
+              {/* ── CTA button pinned to bottom of left column ── */}
+              <div className="flex items-center gap-4">
+                <a
+                  href="/auth"
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-pink-500/30 transition-all hover:-translate-y-0.5 text-base"
+                >
+                  That's me — Get Started
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
                   </svg>
-                  <span className="text-slate-300 text-sm leading-relaxed">
-                    <strong className="text-white">You're a couple or roommates</strong> who regularly watch movies together
-                  </span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <svg className="size-4 text-green-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span className="text-slate-300 text-sm leading-relaxed">
-                    <strong className="text-white">You're tired of "What should we watch?"</strong> and want to find common ground instantly
-                  </span>
-                </li>
-                <li className="flex gap-3 items-start">
-                  <svg className="size-4 text-green-400 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span className="text-slate-300 text-sm leading-relaxed">
-                    <strong className="text-white">You have different tastes</strong> and want to discover movies in the overlap
-                  </span>
-                </li>
-              </ul>
+                </a>
+              </div>
             </div>
-
-            {/* ── CTA button pinned to bottom of left column ── */}
-            <div className="flex items-center gap-4">
-              <a
-                href="/auth"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-pink-500/30 transition-all hover:-translate-y-0.5 text-base"
-              >
-                That's me — Get Started
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </a>
-            </div>
-
-            </div>{/* ── END LEFT COLUMN ── */}
+            {/* ── END LEFT COLUMN ── */}
 
             {/* ── NOT QUITE RIGHT ── */}
             <div className="rounded-2xl border border-slate-700/40 bg-gradient-to-br from-slate-800/30 via-slate-900/50 to-slate-900/50 p-8">
               <h3 className="flex items-center gap-2 text-xl font-bold text-white mb-6">
-                <svg className="size-5 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-5 text-slate-400 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="15" y1="9" x2="9" y2="15" />
                   <line x1="9" y1="9" x2="15" y2="15" />
@@ -822,16 +1105,29 @@ export function LandingPage() {
 
               <ul className="space-y-5 mb-6">
                 <li className="flex gap-3 items-start">
-                  <svg className="size-4 text-slate-500 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4 text-slate-500 flex-shrink-0 mt-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <line x1="8" y1="12" x2="16" y2="12" />
                   </svg>
                   <span className="text-slate-400 text-sm leading-relaxed">
-                    You want detailed reviews or a comprehensive movie diary
+                    You want detailed reviews or a comprehensive
+                    movie diary
                   </span>
                 </li>
                 <li className="flex gap-3 items-start">
-                  <svg className="size-4 text-slate-500 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4 text-slate-500 flex-shrink-0 mt-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <line x1="8" y1="12" x2="16" y2="12" />
                   </svg>
@@ -840,7 +1136,13 @@ export function LandingPage() {
                   </span>
                 </li>
                 <li className="flex gap-3 items-start">
-                  <svg className="size-4 text-slate-500 flex-shrink-0 mt-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    className="size-4 text-slate-500 flex-shrink-0 mt-1"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <line x1="8" y1="12" x2="16" y2="12" />
                   </svg>
@@ -861,13 +1163,13 @@ export function LandingPage() {
                     className="text-blue-400 hover:text-blue-300 underline transition-colors"
                   >
                     Letterboxd
-                  </a>
-                  {" "}— it's amazing. Pro tip: Use both! Import your Letterboxd watchlist into DuoReel.
+                  </a>{" "}
+                  — it's amazing. Pro tip: Use both! Import your
+                  Letterboxd watchlist into DuoReel.
                 </p>
               </div>
             </div>
           </div>
-
         </div>
         {/* ── END WHO IS IT FOR ── */}
       </div>
