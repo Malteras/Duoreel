@@ -78,12 +78,18 @@ export function LandingPage() {
         {/* Left column: text + CTAs */}
         <div>
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 bg-pink-600/10 border border-pink-500/30 text-pink-400 text-xs font-semibold px-4 py-1.5 rounded-full mb-6">
+          <div
+            className="inline-flex items-center gap-2 bg-pink-600/10 border border-pink-500/30 text-pink-400 text-xs font-semibold px-4 py-1.5 rounded-full mb-6 animate-fade-in-up"
+            style={{ animationDelay: '0s' }}
+          >
             <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
             Free for couples
           </div>
 
-          <h1 className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight mb-5">
+          <h1
+            className="text-5xl sm:text-6xl font-bold text-white leading-tight tracking-tight mb-5 animate-fade-in-up"
+            style={{ animationDelay: '0.1s' }}
+          >
             No more<br />
             &ldquo;<span
               className="bg-clip-text text-transparent"
@@ -91,12 +97,18 @@ export function LandingPage() {
             >What should<br />we watch?</span>&rdquo;
           </h1>
 
-          <p className="text-lg text-slate-400 leading-relaxed mb-8 max-w-md">
+          <p
+            className="text-lg text-slate-400 leading-relaxed mb-8 max-w-md animate-fade-in-up"
+            style={{ animationDelay: '0.2s' }}
+          >
             Browse movies independently, match with your partner, and discover
             what you&apos;ll <strong className="text-slate-200">both</strong> love — in under 2 minutes.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 mb-6">
+          <div
+            className="flex flex-wrap items-center gap-4 mb-6 animate-fade-in-up"
+            style={{ animationDelay: '0.3s' }}
+          >
             <Button
               size="lg"
               className="bg-pink-600 hover:bg-pink-700 text-white font-semibold gap-2 cursor-pointer"
@@ -106,7 +118,10 @@ export function LandingPage() {
             </Button>
           </div>
 
-          <div className="flex flex-wrap gap-3 mb-4">
+          <div
+            className="flex flex-wrap gap-3 mb-4 animate-fade-in-up"
+            style={{ animationDelay: '0.4s' }}
+          >
             {(['Free forever', 'No credit card', '2-min setup'] as const).map((t) => (
               <span key={t} className="flex items-center gap-1.5 text-sm text-slate-300 bg-slate-800/60 border border-slate-700/50 px-3 py-1 rounded-full">
                 <CheckCircle2 className="size-3.5 text-green-400 shrink-0" /> {t}
@@ -114,7 +129,10 @@ export function LandingPage() {
             ))}
           </div>
 
-          <p className="text-sm text-slate-400">
+          <p
+            className="text-sm text-slate-400 animate-fade-in-up"
+            style={{ animationDelay: '0.5s' }}
+          >
             Already have an account?{' '}
             <button onClick={onGetStarted} className="text-blue-400 hover:text-blue-300 hover:underline bg-transparent border-none cursor-pointer p-0 font-medium">
               Sign in
@@ -123,7 +141,10 @@ export function LandingPage() {
         </div>
 
         {/* Right column: app screenshot */}
-        <div className="hidden md:flex items-center justify-center">
+        <div
+          className="hidden md:flex items-center justify-center animate-fade-in-up"
+          style={{ animation: 'fadeInUp 0.8s ease-out 0.3s both' }}
+        >
           <div className="relative">
             {/* Diffuse glow layer — wide, soft */}
             <div className="absolute -inset-8 bg-gradient-to-br from-pink-500/30 via-purple-500/20 to-blue-500/10 rounded-3xl blur-3xl" />
@@ -179,7 +200,7 @@ export function LandingPage() {
                     <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
                   </svg>
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-60 bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-200 pointer-events-none z-50 leading-relaxed shadow-xl">
-                    It&apos;s actually just me and my girlfriend at the moment, but 500+ looks better 🤫
+                    It&apos;s actually just my girlfriend and me at the moment, but 500+ looks better 🤫
                     <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-700" />
                   </div>
                 </div>
