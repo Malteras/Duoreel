@@ -25,7 +25,7 @@ import duoReelLogo from "figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.pn
 import appScreenshot from "figma:asset/b93eb9190ee818e6e3f0c5e4e02a1b41573eb5df.png";
 import matchesScreenshot from "figma:asset/f99272690cff28ce969229dfd7b06bc1656eb9a2.png";
 import twoHoursLater from "figma:asset/0d9cdcfe1e0abe10063defa7d62be273fa090bad.png";
-import grandBudapestCard from "figma:asset/c27a1e6feef3c11ee6616a34c449842b1360d847.png";
+import grandBudapestCard from "figma:asset/315a25f13c2a9fe5a43cfc015139edb8155d5420.png";
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -394,7 +394,7 @@ export function LandingPage() {
             <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
 
             {/* Two-column comparison grid */}
-            <div className="grid md:grid-cols-2 gap-8 items-start">
+            <div className="grid md:grid-cols-2 gap-8 items-stretch">
 
               {/* ── WITHOUT ── */}
               <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-500/8 via-slate-900/50 to-slate-900/50 p-8 flex flex-col">
@@ -500,12 +500,25 @@ export function LandingPage() {
                   </div>
 
                   {/* Match notification */}
-                  <div className="my-2 flex justify-center">
-                    <img
-                      src={grandBudapestCard}
-                      alt="The Grand Budapest Hotel movie card with Match badge"
-                      className="w-36 rounded-2xl shadow-xl shadow-pink-500/20 border border-pink-500/30"
-                    />
+                  <div className="my-2 flex items-start justify-between gap-3">
+                    {/* S — left card */}
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 bg-pink-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">S</div>
+                      <img
+                        src={grandBudapestCard}
+                        alt="The Grand Budapest Hotel saved by S"
+                        className="w-36 drop-shadow-xl"
+                      />
+                    </div>
+                    {/* M — right card */}
+                    <div className="flex items-start gap-2">
+                      <img
+                        src={grandBudapestCard}
+                        alt="The Grand Budapest Hotel saved by M"
+                        className="w-36 drop-shadow-xl"
+                      />
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-2">M</div>
+                    </div>
                   </div>
 
                   <div className="flex gap-2 items-end">
