@@ -2038,37 +2038,15 @@ export function LandingPage() {
               <ul className="text-slate-400 text-sm leading-relaxed space-y-2">
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 size-1.5 rounded-full bg-pink-500 flex-shrink-0" />
-                  Import your{" "}
-                  <span className="text-slate-300">
-                    watchlist
-                  </span>{" "}
-                  to add movies to your DuoReel{" "}
-                  <span className="text-slate-300">Saved</span>{" "}
-                  list.
+                  <span>Import your <span className="text-slate-300">watchlist</span> to add movies to your DuoReel <span className="text-slate-300">Saved</span> list.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 size-1.5 rounded-full bg-pink-500 flex-shrink-0" />
-                  Import your{" "}
-                  <span className="text-slate-300">
-                    watched movies
-                  </span>{" "}
-                  to filter them out of the{" "}
-                  <span className="text-slate-300">
-                    Discover
-                  </span>{" "}
-                  feed.
+                  <span>Import your <span className="text-slate-300">watched movies</span> to filter them out of the <span className="text-slate-300">Discover</span> feed.</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="mt-1.5 size-1.5 rounded-full bg-pink-500 flex-shrink-0" />
-                  Connect via your{" "}
-                  <span className="text-slate-300">
-                    Letterboxd RSS URL
-                  </span>{" "}
-                  — review movie on Letterboxd and it is
-                  <span className="text-slate-300">
-                    automatically marked as watched
-                  </span>
-                  on DuoReel.
+                  <span>Connect via your <span className="text-slate-300">Letterboxd RSS URL</span> — review a movie on Letterboxd and it's <span className="text-slate-300">automatically marked as watched</span> on DuoReel.</span>
                 </li>
               </ul>
             </div>
