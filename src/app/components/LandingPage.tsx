@@ -387,7 +387,7 @@ export function LandingPage() {
         </div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32 overflow-hidden">
+      <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
         {/* ── HOW IT WORKS ── */}
         <div
           id="how-it-works"
@@ -410,8 +410,8 @@ export function LandingPage() {
         {/* Steps */}
         <div className="max-w-4xl mx-auto mb-32 relative">
           {/* Background glow blobs */}
-          <div className="absolute -left-96 top-0 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -right-96 top-80 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -left-20 top-0 w-[400px] h-[400px] bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-20 top-80 w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
           {/* Vertical connector line */}
           <div
             className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-pink-500/50 via-purple-500/30 to-blue-500/20 hidden md:block"
