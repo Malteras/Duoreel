@@ -1089,7 +1089,7 @@ export function LandingPage() {
               <div className="flex items-center gap-4">
                 <a
                   href="/auth"
-                  className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold px-7 py-3.5 rounded-lg shadow-lg shadow-pink-500/30 transition-all cursor-pointer text-base"
+                  className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold px-7 py-2.5 rounded-lg shadow-lg shadow-pink-500/30 transition-all cursor-pointer text-sm"
                 >
                   That's me — Get Started
                   <svg
@@ -2035,30 +2035,42 @@ export function LandingPage() {
               <h3 className="text-white font-bold text-xl leading-snug">
                 Letterboxd Import
               </h3>
-              <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
-                Import your{" "}
-                <span className="text-slate-300">
-                  Letterboxd watchlist
-                </span>{" "}
-                to add movies to your{" "}
-                <span className="text-slate-300">
-                  DuoReel Saved
-                </span>{" "}
-                list, or import your{" "}
-                <span className="text-slate-300">
-                  watched movies
-                </span>{" "}
-                to filter them out of the Discover feed. Connect
-                via your{" "}
-                <span className="text-slate-300">
-                  Letterboxd RSS URL
-                </span>{" "}
-                — review a movie on Letterboxd and it's{" "}
-                <span className="text-slate-300">
-                  automatically marked as watched
-                </span>{" "}
-                in DuoReel.
-              </p>
+              <ul className="text-slate-400 text-sm leading-relaxed space-y-2">
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 size-1.5 rounded-full bg-pink-500 flex-shrink-0" />
+                  Import your{" "}
+                  <span className="text-slate-300">
+                    watchlist
+                  </span>{" "}
+                  to add movies to your DuoReel{" "}
+                  <span className="text-slate-300">Saved</span>{" "}
+                  list.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 size-1.5 rounded-full bg-pink-500 flex-shrink-0" />
+                  Import your{" "}
+                  <span className="text-slate-300">
+                    watched movies
+                  </span>{" "}
+                  to filter them out of the{" "}
+                  <span className="text-slate-300">
+                    Discover
+                  </span>{" "}
+                  feed.
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="mt-1.5 size-1.5 rounded-full bg-pink-500 flex-shrink-0" />
+                  Connect via your{" "}
+                  <span className="text-slate-300">
+                    Letterboxd RSS URL
+                  </span>{" "}
+                  — review movie on Letterboxd and it is
+                  <span className="text-slate-300">
+                    automatically marked as watched
+                  </span>
+                  on DuoReel.
+                </li>
+              </ul>
             </div>
 
             {/* Free banner — as a bento card (col-span-1) */}
@@ -2165,7 +2177,7 @@ export function LandingPage() {
           </p>
           <button
             onClick={onGetStarted}
-            className="inline-flex items-center gap-3 bg-pink-600 hover:bg-pink-700 text-white font-semibold text-lg px-10 py-4 rounded-lg shadow-lg shadow-pink-500/30 transition-all cursor-pointer"
+            className="inline-flex items-center gap-3 bg-pink-600 hover:bg-pink-700 text-white font-semibold text-sm px-8 py-2.5 rounded-lg shadow-lg shadow-pink-500/30 transition-all cursor-pointer"
           >
             Get Started Now
             <svg
