@@ -94,35 +94,35 @@ export function LandingPage() {
               <img
                 src={duoReelMatchHeart}
                 alt="DuoReel"
-                className="h-10 w-auto"
+                className="h-7 md:h-10 w-auto"
               />
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-lg md:text-2xl font-bold text-white">
                   <span className="text-pink-400">Duo</span>Reel
                 </h1>
-                <p className="text-sm text-slate-400">
+                <p className="text-xs md:text-sm text-slate-400">
                   Find movies you both love
                 </p>
               </div>
             </div>
 
-            {/* Navigation Links */}
+            {/* Navigation Links — desktop only */}
             <nav className="hidden md:flex items-center gap-8">
               <a
                 href="#how-it-works"
-                className="text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
                 How It Works
               </a>
               <a
                 href="#why-duoreel"
-                className="text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
                 Why DuoReel
               </a>
               <a
                 href="#features"
-                className="text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
                 Features
               </a>
@@ -130,9 +130,17 @@ export function LandingPage() {
                 onClick={onGetStarted}
                 className="bg-pink-600 hover:bg-pink-700 text-white font-semibold cursor-pointer"
               >
-                Get Started
+                Sign In
               </Button>
             </nav>
+
+            {/* Mobile — always visible Sign In button */}
+            <button
+              onClick={onGetStarted}
+              className="md:hidden bg-pink-600 hover:bg-pink-700 text-white font-semibold text-sm px-4 py-2 rounded-lg cursor-pointer transition-colors"
+            >
+              Sign In
+            </button>
           </div>
         </div>
       </header>
@@ -277,11 +285,11 @@ export function LandingPage() {
       </section>
 
       {/* ── SOCIAL PROOF BAR ── */}
-      <div className="border-y border-slate-800 bg-slate-900/50 py-10">
-        <div className="max-w-4xl mx-auto px-4 flex flex-wrap justify-center items-center gap-10 sm:gap-16">
+      <div className="border-y border-slate-800 bg-slate-900/50 py-6">
+        <div className="max-w-4xl mx-auto px-4 flex flex-nowrap justify-center items-center gap-4 sm:gap-16 overflow-hidden">
           {/* Stat 1 — Couples */}
           <div className="flex items-center gap-3 text-slate-300">
-            <div className="w-10 h-10 rounded-xl bg-pink-600/15 border border-pink-500/20 flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 md:w-10 md:h-10 rounded-xl bg-pink-600/15 border border-pink-500/20 flex items-center justify-center shrink-0">
               <svg
                 className="w-5 h-5 text-pink-400"
                 viewBox="0 0 24 24"
@@ -297,7 +305,7 @@ export function LandingPage() {
             </div>
             <div>
               <div className="flex items-center gap-1.5 leading-none">
-                <span className="text-2xl font-bold text-white leading-none">
+                <span className="text-lg md:text-2xl font-bold text-white leading-none">
                   500+
                 </span>
                 <div className="relative group/tip">
@@ -321,7 +329,7 @@ export function LandingPage() {
                   </div>
                 </div>
               </div>
-              <div className="text-sm text-slate-400 mt-0.5">
+              <div className="text-xs md:text-sm text-slate-400 mt-0.5">
                 couples matched
               </div>
             </div>
@@ -332,7 +340,7 @@ export function LandingPage() {
 
           {/* Stat 2 — Movies */}
           <div className="flex items-center gap-3 text-slate-300">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/20 flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 md:w-10 md:h-10 rounded-xl bg-blue-600/15 border border-blue-500/20 flex items-center justify-center shrink-0">
               <svg
                 className="w-5 h-5 text-blue-400"
                 viewBox="0 0 24 24"
@@ -351,10 +359,10 @@ export function LandingPage() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-white leading-none">
+              <div className="text-lg md:text-2xl font-bold text-white leading-none">
                 50K+
               </div>
-              <div className="text-sm text-slate-400 mt-0.5">
+              <div className="text-xs md:text-sm text-slate-400 mt-0.5">
                 movies to discover
               </div>
             </div>
@@ -365,7 +373,7 @@ export function LandingPage() {
 
           {/* Stat 3 — Free */}
           <div className="flex items-center gap-3 text-slate-300">
-            <div className="w-10 h-10 rounded-xl bg-green-600/15 border border-green-500/20 flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 md:w-10 md:h-10 rounded-xl bg-green-600/15 border border-green-500/20 flex items-center justify-center shrink-0">
               <svg
                 className="w-5 h-5 text-green-400"
                 viewBox="0 0 24 24"
@@ -377,10 +385,10 @@ export function LandingPage() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-bold text-white leading-none">
+              <div className="text-lg md:text-2xl font-bold text-white leading-none">
                 100%
               </div>
-              <div className="text-sm text-slate-400 mt-0.5">
+              <div className="text-xs md:text-sm text-slate-400 mt-0.5">
                 free, forever
               </div>
             </div>
@@ -411,8 +419,8 @@ export function LandingPage() {
         {/* Steps */}
         <div className="max-w-4xl mx-auto mb-32 relative">
           {/* Background glow blobs */}
-          <div className="absolute -left-20 top-0 w-[400px] h-[400px] bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -right-20 top-80 w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="hidden lg:block absolute -left-20 top-0 w-[400px] h-[400px] bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="hidden lg:block absolute -right-20 top-80 w-[400px] h-[400px] bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
           {/* Vertical connector line */}
           <div
             className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-pink-500/50 via-purple-500/30 to-blue-500/20 hidden md:block"
@@ -420,13 +428,13 @@ export function LandingPage() {
           />
 
           {/* ── STEP 1: Connect ── */}
-          <div className="relative flex gap-8 mb-14">
+          <div className="relative flex gap-4 md:gap-8 mb-14">
             <div
               className="flex-shrink-0 z-10 fade-on-scroll"
               style={{ transitionDelay: "0s" }}
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
-                <span className="text-white text-2xl font-bold">
+              <div className="w-9 h-9 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-pink-500 to-pink-700 flex items-center justify-center shadow-lg shadow-pink-500/40">
+                <span className="text-white text-sm md:text-2xl font-bold">
                   1
                 </span>
               </div>
@@ -449,7 +457,7 @@ export function LandingPage() {
               </p>
               {/* Invite link mockup */}
               <div
-                className="backdrop-blur-lg rounded-xl border border-slate-600/50 bg-slate-900/50 p-4 max-w-sm fade-on-scroll"
+                className="backdrop-blur-lg rounded-xl border border-slate-600/50 bg-slate-900/50 p-4 max-w-full md:max-w-sm fade-on-scroll"
                 style={{ transitionDelay: "0.24s" }}
               >
                 <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
@@ -499,13 +507,13 @@ export function LandingPage() {
           </div>
 
           {/* ── STEP 2: Discover ── */}
-          <div className="relative flex gap-8 mb-14">
+          <div className="relative flex gap-4 md:gap-8 mb-14">
             <div
               className="flex-shrink-0 z-10 fade-on-scroll"
               style={{ transitionDelay: "0s" }}
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
-                <span className="text-white text-2xl font-bold">
+              <div className="w-9 h-9 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-purple-500 to-violet-700 flex items-center justify-center shadow-lg shadow-purple-500/40">
+                <span className="text-white text-sm md:text-2xl font-bold">
                   2
                 </span>
               </div>
@@ -548,13 +556,13 @@ export function LandingPage() {
           </div>
 
           {/* ── STEP 3: Match ── */}
-          <div className="relative flex gap-8">
+          <div className="relative flex gap-4 md:gap-8">
             <div
               className="flex-shrink-0 z-10 fade-on-scroll"
               style={{ transitionDelay: "0s" }}
             >
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
-                <span className="text-white text-2xl font-bold">
+              <div className="w-9 h-9 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-500/40">
+                <span className="text-white text-sm md:text-2xl font-bold">
                   3
                 </span>
               </div>
