@@ -128,7 +128,7 @@ export function LandingPage() {
               </a>
               <Button
                 onClick={onGetStarted}
-                className="bg-pink-600 hover:bg-pink-700 text-white font-semibold"
+                className="bg-pink-600 hover:bg-pink-700 text-white font-semibold cursor-pointer"
               >
                 Get Started
               </Button>
@@ -564,7 +564,7 @@ export function LandingPage() {
                 className="text-2xl font-bold text-white mb-2 fade-on-scroll"
                 style={{ transitionDelay: "0.08s" }}
               >
-                Match! 🎉
+                Match!
               </h3>
               <p
                 className="text-slate-300 leading-relaxed mb-5 max-w-lg fade-on-scroll"
@@ -829,7 +829,10 @@ export function LandingPage() {
                     wait for it…
                   </p>
                   <p className="text-slate-400 text-xs italic max-w-[220px] text-center leading-relaxed">
-                    "I find I'm so excited I can barely sit still or hold a thought in my head... I hope the Pacific is as blue as it has been in my dreams. I hope."
+                    "I find I'm so excited I can barely sit
+                    still or hold a thought in my head... I hope
+                    the Pacific is as blue as it has been in my
+                    dreams. I hope."
                   </p>
                 </div>
 
@@ -902,8 +905,15 @@ export function LandingPage() {
                       src={duoReelMatchHeart}
                       alt="Match!"
                       className="w-10 h-10 drop-shadow-lg"
-                      animate={{ scale: [1, 1.6, 1], opacity: [0.4, 1, 0.4] }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                      animate={{
+                        scale: [1, 1.6, 1],
+                        opacity: [0.4, 1, 0.4],
+                      }}
+                      transition={{
+                        duration: 1.4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                     />
                   </div>
                   <div className="flex items-start gap-2">
@@ -1079,7 +1089,7 @@ export function LandingPage() {
               <div className="flex items-center gap-4">
                 <a
                   href="/auth"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-pink-500/30 transition-all hover:-translate-y-0.5 text-base"
+                  className="inline-flex items-center gap-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold px-7 py-3.5 rounded-lg shadow-lg shadow-pink-500/30 transition-all cursor-pointer text-base"
                 >
                   That's me — Get Started
                   <svg
@@ -1843,90 +1853,234 @@ export function LandingPage() {
           <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
             {/* Card 1 — Infinite Discovery (wide, col-span-2) */}
             <div className="relative md:col-span-2 rounded-2xl border border-pink-500/30 bg-slate-900/60 backdrop-blur-sm p-8 flex flex-col gap-4 overflow-hidden">
-              <div className="absolute bottom-4 right-6 text-8xl font-black text-white/5 leading-none select-none pointer-events-none">50K</div>
+              <div className="absolute bottom-4 right-6 text-8xl font-black text-white/5 leading-none select-none pointer-events-none">
+                50K
+              </div>
               <div className="w-10 h-10 rounded-xl bg-pink-500/15 border border-pink-500/20 flex items-center justify-center text-pink-400">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="16" />
                   <line x1="8" y1="12" x2="16" y2="12" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">Infinite Discovery</h3>
-              <p className="text-slate-400 text-sm leading-relaxed max-w-lg">Browse <span className="text-slate-300">thousands</span> of movies with infinite scroll. <span className="text-slate-300">New titles</span> added constantly from <span className="text-slate-300">TMDb's massive database</span>.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                Infinite Discovery
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
+                Browse{" "}
+                <span className="text-slate-300">
+                  thousands
+                </span>{" "}
+                of movies with infinite scroll.{" "}
+                <span className="text-slate-300">
+                  New titles
+                </span>{" "}
+                added constantly from{" "}
+                <span className="text-slate-300">
+                  TMDb's massive database
+                </span>
+                .
+              </p>
             </div>
 
             {/* Card 2 — Instant Matching (col-span-1) */}
             <div className="rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur-sm p-8 flex flex-col gap-4">
               <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/40 flex items-center justify-center text-slate-300">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">Instant Matching</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">The <span className="text-slate-300">moment</span> you both save a movie, it <span className="text-slate-300">drops</span> into your <span className="text-slate-300">Matches tab</span>. No manual comparison needed.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                Instant Matching
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                The{" "}
+                <span className="text-slate-300">moment</span>{" "}
+                you both save a movie, it{" "}
+                <span className="text-slate-300">drops</span>{" "}
+                into your{" "}
+                <span className="text-slate-300">
+                  Matches tab
+                </span>
+                . No manual comparison needed.
+              </p>
             </div>
 
             {/* Card 3 — Smart Filters (col-span-1) */}
             <div className="rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur-sm p-8 flex flex-col gap-4">
               <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/40 flex items-center justify-center text-slate-300">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">Smart Filters</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Filter by <span className="text-slate-300">genre</span>, <span className="text-slate-300">decade</span>, <span className="text-slate-300">rating</span>, <span className="text-slate-300">streaming service</span>, <span className="text-slate-300">length</span>, <span className="text-slate-300">director</span>, or even by <span className="text-slate-300">keyword</span> — like zombie apocalypse, heart-throb, or corrupt mayor.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                Smart Filters
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Filter by{" "}
+                <span className="text-slate-300">genre</span>,{" "}
+                <span className="text-slate-300">decade</span>,{" "}
+                <span className="text-slate-300">rating</span>,{" "}
+                <span className="text-slate-300">
+                  streaming service
+                </span>
+                , <span className="text-slate-300">length</span>
+                ,{" "}
+                <span className="text-slate-300">director</span>
+                , or even by{" "}
+                <span className="text-slate-300">keyword</span>{" "}
+                — like zombie apocalypse, heart-throb, or
+                corrupt mayor.
+              </p>
             </div>
 
             {/* Card 4 — Streaming Filters (col-span-1) */}
             <div className="rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur-sm p-8 flex flex-col gap-4">
               <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/40 flex items-center justify-center text-slate-300">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="7" width="20" height="15" rx="2" ry="2" />
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect
+                    x="2"
+                    y="7"
+                    width="20"
+                    height="15"
+                    rx="2"
+                    ry="2"
+                  />
                   <polyline points="17 2 12 7 7 2" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">Streaming Filters</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Filter by the services you actually subscribe to — <span className="text-slate-300">Netflix</span>, <span className="text-slate-300">HBO Max</span>, <span className="text-slate-300">Prime</span>, <span className="text-slate-300">Disney+</span>, and more. No more suggesting movies you can't watch.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                Streaming Filters
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Filter by the services you actually subscribe to
+                —{" "}
+                <span className="text-slate-300">Netflix</span>,{" "}
+                <span className="text-slate-300">HBO Max</span>,{" "}
+                <span className="text-slate-300">Prime</span>,{" "}
+                <span className="text-slate-300">Disney+</span>,
+                and more. No more suggesting movies you can't
+                watch.
+              </p>
             </div>
 
             {/* Card 5 — IMDb Ratings (col-span-1) */}
             <div className="rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur-sm p-8 flex flex-col gap-4">
               <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/40 flex items-center justify-center text-slate-300">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">IMDb Ratings</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Every card shows the <span className="text-slate-300">IMDb score</span> so you can quickly judge quality. Full details — cast, runtime, plot, and streaming availability — on tap.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                IMDb Ratings
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                Every card shows the{" "}
+                <span className="text-slate-300">
+                  IMDb score
+                </span>{" "}
+                so you can quickly judge quality. Full details —
+                cast, runtime, plot, and streaming availability
+                — on tap.
+              </p>
             </div>
 
             {/* Card 6 — Letterboxd Import (wide, col-span-2) */}
             <div className="relative md:col-span-2 rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur-sm p-8 flex flex-col gap-4 overflow-hidden">
               <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/40 flex items-center justify-center text-slate-300">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="17 8 12 3 7 8" />
                   <line x1="12" y1="3" x2="12" y2="15" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">Letterboxd Import</h3>
-              <p className="text-slate-400 text-sm leading-relaxed max-w-lg">Import your <span className="text-slate-300">Letterboxd watchlist</span> to add movies to your <span className="text-slate-300">DuoReel Saved</span> list, or import your <span className="text-slate-300">watched movies</span> to filter them out of the Discover feed. Connect via your <span className="text-slate-300">Letterboxd RSS URL</span> — review a movie on Letterboxd and it's <span className="text-slate-300">automatically marked as watched</span> in DuoReel.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                Letterboxd Import
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed max-w-lg">
+                Import your{" "}
+                <span className="text-slate-300">
+                  Letterboxd watchlist
+                </span>{" "}
+                to add movies to your{" "}
+                <span className="text-slate-300">
+                  DuoReel Saved
+                </span>{" "}
+                list, or import your{" "}
+                <span className="text-slate-300">
+                  watched movies
+                </span>{" "}
+                to filter them out of the Discover feed. Connect
+                via your{" "}
+                <span className="text-slate-300">
+                  Letterboxd RSS URL
+                </span>{" "}
+                — review a movie on Letterboxd and it's{" "}
+                <span className="text-slate-300">
+                  automatically marked as watched
+                </span>{" "}
+                in DuoReel.
+              </p>
             </div>
 
             {/* Free banner — as a bento card (col-span-1) */}
             <div className="rounded-2xl border border-green-500/20 bg-green-500/5 backdrop-blur-sm p-8 flex flex-col items-start justify-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-green-500/15 border border-green-500/20 flex items-center justify-center text-green-400">
-                <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg
+                  className="size-5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h3 className="text-white font-bold text-xl leading-snug">100% Free</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">All features, no limits, no credit card. Ever.</p>
+              <h3 className="text-white font-bold text-xl leading-snug">
+                100% Free
+              </h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                All features, no limits, no credit card. Ever.
+              </p>
             </div>
-
           </div>
         </div>
       </div>
@@ -1967,13 +2121,23 @@ export function LandingPage() {
             <div key={i} className="py-5">
               <button
                 className="w-full flex items-center justify-between gap-4 text-left group"
-                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                onClick={() =>
+                  setOpenFaq(openFaq === i ? null : i)
+                }
               >
                 <span className="text-white font-semibold text-lg group-hover:text-pink-300 transition-colors">
                   {item.q}
                 </span>
-                <span className={`flex-shrink-0 w-6 h-6 rounded-full border border-slate-600 flex items-center justify-center text-slate-400 transition-transform duration-200 ${openFaq === i ? "rotate-45 border-pink-500 text-pink-400" : ""}`}>
-                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <span
+                  className={`flex-shrink-0 w-6 h-6 rounded-full border border-slate-600 flex items-center justify-center text-slate-400 transition-transform duration-200 ${openFaq === i ? "rotate-45 border-pink-500 text-pink-400" : ""}`}
+                >
+                  <svg
+                    className="size-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
@@ -1996,22 +2160,44 @@ export function LandingPage() {
             Ready for movie night?
           </h2>
           <p className="text-lg text-slate-400 mb-10">
-            Join 500+ couples who've already stopped arguing about what to watch.
+            Join 500+ couples who've already stopped arguing
+            about what to watch.
           </p>
           <button
             onClick={onGetStarted}
-            className="inline-flex items-center gap-3 bg-gradient-to-r from-pink-500 to-pink-700 hover:from-pink-600 hover:to-pink-800 text-white font-semibold text-lg px-10 py-4 rounded-2xl shadow-xl shadow-pink-500/30 transition-all"
+            className="inline-flex items-center gap-3 bg-pink-600 hover:bg-pink-700 text-white font-semibold text-lg px-10 py-4 rounded-lg shadow-lg shadow-pink-500/30 transition-all cursor-pointer"
           >
             Get Started Now
-            <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              className="size-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <line x1="5" y1="12" x2="19" y2="12" />
               <polyline points="12 5 19 12 12 19" />
             </svg>
           </button>
           <div className="flex items-center justify-center gap-6 mt-8 flex-wrap">
-            {["Free forever", "No credit card", "2-min setup"].map(t => (
-              <span key={t} className="flex items-center gap-1.5 text-sm text-slate-400">
-                <svg className="size-3.5 text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            {[
+              "Free forever",
+              "No credit card",
+              "2-min setup",
+            ].map((t) => (
+              <span
+                key={t}
+                className="flex items-center gap-1.5 text-sm text-slate-400"
+              >
+                <svg
+                  className="size-3.5 text-green-400 flex-shrink-0"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 {t}
