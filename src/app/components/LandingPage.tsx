@@ -19,7 +19,6 @@ import {
   ArrowRight,
   LinkIcon,
   Star,
-  Upload,
   FileText,
 } from "lucide-react";
 import { Heart } from "lucide-react";
@@ -2056,100 +2055,37 @@ export function LandingPage() {
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/40 via-transparent to-slate-950/40"></div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 relative">
-          <h2 className="text-4xl font-bold text-white text-center mb-12">
-            Everything You Need
+        <div className="max-w-6xl mx-auto px-4 relative">
+          <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pink-400 mb-3">
+            <span className="size-1.5 rounded-full bg-pink-500 animate-pulse inline-block" />
+            Features
+          </span>
+          <h2 className="text-4xl font-bold text-white leading-tight tracking-tight mb-3">
+            Everything you need
           </h2>
+          <p className="text-slate-400 text-base max-w-md mb-3">
+            Simple by design. Powerful where it matters.
+          </p>
+          <div className="w-24 h-0.5 bg-gradient-to-r from-pink-500/60 to-transparent rounded-full mb-12" />
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="flex gap-4 items-start">
-              <CheckCircle2 className="size-6 text-green-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  Infinite Movie Discovery
-                </h4>
-                <p className="text-slate-400">
-                  Browse thousands of movies with infinite
-                  scroll
-                </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              { icon: '🎬', title: 'Tinder-style discovery',  body: 'Browse a curated feed and save movies with one tap. Your partner does the same, independently.' },
+              { icon: '✨', title: 'Instant matching',         body: 'The moment you both save a movie, it drops into your Matches tab. No manual comparison needed.' },
+              { icon: '📺', title: 'Streaming filters',        body: 'Filter by the services you actually subscribe to — Netflix, Max, Prime, Disney+, and more.' },
+              { icon: '⭐', title: 'IMDb ratings',             body: 'Every card shows the IMDb score so you can quickly judge quality before you decide.' },
+              { icon: '🔖', title: 'Save for later',           body: "Not sure yet? Bookmark a movie to your Saved list and come back to it when you're ready." },
+              { icon: '📋', title: 'Letterboxd import',        body: 'Paste your Letterboxd RSS URL to sync your watch history and hide movies you\'ve already seen.' },
+            ].map((f, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-slate-700/40 bg-slate-900/60 backdrop-blur-sm p-6 flex flex-col gap-3 hover:border-slate-600/50 transition-colors"
+              >
+                <span className="text-3xl">{f.icon}</span>
+                <h3 className="text-white font-bold text-lg leading-snug">{f.title}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{f.body}</p>
               </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <CheckCircle2 className="size-6 text-green-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  Smart Filters
-                </h4>
-                <p className="text-slate-400">
-                  Filter by genre, decade, and IMDb rating
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <CheckCircle2 className="size-6 text-green-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  Detailed Movie Info
-                </h4>
-                <p className="text-slate-400">
-                  See ratings, cast, runtime, and full overviews
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <CheckCircle2 className="size-6 text-green-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  Hide Unwanted Movies
-                </h4>
-                <p className="text-slate-400">
-                  Mark movies as "Not Interested" to hide them
-                  forever
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <Upload className="size-6 text-blue-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  Import from Letterboxd
-                </h4>
-                <p className="text-slate-400">
-                  Upload your watchlist CSV to auto-add to
-                  Saved, or import watched movies to hide them
-                  from Discover
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <CheckCircle2 className="size-6 text-green-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  Beautiful Design
-                </h4>
-                <p className="text-slate-400">
-                  Modern, responsive interface that works on all
-                  devices
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4 items-start">
-              <CheckCircle2 className="size-6 text-green-400 flex-shrink-0 mt-1" />
-              <div>
-                <h4 className="text-lg font-semibold text-white mb-1">
-                  100% Free
-                </h4>
-                <p className="text-slate-400">
-                  All features available at no cost
-                </p>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
