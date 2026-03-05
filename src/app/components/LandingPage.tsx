@@ -2084,7 +2084,7 @@ export function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold text-lg leading-snug">Infinite Discovery</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Browse thousands of movies with infinite scroll. New titles added constantly from TMDB's massive database.</p>
+              <p className="text-slate-400 text-sm leading-relaxed">Browse <span className="text-slate-300">thousands</span> of movies with infinite scroll. <span className="text-slate-300">New titles</span> added constantly from <span className="text-slate-300">TMDb's massive database</span>.</p>
             </div>
 
             {/* Card 2 — Instant Matching */}
@@ -2095,7 +2095,7 @@ export function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold text-lg leading-snug">Instant Matching</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">The moment you both save a movie, it drops into your Matches tab. No manual comparison needed.</p>
+              <p className="text-slate-400 text-sm leading-relaxed">The <span className="text-slate-300">moment</span> you both save a movie, it <span className="text-slate-300">drops</span> into your <span className="text-slate-300">Matches tab</span>. No manual comparison needed.</p>
             </div>
 
             {/* Card 3 — Smart Filters */}
@@ -2106,17 +2106,7 @@ export function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold text-lg leading-snug">Smart Filters</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Filter by genre, decade, rating, streaming service, length, director, and more. Find exactly the type of movie you're in the mood for.</p>
-              <div className="flex flex-wrap gap-1.5 mt-1">
-                {['zombie apocalypse', 'heart-throb', 'corrupt mayor', 'heist gone wrong', 'time loop'].map((kw) => (
-                  <span
-                    key={kw}
-                    className="text-xs text-purple-300 bg-purple-600/20 border border-purple-500/30 px-2 py-0.5 rounded-full"
-                  >
-                    {kw}
-                  </span>
-                ))}
-              </div>
+              <p className="text-slate-400 text-sm leading-relaxed">Filter by <span className="text-slate-300">genre</span>, <span className="text-slate-300">decade</span>, <span className="text-slate-300">rating</span>, <span className="text-slate-300">streaming service</span>, <span className="text-slate-300">length</span>, <span className="text-slate-300">director</span>, or even by <span className="text-slate-300">keyword</span> — like zombie apocalypse, heart-throb, or corrupt mayor.</p>
             </div>
 
             {/* Card 4 — Streaming Availability */}
@@ -2128,7 +2118,7 @@ export function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold text-lg leading-snug">Streaming Filters</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Filter by the services you actually subscribe to — Netflix, Max, Prime, Disney+, and more. No more suggesting movies you can't watch.</p>
+              <p className="text-slate-400 text-sm leading-relaxed">Filter by the services you actually subscribe to — <span className="text-slate-300">Netflix</span>, <span className="text-slate-300">HBO Max</span>, <span className="text-slate-300">Prime</span>, <span className="text-slate-300">Disney+</span>, and more. No more suggesting movies you can't watch.</p>
             </div>
 
             {/* Card 5 — IMDb Ratings */}
@@ -2139,7 +2129,7 @@ export function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold text-lg leading-snug">IMDb Ratings</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Every card shows the IMDb score so you can quickly judge quality. Full details — cast, runtime, plot, and streaming availability — on tap.</p>
+              <p className="text-slate-400 text-sm leading-relaxed">Every card shows the <span className="text-slate-300">IMDb score</span> so you can quickly judge quality. Full details — cast, runtime, plot, and streaming availability — on tap.</p>
             </div>
 
             {/* Card 6 — Letterboxd Import */}
@@ -2152,7 +2142,7 @@ export function LandingPage() {
                 </svg>
               </div>
               <h3 className="text-white font-bold text-lg leading-snug">Letterboxd Import</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">Paste your Letterboxd RSS URL to sync your watch history and hide movies you've already seen from your Discover feed.</p>
+              <p className="text-slate-400 text-sm leading-relaxed">Import your <span className="text-slate-300">Letterboxd watchlist</span> to add movies to your <span className="text-slate-300">DuoReel Saved</span> list, or import your <span className="text-slate-300">watched movies</span> to filter them out of the Discover feed. Connect via your <span className="text-slate-300">Letterboxd RSS URL</span> — review a movie on Letterboxd and it's <span className="text-slate-300">automatically marked as watched</span> in DuoReel.</p>
             </div>
 
           </div>
