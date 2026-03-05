@@ -387,7 +387,7 @@ export function LandingPage() {
         </div>
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32">
+      <div className="relative max-w-7xl mx-auto px-4 py-20 sm:py-32 overflow-hidden">
         {/* ── HOW IT WORKS ── */}
         <div
           id="how-it-works"
