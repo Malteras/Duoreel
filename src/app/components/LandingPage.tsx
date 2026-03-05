@@ -360,7 +360,7 @@ export function LandingPage() {
             </div>
             <div>
               <div className="text-lg md:text-2xl font-bold text-white leading-none">
-                50K+
+                1.3M+
               </div>
               <div className="text-xs md:text-sm text-slate-400 mt-0.5">
                 movies to discover
