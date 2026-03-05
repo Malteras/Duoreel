@@ -449,7 +449,7 @@ export function LandingPage() {
               </p>
               {/* Invite link mockup */}
               <div
-                className="backdrop-blur-lg rounded-xl border border-slate-700/50 bg-slate-900/50 p-4 max-w-sm fade-on-scroll"
+                className="backdrop-blur-lg rounded-xl border border-slate-600/50 bg-slate-900/50 p-4 max-w-sm fade-on-scroll"
                 style={{ transitionDelay: "0.24s" }}
               >
                 <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
@@ -468,7 +468,7 @@ export function LandingPage() {
                   </svg>
                   duoreel.com/invite/a8f3k2...
                 </div>
-                <button className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-xs font-semibold transition-colors cursor-pointer">
+                <button className="inline-flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2 text-xs font-semibold cursor-default pointer-events-none">
                   <svg
                     className="size-3.5"
                     viewBox="0 0 24 24"
