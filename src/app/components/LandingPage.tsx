@@ -411,8 +411,8 @@ export function LandingPage() {
         {/* Steps */}
         <div className="max-w-4xl mx-auto mb-32 relative">
           {/* Background glow blobs */}
-          <div className="absolute -left-40 top-10 w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -right-40 top-96 w-[500px] h-[500px] bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -left-96 top-0 w-[600px] h-[600px] bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -right-96 top-80 w-[600px] h-[600px] bg-purple-600/20 rounded-full blur-3xl pointer-events-none" />
           {/* Vertical connector line */}
           <div
             className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-pink-500/50 via-purple-500/30 to-blue-500/20 hidden md:block"
