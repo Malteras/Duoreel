@@ -265,7 +265,7 @@ export function LandingPage() {
                 <img
                   src={appScreenshot}
                   alt="DuoReel app showing the Discover tab with movie cards featuring bookmark save buttons, genre filters, TMDb and IMDb ratings, and director filtering"
-                  className="w-full max-w-3xl block brightness-[0.92] saturate-[1.05]"
+                  className="w-full block brightness-[0.92] saturate-[1.05]"
                 />
                 {/* Bottom fade */}
                 <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none" />
