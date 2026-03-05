@@ -286,7 +286,7 @@ export function LandingPage() {
 
       {/* ── SOCIAL PROOF BAR ── */}
       <div className="border-y border-slate-800 bg-slate-900/50 py-6">
-        <div className="max-w-4xl mx-auto px-4 flex flex-nowrap justify-center items-center gap-4 sm:gap-16 overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4 flex flex-nowrap justify-center items-center gap-4 sm:gap-16">
           {/* Stat 1 — Couples */}
           <div className="flex items-center gap-3 text-slate-300">
             <div className="w-7 h-7 md:w-10 md:h-10 rounded-xl bg-pink-600/15 border border-pink-500/20 flex items-center justify-center shrink-0">
