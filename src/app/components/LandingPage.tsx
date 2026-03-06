@@ -310,7 +310,7 @@ export function LandingPage() {
                 </span>
                 <div className="relative group/tip">
                   <svg
-                    className="w-3.5 h-3.5 text-slate-500 hover:text-slate-400 cursor-default transition-colors shrink-0"
+                    className="w-3.5 h-3.5 text-slate-400 hover:text-slate-300 cursor-default transition-colors shrink-0"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -359,8 +359,26 @@ export function LandingPage() {
               </svg>
             </div>
             <div>
-              <div className="text-lg md:text-2xl font-bold text-white leading-none">
-                1.3M+
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="text-lg md:text-2xl font-bold text-white leading-none">
+                  1.3M+
+                </span>
+                <div className="relative group/tip2">
+                  <svg
+                    className="w-3.5 h-3.5 text-slate-400 hover:text-slate-300 cursor-default transition-colors shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
+                  </svg>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 w-64 bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-3 py-2.5 opacity-0 group-hover/tip2:opacity-100 transition-opacity duration-200 pointer-events-none z-50 leading-relaxed shadow-xl">
+                    This is actually true 🤯 We're using TMDB API and according to their FAQ section, they currently have 1.300.107 movies.
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-[5px] border-transparent border-t-slate-700" />
+                  </div>
+                </div>
               </div>
               <div className="text-xs md:text-sm text-slate-400 mt-0.5">
                 movies to discover
@@ -460,7 +478,7 @@ export function LandingPage() {
                 className="backdrop-blur-lg rounded-xl border border-slate-600/50 bg-slate-900/50 p-4 max-w-full md:max-w-sm fade-on-scroll"
                 style={{ transitionDelay: "0.24s" }}
               >
-                <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-3">
                   Share Your Invite Link
                 </p>
                 <div className="flex items-center gap-2 bg-slate-800/70 border border-slate-700/40 rounded-lg px-3 py-2 text-cyan-400 font-mono text-xs mb-3">
@@ -1138,7 +1156,7 @@ export function LandingPage() {
               <ul className="space-y-5 mb-6">
                 <li className="flex gap-3 items-start">
                   <svg
-                    className="size-4 text-slate-500 flex-shrink-0 mt-1"
+                    className="size-4 text-slate-400 flex-shrink-0 mt-1"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -1154,7 +1172,7 @@ export function LandingPage() {
                 </li>
                 <li className="flex gap-3 items-start">
                   <svg
-                    className="size-4 text-slate-500 flex-shrink-0 mt-1"
+                    className="size-4 text-slate-400 flex-shrink-0 mt-1"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
@@ -1169,7 +1187,7 @@ export function LandingPage() {
                 </li>
                 <li className="flex gap-3 items-start">
                   <svg
-                    className="size-4 text-slate-500 flex-shrink-0 mt-1"
+                    className="size-4 text-slate-400 flex-shrink-0 mt-1"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
