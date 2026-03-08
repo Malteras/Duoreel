@@ -12,6 +12,7 @@ import { NotificationBell } from './NotificationBell';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import { API_BASE_URL } from '../../utils/api';
 import duoReelLogo from 'figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
+import duoReelMatchHeart from 'figma:asset/1de8a8f1f163270e2734dea06481c2638f51aedc.png';
 import { useTabCache, type DiscoverCache, type SavedCache, type MatchesCache } from '../hooks/useTabCache';
 
 export interface AppLayoutContext {
@@ -140,12 +141,12 @@ function AppLayoutContent({
                 className="flex items-center gap-3 cursor-pointer text-left"
                 aria-label="Go to Discover"
               >
-                <img src={duoReelLogo} alt="DuoReel" className="h-10 w-auto" />
+                <img src={duoReelMatchHeart} alt="DuoReel" className="h-8 md:h-10 w-auto" />
                 <div>
-                  <h1 className="text-2xl font-bold text-white">
+                  <h1 className="text-lg md:text-2xl font-bold text-white">
                     <span className="text-pink-500">Duo</span>Reel
                   </h1>
-                  <p className="hidden md:block text-sm text-slate-400">Find movies you both love</p>
+                  <p className="text-xs md:text-sm text-slate-400">Find movies you both love</p>
                 </div>
               </button>
               <div className="flex items-center gap-3">

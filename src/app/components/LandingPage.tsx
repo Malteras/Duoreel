@@ -94,7 +94,7 @@ export function LandingPage() {
               <img
                 src={duoReelMatchHeart}
                 alt="DuoReel"
-                className="h-7 md:h-10 w-auto"
+                className="h-8 md:h-10 w-auto"
               />
               <div>
                 <h1 className="text-lg md:text-2xl font-bold text-white">
