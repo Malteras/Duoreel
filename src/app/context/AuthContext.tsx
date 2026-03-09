@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUserEmail(session.user?.email ?? null);
           setUserId(session.user?.id ?? null);
         } else {
-          console.warn('No active session found');
+          console.log('No active session found');
         }
       } catch (e) {
         console.error('Auth initialization error:', e);
@@ -117,7 +117,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Keep auth state in sync for token refresh, sign-out, etc.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.warn('Auth state changed:', event, session?.user?.email);
+      // INITIAL_SESSION fires synchronously when the listener attaches.
+      // initAuth() already handles the initial state via getSession(), so skip
+      // this event here to avoid a redundant state update and noisy log.
+      if (event === 'INITIAL_SESSION') return;
+
+      console.log('Auth state changed:', event, session?.user?.email);
 
       if (session?.access_token) {
         setAccessToken(session.access_token);
