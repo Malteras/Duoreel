@@ -143,13 +143,13 @@ app.get("/make-server-5623fde1/manifest.webmanifest", (c) => {
         purpose: "maskable",
       },
       {
-        src: "/icons/icon-192.png",
+        src: "https://raw.githubusercontent.com/Malteras/Duoreel/main/public/icons/icon-192.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/icons/icon-512.png",
+        src: "https://raw.githubusercontent.com/Malteras/Duoreel/main/public/icons/icon-512.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "any maskable",
