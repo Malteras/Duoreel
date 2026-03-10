@@ -25,7 +25,7 @@ const injectOgMetaPlugin: Plugin = {
     <link rel="canonical" href="${SITE_URL}/" />
 
     <!-- PWA — manifest served from Supabase edge function (Figma Make hosting workaround) -->
-    <link rel="manifest" href="${MANIFEST_URL}" crossorigin="use-credentials" />
+    <link rel="manifest" href="${MANIFEST_URL}" crossorigin="anonymous" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="mobile-web-app-capable" content="yes" />
 
