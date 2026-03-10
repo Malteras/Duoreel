@@ -1,25 +1,24 @@
-import { defineConfig } from 'vite'
-import path from 'path'
-import tailwindcss from '@tailwindcss/vite'
-import react from '@vitejs/plugin-react'
-import type { Plugin } from 'vite'
+import { defineConfig } from "vite";
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import type { Plugin } from "vite";
 
-const SITE_URL = 'https://duoreel.com';
+const SITE_URL = "https://duoreel.com";
 const OG_IMAGE_URL = `${SITE_URL}/og.svg`;
 
 // The PWA manifest is served from the Supabase edge function because Figma
 // Make's hosting redirects all paths (including /manifest.json) to the SPA
 // shell. The Supabase URL is a real, stable, CORS-enabled endpoint.
-const MANIFEST_URL =
-  'https://xycuaqjmebzurygsxovt.supabase.co/functions/v1/make-server-5623fde1/manifest.webmanifest';
+const MANIFEST_URL = "/manifest.json";
 
 // Injects Open Graph + Twitter Card meta tags into the HTML entry point so
 // that bots / link-preview crawlers (WhatsApp, iMessage, Telegram, Slack,
 // Discord, etc.) see a rich preview even though they don't execute JS.
 const injectOgMetaPlugin: Plugin = {
-  name: 'inject-og-meta',
-  transformIndexHtml(html) {
-    const tags = `
+    name: "inject-og-meta",
+    transformIndexHtml(html) {
+        const tags = `
     <!-- Primary meta -->
     <meta name="description" content="Connect with your partner and discover movies you'll both want to watch. Like, match, and never argue about what to watch again." />
     <link rel="canonical" href="${SITE_URL}/" />
@@ -56,26 +55,26 @@ const injectOgMetaPlugin: Plugin = {
     <meta name="twitter:image:alt"   content="DuoReel — Find movies you both love" />
     `;
 
-    // Insert just before </head> so it doesn't conflict with existing charset / viewport tags
-    return html.replace('</head>', `${tags}</head>`);
-  },
+        // Insert just before </head> so it doesn't conflict with existing charset / viewport tags
+        return html.replace("</head>", `${tags}</head>`);
+    },
 };
 
 export default defineConfig({
-  plugins: [
-    // The React and Tailwind plugins are both required for Make, even if
-    // Tailwind is not being actively used – do not remove them
-    react(),
-    tailwindcss(),
-    injectOgMetaPlugin,
-  ],
-  resolve: {
-    alias: {
-      // Alias @ to the src directory
-      '@': path.resolve(__dirname, './src'),
+    plugins: [
+        // The React and Tailwind plugins are both required for Make, even if
+        // Tailwind is not being actively used – do not remove them
+        react(),
+        tailwindcss(),
+        injectOgMetaPlugin,
+    ],
+    resolve: {
+        alias: {
+            // Alias @ to the src directory
+            "@": path.resolve(__dirname, "./src"),
+        },
     },
-  },
 
-  // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
-  assetsInclude: ['**/*.svg', '**/*.csv'],
-})
+    // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
+    assetsInclude: ["**/*.svg", "**/*.csv"],
+});
