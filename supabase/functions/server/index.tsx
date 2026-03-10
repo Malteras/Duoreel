@@ -168,18 +168,6 @@ app.get("/make-server-5623fde1/manifest.webmanifest", (c) => {
         type: "image/svg+xml",
         purpose: "maskable",
       },
-      {
-        src: "https://i.imgur.com/9lHv52J.png",
-        sizes: "192x192",
-        type: "image/png",
-        purpose: "any",
-      },
-      {
-        src: "https://i.imgur.com/or5Avl8.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "any maskable",
-      },
     ],
     categories: ["entertainment", "lifestyle"],
   };
