@@ -10,7 +10,6 @@ export default function App() {
             const l = document.createElement("link");
             l.rel = "manifest";
             l.href = "/manifest.json";
-            l.crossOrigin = "anonymous";
             document.head.appendChild(l);
         }
         if ("serviceWorker" in navigator) {
