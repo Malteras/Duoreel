@@ -22,12 +22,12 @@ import {
   FileText,
 } from "lucide-react";
 import { Heart } from "lucide-react";
-import duoReelLogo from "figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png";
-import appScreenshot from "figma:asset/b93eb9190ee818e6e3f0c5e4e02a1b41573eb5df.png";
-import matchesScreenshot from "figma:asset/f99272690cff28ce969229dfd7b06bc1656eb9a2.png";
-import twoHoursLater from "figma:asset/0d9cdcfe1e0abe10063defa7d62be273fa090bad.png";
-import grandBudapestCard from "figma:asset/315a25f13c2a9fe5a43cfc015139edb8155d5420.png";
-import duoReelMatchHeart from "figma:asset/1de8a8f1f163270e2734dea06481c2638f51aedc.png";
+import duoReelLogo from "../../assets/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png";
+import appScreenshot from "../../assets/b93eb9190ee818e6e3f0c5e4e02a1b41573eb5df.png";
+import matchesScreenshot from "../../assets/f99272690cff28ce969229dfd7b06bc1656eb9a2.png";
+import twoHoursLater from "../../assets/0d9cdcfe1e0abe10063defa7d62be273fa090bad.png";
+import grandBudapestCard from "../../assets/315a25f13c2a9fe5a43cfc015139edb8155d5420.png";
+import duoReelMatchHeart from "../../assets/1de8a8f1f163270e2734dea06481c2638f51aedc.png";
 
 export function LandingPage() {
   const navigate = useNavigate();

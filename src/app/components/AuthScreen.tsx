@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Film, Loader2, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import duoReelLogo from 'figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
+import duoReelLogo from '../../assets/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
 import { supabase } from '../context/AuthContext';
 
 interface AuthScreenProps {

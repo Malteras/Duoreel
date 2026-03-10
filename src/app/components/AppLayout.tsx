@@ -11,8 +11,8 @@ import { ProfileDropdown } from './ProfileDropdown';
 import { NotificationBell } from './NotificationBell';
 import { projectId, publicAnonKey } from '/utils/supabase/info';
 import { API_BASE_URL } from '../../utils/api';
-import duoReelLogo from 'figma:asset/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
-import duoReelMatchHeart from 'figma:asset/1de8a8f1f163270e2734dea06481c2638f51aedc.png';
+import duoReelLogo from '../../assets/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
+import duoReelMatchHeart from '../../assets/1de8a8f1f163270e2734dea06481c2638f51aedc.png';
 import { useTabCache, type DiscoverCache, type SavedCache, type MatchesCache } from '../hooks/useTabCache';
 
 export interface AppLayoutContext {
