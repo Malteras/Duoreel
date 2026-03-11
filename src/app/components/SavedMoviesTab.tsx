@@ -62,7 +62,9 @@ export function SavedMoviesTab({
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
   const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
   const [cardViewMode, setCardViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
-    return (localStorage.getItem('duoreel-viewmode-saved') as 'grid' | 'compact' | 'list') || 'grid';
+    const saved = localStorage.getItem('duoreel-viewmode-saved') as 'grid' | 'compact' | 'list' | null;
+    if (saved) return saved;
+    return window.innerWidth < 768 ? 'compact' : 'grid';
   });
   const handleCardViewMode = (mode: 'grid' | 'compact' | 'list') => {
     setCardViewMode(mode);
@@ -570,7 +572,7 @@ export function SavedMoviesTab({
 
         {/* ── Content ── */}
         {(loading || !likedMoviesReady) ? (
-          <MovieCardSkeletonGrid count={8} />
+          <MovieCardSkeletonGrid count={8} viewMode={cardViewMode === 'compact' ? 'compact' : 'grid'} />
         ) : viewMode === 'mine' ? (
           filteredLikedMovies.length === 0 ? (
             likedMovies.length === 0 ? (

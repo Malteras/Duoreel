@@ -37,7 +37,6 @@ import {
   Search,
   SlidersHorizontal,
   Loader2,
-  RefreshCw,
   ChevronDown,
   Ban,
   X,
@@ -153,7 +152,9 @@ export function MoviesTab({
 
   // View mode — persisted per tab
   const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
-    return (localStorage.getItem('duoreel-viewmode-discover') as 'grid' | 'compact' | 'list') || 'grid';
+    const saved = localStorage.getItem('duoreel-viewmode-discover') as 'grid' | 'compact' | 'list' | null;
+    if (saved) return saved;
+    return window.innerWidth < 768 ? 'compact' : 'grid';
   });
 
   const handleViewMode = (mode: 'grid' | 'compact' | 'list') => {
@@ -863,15 +864,6 @@ export function MoviesTab({
     setSearchQuery("");
   };
 
-  const handleRefresh = () => {
-    setDiscoverCache(null); // Invalidate  next mount will fetch fresh
-    skipNextFetchRef.current = false;
-    setPage(1);
-    resetEnrichment();
-    setImdbRatings(new Map());
-    fetchMovies(1, false);
-  };
-
   // ──────────────── Visible (non-pending) movies ────────────────
   const visibleMovies = useMemo(
     () =>
@@ -1028,23 +1020,6 @@ export function MoviesTab({
                 </span>
               )}
             </Button>
-
-            {/* Refresh — always visible */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="bg-slate-800/80 border-slate-700 text-white hover:bg-slate-700 hover:text-white h-9 px-3 shrink-0"
-                  onClick={handleRefresh}
-                  aria-label="Refresh movies"
-                >
-                  <RefreshCw className="size-3.5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent className="bg-slate-800 text-white border-slate-700">
-                <p>Refresh movies</p>
-              </TooltipContent>
-            </Tooltip>
 
             {/* View mode toggle — Large (default) vs Compact grid */}
             <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700 rounded-md p-0.5 shrink-0">
@@ -1228,7 +1203,7 @@ export function MoviesTab({
 
         {/* Movie Grid */}
         {loading || contextLoading ? (
-          <MovieCardSkeletonGrid count={8} />
+          <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
         ) : visibleMovies.length === 0 ? (
           <div className="text-center py-20">
             <Film className="size-20 mx-auto mb-6 text-slate-700" />

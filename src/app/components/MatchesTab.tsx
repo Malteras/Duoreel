@@ -72,7 +72,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [sortBy, setSortBy] = useState<'default' | 'rating' | 'year-new' | 'year-old'>('default');
   const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
   const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
-    return (localStorage.getItem('duoreel-viewmode-matches') as 'grid' | 'compact' | 'list') || 'grid';
+    const saved = localStorage.getItem('duoreel-viewmode-matches') as 'grid' | 'compact' | 'list' | null;
+    if (saved) return saved;
+    return window.innerWidth < 768 ? 'compact' : 'grid';
   });
   const handleViewMode = (mode: 'grid' | 'compact' | 'list') => {
     setViewMode(mode);
@@ -627,7 +629,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
         {/* ── Grid / empty states ── */}
         {loading ? (
-          <MovieCardSkeletonGrid count={8} />
+          <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
         ) : !partner ? (
           <div className="text-center py-20">
             <Users className="size-20 mx-auto mb-6 text-slate-700" />
