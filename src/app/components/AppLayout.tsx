@@ -1,368 +1,420 @@
-import { useState, useEffect, useRef } from 'react';
-import { Outlet, NavLink, useNavigate, useOutletContext } from 'react-router';
-import { Film, Bookmark, Heart } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuth } from '../context/AuthContext';
-import { UserInteractionsProvider, useUserInteractions } from './UserInteractionsContext';
-import { ImportProvider, useImportContext } from './ImportContext';
-import { MinimizedImportWidget } from './MinimizedImportWidget';
-import { TooltipProvider } from './ui/tooltip';
-import { ProfileDropdown } from './ProfileDropdown';
-import { NotificationBell } from './NotificationBell';
-import { projectId, publicAnonKey } from '/utils/supabase/info';
-import { API_BASE_URL } from '../../utils/api';
-import duoReelLogo from '../../assets/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png';
-import duoReelMatchHeart from '../../assets/1de8a8f1f163270e2734dea06481c2638f51aedc.png';
-import { useTabCache, type DiscoverCache, type SavedCache, type MatchesCache } from '../hooks/useTabCache';
+import { useState, useEffect, useRef } from "react";
+import { Outlet, NavLink, useNavigate, useOutletContext } from "react-router";
+import { Film, Bookmark, Heart } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext";
+import { UserInteractionsProvider, useUserInteractions } from "./UserInteractionsContext";
+import { ImportProvider, useImportContext } from "./ImportContext";
+import { MinimizedImportWidget } from "./MinimizedImportWidget";
+import { TooltipProvider } from "./ui/tooltip";
+import { ProfileDropdown } from "./ProfileDropdown";
+import { NotificationBell } from "./NotificationBell";
+import { projectId, publicAnonKey } from "/utils/supabase/info";
+import { API_BASE_URL } from "../../utils/api";
+import duoReelLogo from "../../assets/65ac31667d93e024af4b11b9531ae9e7cbf4dc67.png";
+import duoReelMatchHeart from "../../assets/1de8a8f1f163270e2734dea06481c2638f51aedc.png";
+import {
+    useTabCache,
+    type DiscoverCache,
+    type SavedCache,
+    type MatchesCache,
+} from "../hooks/useTabCache";
 
 export interface AppLayoutContext {
-  accessToken: string;
-  userEmail: string | null;
-  projectId: string;
-  publicAnonKey: string;
-  likedMovies: any[];
-  setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
-  globalImdbCache: Map<string, string>;
-  setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
-  navigateToDiscoverWithFilter: (
-    filterType: 'genre' | 'director' | 'actor' | 'year' | 'keyword',
-    value: string | number,
-    extra?: string
-  ) => void;
-  onSignOut: () => Promise<void>;
-  // Tab caches
-  discoverCache: DiscoverCache | null;
-  setDiscoverCache: React.Dispatch<React.SetStateAction<DiscoverCache | null>>;
-  savedCache: SavedCache | null;
-  setSavedCache: React.Dispatch<React.SetStateAction<SavedCache | null>>;
-  matchesCache: MatchesCache | null;
-  setMatchesCache: React.Dispatch<React.SetStateAction<MatchesCache | null>>;
-  matchNotificationCount: number;
+    accessToken: string;
+    userEmail: string | null;
+    projectId: string;
+    publicAnonKey: string;
+    likedMovies: any[];
+    setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
+    globalImdbCache: Map<string, string>;
+    setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
+    navigateToDiscoverWithFilter: (
+        filterType: "genre" | "director" | "actor" | "year" | "keyword",
+        value: string | number,
+        extra?: string,
+    ) => void;
+    onSignOut: () => Promise<void>;
+    // Tab caches
+    discoverCache: DiscoverCache | null;
+    setDiscoverCache: React.Dispatch<React.SetStateAction<DiscoverCache | null>>;
+    savedCache: SavedCache | null;
+    setSavedCache: React.Dispatch<React.SetStateAction<SavedCache | null>>;
+    matchesCache: MatchesCache | null;
+    setMatchesCache: React.Dispatch<React.SetStateAction<MatchesCache | null>>;
+    matchNotificationCount: number;
 }
 
 export function useAppLayoutContext() {
-  return useOutletContext<AppLayoutContext>();
+    return useOutletContext<AppLayoutContext>();
 }
 
 function GlobalImportWidgets() {
-  const { watchlist, watched } = useImportContext();
+    const { watchlist, watched } = useImportContext();
 
-  const watchlistOffset = 24;
-  const watchedOffset = watchlist.importing && watchlist.minimized ? 128 : 24;
+    const watchlistOffset = 24;
+    const watchedOffset = watchlist.importing && watchlist.minimized ? 128 : 24;
 
-  return (
-    <>
-      <MinimizedImportWidget importState={watchlist} color="blue" bottomOffset={watchlistOffset} />
-      <MinimizedImportWidget importState={watched} color="green" bottomOffset={watchedOffset} />
-    </>
-  );
+    return (
+        <>
+            <MinimizedImportWidget
+                importState={watchlist}
+                color="blue"
+                bottomOffset={watchlistOffset}
+            />
+            <MinimizedImportWidget
+                importState={watched}
+                color="green"
+                bottomOffset={watchedOffset}
+            />
+        </>
+    );
 }
 
 // ── Inner component that can consume UserInteractionsContext ──────────────────
 // AppLayout is the Provider, so we can't call useUserInteractions() there.
 // AppLayoutContent sits inside the Provider and can call it freely.
 interface AppLayoutContentProps {
-  context: AppLayoutContext;
-  accessToken: string;
-  setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
-  handleSignOut: () => Promise<void>;
-  handleMatchesClick: () => void;
-  matchNotificationCount: number;
+    context: AppLayoutContext;
+    accessToken: string;
+    setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
+    handleSignOut: () => Promise<void>;
+    handleMatchesClick: () => void;
+    matchNotificationCount: number;
 }
 
 function AppLayoutContent({
-  context,
-  accessToken,
-  setLikedMovies,
-  handleSignOut,
-  handleMatchesClick,
-  matchNotificationCount,
+    context,
+    accessToken,
+    setLikedMovies,
+    handleSignOut,
+    handleMatchesClick,
+    matchNotificationCount,
 }: AppLayoutContentProps) {
-  const { refreshInteractions } = useUserInteractions();
-  const navigate = useNavigate();
+    const { refreshInteractions } = useUserInteractions();
+    const navigate = useNavigate();
 
-  const handleLogoClick = () => {
-    // Bust the discover cache so MoviesTab re-mounts with DEFAULT_FILTERS and
-    // fresh results — equivalent to "Clear all filters + go to Discover".
-    context.setDiscoverCache(null);
-    navigate('/discover');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+    const handleLogoClick = () => {
+        // Bust the discover cache so MoviesTab re-mounts with DEFAULT_FILTERS and
+        // fresh results — equivalent to "Clear all filters + go to Discover".
+        context.setDiscoverCache(null);
+        navigate("/discover");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
 
-  const tabCls = ({ isActive }: { isActive: boolean }) =>
-    `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
-      isActive ? 'bg-blue-600 text-white' : 'text-slate-200 hover:text-white hover:bg-slate-700'
-    }`;
+    const tabCls = ({ isActive }: { isActive: boolean }) =>
+        `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
+            isActive
+                ? "bg-blue-600 text-white"
+                : "text-slate-200 hover:text-white hover:bg-slate-700"
+        }`;
 
-  const matchTabCls = ({ isActive }: { isActive: boolean }) =>
-    `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
-      isActive ? 'bg-pink-600 text-white' : 'text-slate-200 hover:text-white hover:bg-slate-700'
-    }`;
+    const matchTabCls = ({ isActive }: { isActive: boolean }) =>
+        `relative flex items-center justify-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition-all ${
+            isActive
+                ? "bg-pink-600 text-white"
+                : "text-slate-200 hover:text-white hover:bg-slate-700"
+        }`;
 
-  return (
-    <ImportProvider
-      accessToken={accessToken}
-      onWatchlistImported={(imported, failed, total) => {
-        // Re-fetch liked movies to reflect the import
-        fetch(`${API_BASE_URL}/movies/liked`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        })
-          .then(r => r.ok ? r.json() : Promise.reject(r.status))
-          .then(data => { if (data.movies) setLikedMovies(data.movies); })
-          .catch(err => console.error('Error refreshing liked movies:', err));
+    return (
+        <ImportProvider
+            accessToken={accessToken}
+            onWatchlistImported={(imported, failed, total) => {
+                // Re-fetch liked movies to reflect the import
+                fetch(`${API_BASE_URL}/movies/liked`, {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                })
+                    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+                    .then((data) => {
+                        if (data.movies) setLikedMovies(data.movies);
+                    })
+                    .catch((err) => console.error("Error refreshing liked movies:", err));
 
-        // Create bell notification for import completion
-        fetch(`${API_BASE_URL}/notifications/import-complete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify({ type: 'watchlist', imported, failed, total }),
-        }).catch(err => console.error('Error creating import notification:', err));
-      }}
-      onWatchedImported={(imported, failed, total) => {
-        refreshInteractions();
+                // Create bell notification for import completion
+                fetch(`${API_BASE_URL}/notifications/import-complete`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ type: "watchlist", imported, failed, total }),
+                }).catch((err) =>
+                    console.error("Error creating import notification:", err),
+                );
+            }}
+            onWatchedImported={(imported, failed, total) => {
+                refreshInteractions();
 
-        // Create bell notification for watched import completion
-        fetch(`${API_BASE_URL}/notifications/import-complete`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify({ type: 'watched', imported, failed, total }),
-        }).catch(err => console.error('Error creating import notification:', err));
-      }}
-    >
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
-        {/* Sticky header */}
-        <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
-          <div className="max-w-7xl mx-auto px-4 py-3 md:py-4">
-            {/* Logo row */}
-            <div className="flex items-center justify-between mb-4">
-              <button
-                type="button"
-                onClick={handleLogoClick}
-                className="flex items-center gap-3 cursor-pointer text-left"
-                aria-label="Go to Discover"
-              >
-                <img src={duoReelMatchHeart} alt="DuoReel" className="h-8 md:h-10 w-auto" />
-                <div>
-                  <h1 className="text-lg md:text-2xl font-bold text-white">
-                    <span className="text-pink-500">Duo</span>Reel
-                  </h1>
-                  <p className="text-xs md:text-sm text-slate-400">Find movies you both love</p>
-                </div>
-              </button>
-              <div className="flex items-center gap-3">
-                <NotificationBell accessToken={accessToken} />
-                <ProfileDropdown
-                  accessToken={accessToken}
-                  userEmail={context.userEmail}
-                  onSignOut={handleSignOut}
-                />
-              </div>
-            </div>
-
-            {/* Tab nav — desktop only, mobile uses bottom bar */}
-            <nav className="hidden md:grid w-full max-w-md mx-auto grid-cols-3 bg-slate-800/80 border border-slate-600 rounded-lg p-1 gap-1">
-              <NavLink to="/discover" className={tabCls}>
-                <Film className="size-4" />
-                Discover
-              </NavLink>
-
-              <NavLink to="/saved" className={tabCls}>
-                <Bookmark className="size-4" />
-                Saved
-              </NavLink>
-
-              <NavLink to="/matches" onClick={handleMatchesClick} className={matchTabCls}>
-                <Heart className="size-4" />
-                Matches
-                {matchNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center animate-pulse">
-                    {matchNotificationCount}
-                  </span>
-                )}
-              </NavLink>
-            </nav>
-          </div>
-        </div>
-
-        {/* Page content — add bottom padding on mobile so content isn't hidden behind bottom tab bar */}
-        <div className="[&>*]:pb-20 md:[&>*]:pb-0">
-          <Outlet context={context} />
-        </div>
-        <GlobalImportWidgets />
-
-        {/* ── Mobile bottom tab bar ── */}
-        <nav
-          className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 flex items-center justify-around px-2 pt-2"
-          style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom))' }}
+                // Create bell notification for watched import completion
+                fetch(`${API_BASE_URL}/notifications/import-complete`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ type: "watched", imported, failed, total }),
+                }).catch((err) =>
+                    console.error("Error creating import notification:", err),
+                );
+            }}
         >
-          <NavLink
-            to="/discover"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
-                isActive ? 'text-blue-400' : 'text-slate-400'
-              }`
-            }
-          >
-            <Film className="size-6" />
-            <span>Discover</span>
-          </NavLink>
+            <div
+                className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950"
+                style={{ minHeight: "100dvh" }}
+            >
+                {/* Sticky header */}
+                <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800">
+                    <div className="max-w-7xl mx-auto px-4 py-2 md:py-4">
+                        {/* Logo row */}
+                        <div className="flex items-center justify-between mb-0 md:mb-4">
+                            <button
+                                type="button"
+                                onClick={handleLogoClick}
+                                className="flex items-center gap-2 md:gap-3 cursor-pointer text-left"
+                                aria-label="Go to Discover"
+                            >
+                                <img
+                                    src={duoReelMatchHeart}
+                                    alt="DuoReel"
+                                    className="h-7 md:h-10 w-auto"
+                                />
+                                <div>
+                                    <h1 className="text-base md:text-2xl font-bold text-white leading-tight">
+                                        <span className="text-pink-500">Duo</span>Reel
+                                    </h1>
+                                    <p className="text-xs md:text-sm text-slate-400">
+                                        Find movies you both love
+                                    </p>
+                                </div>
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <NotificationBell accessToken={accessToken} />
+                                <ProfileDropdown
+                                    accessToken={accessToken}
+                                    userEmail={context.userEmail}
+                                    onSignOut={handleSignOut}
+                                />
+                            </div>
+                        </div>
 
-          <NavLink
-            to="/saved"
-            className={({ isActive }) =>
-              `flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
-                isActive ? 'text-blue-400' : 'text-slate-400'
-              }`
-            }
-          >
-            <Bookmark className="size-6" />
-            <span>Saved</span>
-          </NavLink>
+                        {/* Tab nav — desktop only, mobile uses bottom bar */}
+                        <nav className="hidden md:grid w-full max-w-md mx-auto grid-cols-3 bg-slate-800/80 border border-slate-600 rounded-lg p-1 gap-1">
+                            <NavLink to="/discover" className={tabCls}>
+                                <Film className="size-4" />
+                                Discover
+                            </NavLink>
 
-          <NavLink
-            to="/matches"
-            onClick={handleMatchesClick}
-            className={({ isActive }) =>
-              `relative flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
-                isActive ? 'text-pink-400' : 'text-slate-400'
-              }`
-            }
-          >
-            <Heart className="size-6" />
-            <span>Matches</span>
-            {matchNotificationCount > 0 && (
-              <span className="absolute top-0 right-2 bg-red-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center animate-pulse">
-                {matchNotificationCount}
-              </span>
-            )}
-          </NavLink>
-        </nav>
-      </div>
-    </ImportProvider>
-  );
+                            <NavLink to="/saved" className={tabCls}>
+                                <Bookmark className="size-4" />
+                                Saved
+                            </NavLink>
+
+                            <NavLink
+                                to="/matches"
+                                onClick={handleMatchesClick}
+                                className={matchTabCls}
+                            >
+                                <Heart className="size-4" />
+                                Matches
+                                {matchNotificationCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center animate-pulse">
+                                        {matchNotificationCount}
+                                    </span>
+                                )}
+                            </NavLink>
+                        </nav>
+                    </div>
+                </div>
+
+                {/* Page content — add bottom padding on mobile so content isn't hidden behind bottom tab bar */}
+                <div className="[&>*]:pb-20 md:[&>*]:pb-0">
+                    <Outlet context={context} />
+                </div>
+                <GlobalImportWidgets />
+
+                {/* ── Mobile bottom tab bar ── */}
+                <nav
+                    className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 flex items-center justify-around px-2 pt-2"
+                    style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
+                >
+                    <NavLink
+                        to="/discover"
+                        className={({ isActive }) =>
+                            `flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+                                isActive ? "text-blue-400" : "text-slate-400"
+                            }`
+                        }
+                    >
+                        <Film className="size-6" />
+                        <span>Discover</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/saved"
+                        className={({ isActive }) =>
+                            `flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+                                isActive ? "text-blue-400" : "text-slate-400"
+                            }`
+                        }
+                    >
+                        <Bookmark className="size-6" />
+                        <span>Saved</span>
+                    </NavLink>
+
+                    <NavLink
+                        to="/matches"
+                        onClick={handleMatchesClick}
+                        className={({ isActive }) =>
+                            `relative flex flex-col items-center gap-1 px-4 py-1 rounded-lg text-xs font-semibold transition-all ${
+                                isActive ? "text-pink-400" : "text-slate-400"
+                            }`
+                        }
+                    >
+                        <Heart className="size-6" />
+                        <span>Matches</span>
+                        {matchNotificationCount > 0 && (
+                            <span className="absolute top-0 right-2 bg-red-500 text-white text-xs font-bold rounded-full size-4 flex items-center justify-center animate-pulse">
+                                {matchNotificationCount}
+                            </span>
+                        )}
+                    </NavLink>
+                </nav>
+            </div>
+        </ImportProvider>
+    );
 }
 
 export function AppLayout() {
-  const { accessToken, userEmail, signOut } = useAuth();
-  const navigate = useNavigate();
+    const { accessToken, userEmail, signOut } = useAuth();
+    const navigate = useNavigate();
 
-  const [matchNotificationCount, setMatchNotificationCount] = useState(0);
-  const [likedMovies, setLikedMovies] = useState<any[]>([]);
-  const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(new Map());
+    const [matchNotificationCount, setMatchNotificationCount] = useState(0);
+    const [likedMovies, setLikedMovies] = useState<any[]>([]);
+    const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(
+        new Map(),
+    );
 
-  // Fetch liked movies once on mount
-  useEffect(() => {
-    if (!accessToken) return;
-    fetch(`${API_BASE_URL}/movies/liked`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => { if (data.movies) setLikedMovies(data.movies); })
-      .catch(err => console.error('Error fetching liked movies:', err));
-  }, [accessToken]);
+    // Fetch liked movies once on mount
+    useEffect(() => {
+        if (!accessToken) return;
+        fetch(`${API_BASE_URL}/movies/liked`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        })
+            .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+            .then((data) => {
+                if (data.movies) setLikedMovies(data.movies);
+            })
+            .catch((err) => console.error("Error fetching liked movies:", err));
+    }, [accessToken]);
 
-  // Poll match notifications every 30 s
-  useEffect(() => {
-    if (!accessToken) return;
+    // Poll match notifications every 30 s
+    useEffect(() => {
+        if (!accessToken) return;
 
-    const fetchNotifications = async () => {
-      try {
-        const r = await fetch(`${API_BASE_URL}/notifications/matches`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
+        const fetchNotifications = async () => {
+            try {
+                const r = await fetch(`${API_BASE_URL}/notifications/matches`, {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                });
+                const data = await r.json();
+                if (data.count) setMatchNotificationCount(data.count);
+            } catch (err) {
+                console.error("Error fetching notifications:", err);
+            }
+        };
+
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 30_000);
+        return () => clearInterval(interval);
+    }, [accessToken]);
+
+    // ─── Auto-sync Letterboxd on app load ────────────────────────────────────
+    const hasAutoSyncedLetterboxd = useRef(false);
+    useEffect(() => {
+        if (!accessToken || hasAutoSyncedLetterboxd.current) return;
+        hasAutoSyncedLetterboxd.current = true;
+
+        // Fire-and-forget: silently sync Letterboxd if user has it connected
+        fetch(`${API_BASE_URL}/letterboxd/sync`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${accessToken}` },
+        }).catch(() => {
+            // Silently ignore sync errors on app load
         });
-        const data = await r.json();
-        if (data.count) setMatchNotificationCount(data.count);
-      } catch (err) {
-        console.error('Error fetching notifications:', err);
-      }
+    }, [accessToken]);
+
+    const handleSignOut = async () => {
+        try {
+            await fetch(`${API_BASE_URL}/auth/signout`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${accessToken}` },
+            });
+        } catch (err) {
+            console.error("Sign-out request error:", err);
+        }
+        await signOut();
+        toast.success("Signed out successfully");
+        navigate("/");
     };
 
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30_000);
-    return () => clearInterval(interval);
-  }, [accessToken]);
+    const handleMatchesClick = () => {
+        if (matchNotificationCount > 0 && accessToken) {
+            fetch(`${API_BASE_URL}/notifications/matches/seen`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${accessToken}` },
+            }).then(() => setMatchNotificationCount(0));
+        }
+    };
 
-  // ─── Auto-sync Letterboxd on app load ────────────────────────────────────
-  const hasAutoSyncedLetterboxd = useRef(false);
-  useEffect(() => {
-    if (!accessToken || hasAutoSyncedLetterboxd.current) return;
-    hasAutoSyncedLetterboxd.current = true;
+    const navigateToDiscoverWithFilter: AppLayoutContext["navigateToDiscoverWithFilter"] =
+        (filterType, value, extra) => {
+            navigate("/discover", {
+                state: { filterType, filterValue: value, filterExtra: extra },
+            });
+        };
 
-    // Fire-and-forget: silently sync Letterboxd if user has it connected
-    fetch(`${API_BASE_URL}/letterboxd/sync`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${accessToken}` },
-    }).catch(() => {
-      // Silently ignore sync errors on app load
-    });
-  }, [accessToken]);
+    const {
+        discoverCache,
+        setDiscoverCache,
+        savedCache,
+        setSavedCache,
+        matchesCache,
+        setMatchesCache,
+    } = useTabCache();
 
-  const handleSignOut = async () => {
-    try {
-      await fetch(`${API_BASE_URL}/auth/signout`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-    } catch (err) {
-      console.error('Sign-out request error:', err);
-    }
-    await signOut();
-    toast.success('Signed out successfully');
-    navigate('/');
-  };
+    const context: AppLayoutContext = {
+        accessToken: accessToken!,
+        userEmail,
+        projectId,
+        publicAnonKey,
+        likedMovies,
+        setLikedMovies,
+        globalImdbCache,
+        setGlobalImdbCache,
+        navigateToDiscoverWithFilter,
+        onSignOut: handleSignOut,
+        // Tab caches
+        discoverCache,
+        setDiscoverCache,
+        savedCache,
+        setSavedCache,
+        matchesCache,
+        setMatchesCache,
+        matchNotificationCount,
+    };
 
-  const handleMatchesClick = () => {
-    if (matchNotificationCount > 0 && accessToken) {
-      fetch(`${API_BASE_URL}/notifications/matches/seen`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }).then(() => setMatchNotificationCount(0));
-    }
-  };
-
-  const navigateToDiscoverWithFilter: AppLayoutContext['navigateToDiscoverWithFilter'] = (
-    filterType,
-    value,
-    extra
-  ) => {
-    navigate('/discover', { state: { filterType, filterValue: value, filterExtra: extra } });
-  };
-
-  const { discoverCache, setDiscoverCache, savedCache, setSavedCache, matchesCache, setMatchesCache } = useTabCache();
-
-  const context: AppLayoutContext = {
-    accessToken: accessToken!,
-    userEmail,
-    projectId,
-    publicAnonKey,
-    likedMovies,
-    setLikedMovies,
-    globalImdbCache,
-    setGlobalImdbCache,
-    navigateToDiscoverWithFilter,
-    onSignOut: handleSignOut,
-    // Tab caches
-    discoverCache,
-    setDiscoverCache,
-    savedCache,
-    setSavedCache,
-    matchesCache,
-    setMatchesCache,
-    matchNotificationCount,
-  };
-
-  return (
-    <TooltipProvider>
-      <UserInteractionsProvider accessToken={accessToken}>
-        <AppLayoutContent
-          context={context}
-          accessToken={accessToken!}
-          setLikedMovies={setLikedMovies}
-          handleSignOut={handleSignOut}
-          handleMatchesClick={handleMatchesClick}
-          matchNotificationCount={matchNotificationCount}
-        />
-      </UserInteractionsProvider>
-    </TooltipProvider>
-  );
+    return (
+        <TooltipProvider>
+            <UserInteractionsProvider accessToken={accessToken}>
+                <AppLayoutContent
+                    context={context}
+                    accessToken={accessToken!}
+                    setLikedMovies={setLikedMovies}
+                    handleSignOut={handleSignOut}
+                    handleMatchesClick={handleMatchesClick}
+                    matchNotificationCount={matchNotificationCount}
+                />
+            </UserInteractionsProvider>
+        </TooltipProvider>
+    );
 }
