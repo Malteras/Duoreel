@@ -310,15 +310,15 @@ export function MovieDetailModal({
                         {(() => {
                           const cachedVal = globalImdbCache?.get(movie.external_ids.imdb_id);
                           const rating = (movie as any).imdbRating || (cachedVal !== 'N/A' && cachedVal !== 'NOT_FOUND' ? cachedVal : null);
-                          if (rating) return <span className="text-xs font-bold text-black">{rating}</span>;
-                          if (cachedVal === 'NOT_FOUND') return <span className="text-xs font-bold text-black/40">—</span>;
-                          return <Loader2 className="size-3 text-black/50 animate-spin" />;
+                          if (rating) return <span className="text-xs font-bold text-black leading-4">{rating}</span>;
+                          if (cachedVal === 'NOT_FOUND') return <span className="text-xs font-bold text-black/40 leading-4">—</span>;
+                          return <span className="inline-flex items-center h-4"><Loader2 className="size-3 text-black/50 animate-spin" /></span>;
                         })()}
                       </a>
                     ) : (
                       <div className="bg-[#F5C518]/30 backdrop-blur-sm px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
                         <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
-                        <Loader2 className="size-3 text-black/40 animate-spin" />
+                        <span className="inline-flex items-center h-4"><Loader2 className="size-3 text-black/40 animate-spin" /></span>
                       </div>
                     )}
                   </TooltipTrigger>
@@ -380,15 +380,15 @@ export function MovieDetailModal({
                       {(() => {
                         const cachedVal = globalImdbCache?.get(movie.external_ids.imdb_id);
                         const rating = (movie as any).imdbRating || (cachedVal !== 'N/A' && cachedVal !== 'NOT_FOUND' ? cachedVal : null);
-                        if (rating) return <span className="text-xs font-bold text-black">{rating}</span>;
-                        if (cachedVal === 'NOT_FOUND') return <span className="text-xs font-bold text-black/40">—</span>;
-                        return <Loader2 className="size-3 text-black/50 animate-spin" />;
+                        if (rating) return <span className="text-xs font-bold text-black leading-4">{rating}</span>;
+                        if (cachedVal === 'NOT_FOUND') return <span className="text-xs font-bold text-black/40 leading-4">—</span>;
+                        return <span className="inline-flex items-center h-4"><Loader2 className="size-3 text-black/50 animate-spin" /></span>;
                       })()}
                     </a>
                   ) : (
                     <div className="bg-[#F5C518]/30 px-2 py-1 rounded-full flex items-center gap-1 shadow-lg">
                       <span className="text-[9px] font-bold text-black/30 uppercase tracking-wide">IMDb</span>
-                      <Loader2 className="size-3 text-black/40 animate-spin" />
+                      <span className="inline-flex items-center h-4"><Loader2 className="size-3 text-black/40 animate-spin" /></span>
                     </div>
                   )}
                 </TooltipTrigger>

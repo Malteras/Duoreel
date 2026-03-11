@@ -1343,11 +1343,11 @@ export function MoviesTab({
                                       displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
                                     }`}>IMDb</span>
                                     {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
-                                      <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+                                      <span className="text-[10px] font-bold text-black leading-3.5">{displayImdbRating}</span>
                                     ) : displayImdbRating === 'NOT_FOUND' ? (
-                                      <span className="text-[10px] font-bold text-black/40">—</span>
+                                      <span className="text-[10px] font-bold text-black/40 leading-3.5">—</span>
                                     ) : (
-                                      <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                                      <span className="inline-flex items-center h-3.5"><Loader2 className="size-2.5 text-black/50 animate-spin" /></span>
                                     )}
                                   </a>
                                 ) : (

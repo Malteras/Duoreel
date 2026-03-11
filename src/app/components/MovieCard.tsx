@@ -255,11 +255,11 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                       displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
                     }`}>IMDb</span>
                     {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
-                      <span className="text-xs font-bold text-black">{displayImdbRating}</span>
+                      <span className="text-xs font-bold text-black leading-4">{displayImdbRating}</span>
                     ) : displayImdbRating === 'NOT_FOUND' ? (
-                      <span className="text-xs font-bold text-black/40">—</span>
+                      <span className="text-xs font-bold text-black/40 leading-4">—</span>
                     ) : (
-                      <Loader2 className="size-3 text-black/50 animate-spin" />
+                      <span className="inline-flex items-center h-4"><Loader2 className="size-3 text-black/50 animate-spin" /></span>
                     )}
                   </a>
                 ) : (
