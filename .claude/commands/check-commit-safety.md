@@ -96,6 +96,19 @@ At the end, it produces a **summary table** and a **verdict**: safe to commit, o
 - After refactor, flag any functions, components, imports, or variables in the diff that are now completely unused
 - Flag commented-out code blocks that look like they were left as "just in case" (warning, not error)
 
+### 13. Logic Preservation
+
+- CRITICAL: When code was refactored (simplified, restructured, or deduplicated), verify that the **before** and **after** produce identical behavior
+- Compare the old code (from `git diff`, the `-` lines) against the new code (the `+` lines) — check that no data transformations, mappings, filters, or computations were accidentally dropped
+- Common mistakes to catch:
+    - A `.map()` that reshapes data (adds fields like `id: i`, `action: 'Add'`, renames properties) was removed during "simplification" — the downstream consumer still expects those fields
+    - A `.filter()` step was merged or removed, changing which items reach the output
+    - A conditional branch (`if/else`) was collapsed but one branch had side effects or different logic that got lost
+    - Default values or fallbacks (e.g., `|| []`, `?? 0`) were dropped during cleanup
+    - Object spread (`{ ...item, isAdded: false }`) was replaced with a simpler assignment that loses other properties
+- For each refactored block: read the old code, read the new code, and confirm the output shape, field names, field values, and filtering logic are identical
+- 🔴 Flag any case where the refactored code produces different data than the original
+
 ---
 
 ## Output Format
