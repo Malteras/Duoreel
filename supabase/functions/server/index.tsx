@@ -4,6 +4,7 @@ import { logger } from "npm:hono/logger";
 import * as kv from "./kv_store.tsx";
 import {
   getByPrefixPaginated,
+  getByPrefixPaginatedWithKeys,
   getKeysByPrefixPaginated,
 } from "./kv_paginated.tsx";
 import { createClient } from "npm:@supabase/supabase-js";
@@ -3693,23 +3694,19 @@ app.get(
 
       const interactions: any[] = [];
 
-      // Fetch watched movies using key+value pairs so we can always recover the
-      // tmdbId from the key suffix ("watched:{userId}:{movieId}") even when old
-      // KV entries were stored without an explicit `id` field.
-      const watchedKeys = await getKeysByPrefixPaginated(
-        `watched:${user.id}:`,
-      );
-      const watchedValues: any[] = watchedKeys.length > 0
-        ? await kv.mget(watchedKeys)
-        : [];
+      // Fetch watched movies — use getByPrefixPaginatedWithKeys so we get both
+      // the key (for reliable tmdbId extraction from suffix) and the value
+      // (for timestamp etc.), without ever building a URL with thousands of
+      // key params (which caused TypeError: Invalid URL with kv.mget).
+      const watchedPrefix = `watched:${user.id}:`;
+      const watchedRaw = await getByPrefixPaginatedWithKeys(watchedPrefix);
 
       console.log(
-        `interactions/all: Found ${watchedKeys.length} watched items for user ${user.id}`,
+        `interactions/all: Found ${watchedRaw.length} watched items for user ${user.id}`,
       );
 
-      for (let wi = 0; wi < watchedKeys.length; wi++) {
-        const key = watchedKeys[wi];
-        const item = watchedValues[wi] || {};
+      for (const { key, value } of watchedRaw) {
+        const item = value || {};
 
         // ── Robust id resolution ───────────────────────────────────────────────
         // Priority: item.id → item.tmdbId → key suffix (authoritative fallback).

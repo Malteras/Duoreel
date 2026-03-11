@@ -67,6 +67,44 @@ export async function getByPrefixPaginated(prefix: string): Promise<any[]> {
  * key suffixes (e.g. "watched:{userId}:{movieId}" → movieId).
  * Much lighter than getByPrefixPaginated for large collections.
  */
+/**
+ * Like getByPrefixPaginated but returns { key, value } pairs instead of
+ * values only. Use when you need both the stored value AND the key suffix
+ * (e.g. to extract tmdbId from "watched:{userId}:{movieId}").
+ */
+export async function getByPrefixPaginatedWithKeys(
+  prefix: string,
+): Promise<{ key: string; value: any }[]> {
+  const supabase = client();
+  let allResults: { key: string; value: any }[] = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("key, value")
+      .like("key", prefix + "%")
+      .range(from, from + PAGE_SIZE - 1)
+      .order("key", { ascending: true });
+
+    if (error) {
+      throw new Error(
+        `getByPrefixPaginatedWithKeys('${prefix}'): ${error.message}`,
+      );
+    }
+
+    if (!data || data.length === 0) break;
+    allResults = allResults.concat(data);
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+
+  console.log(
+    `getByPrefixPaginatedWithKeys('${prefix}'): ${allResults.length} total rows`,
+  );
+  return allResults;
+}
+
 export async function getKeysByPrefixPaginated(prefix: string): Promise<string[]> {
   const supabase = client();
   let allKeys: string[] = [];
