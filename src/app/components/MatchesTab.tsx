@@ -715,6 +715,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     imdbRating={imdbRatings.get(movie.id)}
                     globalImdbCache={globalImdbCache}
                     onGenreClick={(genreId) => navigateToDiscoverWithFilter('genre', genreId)}
+                    partnerWatchedIds={partnerWatchedIds}
+                    partnerName={partnerName}
                     topRightOverlay={
                       <span className="bg-pink-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5">
                         <Heart className="size-2.5 fill-white" />Match

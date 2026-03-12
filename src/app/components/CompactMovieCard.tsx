@@ -1,5 +1,5 @@
 import type { Movie } from '../../types/movie';
-import { Film, Loader2 } from 'lucide-react';
+import { Film, Loader2, Users } from 'lucide-react';
 
 interface CompactMovieCardProps {
   movie: Movie;
@@ -10,6 +10,8 @@ interface CompactMovieCardProps {
   onGenreClick?: (genreId: number) => void;
   topLeftOverlay?: React.ReactNode;
   topRightOverlay?: React.ReactNode;
+  partnerWatchedIds?: Set<number>;
+  partnerName?: string;
 }
 
 export function CompactMovieCard({
@@ -21,6 +23,8 @@ export function CompactMovieCard({
   onGenreClick,
   topLeftOverlay,
   topRightOverlay,
+  partnerWatchedIds,
+  partnerName,
 }: CompactMovieCardProps) {
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -114,6 +118,13 @@ export function CompactMovieCard({
                 {genre.name}
               </span>
             ))}
+          </div>
+        )}
+        {/* Partner watched indicator */}
+        {partnerWatchedIds?.has(movie.id) && partnerName && (
+          <div className="flex items-center gap-1.5 text-slate-400 text-[10px]">
+            <Users className="size-3 shrink-0" />
+            <span>{partnerName} has already seen this</span>
           </div>
         )}
         {movie.director && (

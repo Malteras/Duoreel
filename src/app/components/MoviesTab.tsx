@@ -45,6 +45,7 @@ import {
   // List, // kept for list view — see commented-out dead code block below the compact grid
   LayoutList,
   ArrowUpDown,
+  Users,
 } from "lucide-react";
 
 interface MoviesTabProps {
@@ -1390,6 +1391,13 @@ export function MoviesTab({
                           </div>
                         )}
                         {movie.overview && <p className="text-slate-300 text-[10px] leading-relaxed line-clamp-2">{movie.overview}</p>}
+                        {/* Partner watched indicator */}
+                        {partnerWatchedIds?.has(movie.id) && partnerName && (
+                          <div className="flex items-center gap-1.5 text-slate-400 text-[10px]">
+                            <Users className="size-3 shrink-0" />
+                            <span>{partnerName} has already seen this</span>
+                          </div>
+                        )}
                         {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>}
                       </div>
                     </div>
