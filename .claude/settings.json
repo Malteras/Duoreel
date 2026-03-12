@@ -1,5 +1,10 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(npx next:*)",
+      "Bash(./node_modules/.bin/tsc --noEmit)"
+    ],
     "additionalDirectories": [
       "c:\\Users\\ognjen.kremenovic\\Desktop\\New folder\\Projects\\Duoreel\\.claude"
     ]
