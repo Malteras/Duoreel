@@ -284,6 +284,7 @@ export function SavedMoviesTab({
 
   const handleLike = async (movie: Movie) => {
     if (!accessToken) return;
+    setIsLikeLoading(true);
     try {
       const response = await fetch(`${baseUrl}/movies/like`, {
         method: 'POST',
@@ -292,11 +293,15 @@ export function SavedMoviesTab({
       });
       if (response.ok) {
         setLikedMovies(prev => [...prev, movie]);
+        // Update cache length so the fetch useEffect does not re-trigger
+        setSavedCache(prev => prev ? { ...prev, likedMoviesLengthAtLoad: prev.likedMoviesLengthAtLoad + 1 } : prev);
         toast.success('Added to your saved list');
       }
     } catch (error) {
       console.error('Error liking movie:', error);
       toast.error('Failed to like movie');
+    } finally {
+      setIsLikeLoading(false);
     }
   };
 
