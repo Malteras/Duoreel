@@ -25,9 +25,11 @@ interface MovieCardProps {
   projectId?: string; // For API calls
   publicAnonKey?: string;
   globalImdbCache?: Map<string, string>;
+  partnerWatchedIds?: Set<number>;
+  partnerName?: string;
 }
 
-export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike, onDislike, onNotInterested, isNotInterestedLoading, onClick, showActions = true, onDirectorClick, onGenreClick, onYearClick, onActorClick, imdbRating, projectId, publicAnonKey, globalImdbCache }: MovieCardProps) {
+export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike, onDislike, onNotInterested, isNotInterestedLoading, onClick, showActions = true, onDirectorClick, onGenreClick, onYearClick, onActorClick, imdbRating, projectId, publicAnonKey, globalImdbCache, partnerWatchedIds, partnerName }: MovieCardProps) {
   const posterUrl = movie.poster_path 
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
     : '';
@@ -308,12 +310,20 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
             )}
           </div>
 
+          {/* Partner watched indicator */}
+          {partnerWatchedIds?.has(movie.id) && partnerName && (
+            <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-3">
+              <Users className="size-3 shrink-0" />
+              <span>{partnerName} has already seen this</span>
+            </div>
+          )}
+
           {/* Genres */}
           {movie.genres && movie.genres.length > 0 && (
             <div className="mb-3">
               <div className="flex flex-wrap gap-2">
                 {movie.genres.map((genre) => (
-                  <Badge 
+                  <Badge
                     key={genre.id} 
                     variant="secondary" 
                     className="bg-purple-600/70 text-white border-purple-500 cursor-pointer hover:bg-purple-700 hover:border-purple-400 transition-colors text-xs"

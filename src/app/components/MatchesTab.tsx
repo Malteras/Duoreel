@@ -58,7 +58,7 @@ interface MatchesTabProps {
 }
 
 export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter, globalImdbCache, setGlobalImdbCache, matchesCache, setMatchesCache, matchNotificationCount }: MatchesTabProps) {
-  const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
+  const { watchedMovieIds, isWatched, watchedLoadingIds, partnerWatchedIds, partnerName } = useUserInteractions();
   const [partner, setPartner] = useState<any>(matchesCache?.partner ?? null);
   const [matchedMovies, setMatchedMovies] = useState<Movie[]>(matchesCache?.matchedMovies ?? []);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]); // partner request objects, not movies
@@ -696,6 +696,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     publicAnonKey={publicAnonKey}
                     globalImdbCache={globalImdbCache}
                     imdbRating={imdbRatings.get(movie.id)}
+                    partnerWatchedIds={partnerWatchedIds}
+                    partnerName={partnerName}
                   />
                 ))}
               </div>
@@ -760,6 +762,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         imdbRatingFromCard={selectedMovie?.external_ids?.imdb_id
           ? (globalImdbCache.get(selectedMovie.external_ids.imdb_id) || null)
           : null}
+        partnerWatchedIds={partnerWatchedIds}
+        partnerName={partnerName}
       />
     </div>
   );

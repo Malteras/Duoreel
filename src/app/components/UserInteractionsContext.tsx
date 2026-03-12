@@ -23,6 +23,8 @@ interface UserInteractionsContextType {
   notInterestedLoadingIds: Set<number>;
   refreshInteractions: () => Promise<void>;
   isInitialLoading: boolean;
+  partnerWatchedIds: Set<number>;
+  partnerName: string;
 }
 
 const UserInteractionsContext = createContext<UserInteractionsContextType | null>(null);
@@ -38,6 +40,8 @@ export function UserInteractionsProvider({
   const [watchedLoadingIds, setWatchedLoadingIds] = useState<Set<number>>(new Set());
   const [notInterestedLoadingIds, setNotInterestedLoadingIds] = useState<Set<number>>(new Set());
   const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [partnerWatchedIds, setPartnerWatchedIds] = useState<Set<number>>(new Set());
+  const [partnerName, setPartnerName] = useState<string>('');
 
   // Guard against concurrent refreshInteractions calls.
   // onAuthStateChange + initAuth can both fire in quick succession when a
@@ -92,6 +96,20 @@ export function UserInteractionsProvider({
   useEffect(() => {
     refreshInteractions();
   }, [refreshInteractions]);
+
+  // Fetch partner's watched movie IDs for display in Discover & Matches
+  useEffect(() => {
+    if (!accessToken) return;
+    fetch(`${API_BASE_URL}/movies/partner-watched-ids`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data.watchedIds)) setPartnerWatchedIds(new Set(data.watchedIds));
+        if (data.partnerName) setPartnerName(data.partnerName);
+      })
+      .catch(() => {}); // non-critical — fail silently
+  }, [accessToken]);
 
   // Derived sets
   const watchedMovieIds = useMemo(() => {
@@ -259,6 +277,8 @@ export function UserInteractionsProvider({
       notInterestedLoadingIds,
       refreshInteractions,
       isInitialLoading,
+      partnerWatchedIds,
+      partnerName,
     }),
     [
       interactions,
@@ -272,6 +292,8 @@ export function UserInteractionsProvider({
       notInterestedLoadingIds,
       refreshInteractions,
       isInitialLoading,
+      partnerWatchedIds,
+      partnerName,
     ]
   );
 
@@ -299,6 +321,8 @@ export function useUserInteractions() {
       notInterestedLoadingIds: new Set<number>(),
       refreshInteractions: async () => {},
       isInitialLoading: false,
+      partnerWatchedIds: new Set<number>(),
+      partnerName: '',
     } as UserInteractionsContextType;
   }
   return context;

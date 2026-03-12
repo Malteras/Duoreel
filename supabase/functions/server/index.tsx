@@ -2186,6 +2186,35 @@ app.get(
   },
 );
 
+// Get partner's watched movie IDs (lightweight — IDs only, no full movie objects)
+app.get("/make-server-5623fde1/movies/partner-watched-ids", async (c) => {
+  try {
+    const accessToken = c.req.header("Authorization")?.split(" ")[1];
+    if (!accessToken) return c.json({ error: "Unauthorized" }, 401);
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !user?.id) return c.json({ error: "Unauthorized" }, 401);
+
+    const userProfile = await kv.get(`user:${user.id}`);
+    // No partner connected — return empty gracefully, not a 404
+    if (!userProfile?.partnerId) return c.json({ watchedIds: [], partnerName: "" });
+
+    const partnerProfile = await kv.get(`user:${userProfile.partnerId}`);
+    const partnerName = partnerProfile?.name || partnerProfile?.email || "Partner";
+
+    // Key format: "watched:{partnerId}:{movieId}" — extract movieId from the suffix
+    const watchedKeys = await getKeysByPrefixPaginated(`watched:${userProfile.partnerId}:`);
+    const watchedIds = watchedKeys
+      .map((key: string) => Number(key.split(":").pop()))
+      .filter((id: number) => id > 0 && !isNaN(id));
+
+    return c.json({ watchedIds, partnerName });
+  } catch (error) {
+    console.error("Error fetching partner watched IDs:", error);
+    return c.json({ error: `Failed to fetch partner watched IDs: ${error}` }, 500);
+  }
+});
+
 // Get matched movies
 app.get("/make-server-5623fde1/movies/matches", async (c) => {
   try {

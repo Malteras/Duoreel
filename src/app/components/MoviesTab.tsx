@@ -268,6 +268,8 @@ export function MoviesTab({
     watchedLoadingIds,
     notInterestedLoadingIds,
     isInitialLoading: contextLoading,
+    partnerWatchedIds,
+    partnerName,
   } = useUserInteractions();
 
   // Liked movie IDs set for quick lookup
@@ -1260,6 +1262,8 @@ export function MoviesTab({
                     projectId={projectId}
                     publicAnonKey={publicAnonKey}
                     globalImdbCache={globalImdbCache}
+                    partnerWatchedIds={partnerWatchedIds}
+                    partnerName={partnerName}
                   />
                 ))}
               </div>
@@ -1565,6 +1569,8 @@ export function MoviesTab({
         globalImdbCache={globalImdbCache}
         setGlobalImdbCache={setGlobalImdbCache}
         imdbRatingFromCard={selectedMovie ? (imdbRatings.get(selectedMovie.id) || null) : null}
+        partnerWatchedIds={partnerWatchedIds}
+        partnerName={partnerName}
       />
     </div>
   );

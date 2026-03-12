@@ -32,6 +32,8 @@ interface MovieDetailModalProps {
   globalImdbCache?: Map<string, string>;
   setGlobalImdbCache?: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   imdbRatingFromCard?: string | null;
+  partnerWatchedIds?: Set<number>;
+  partnerName?: string;
 }
 
 export function MovieDetailModal({ 
@@ -58,7 +60,9 @@ export function MovieDetailModal({
   publicAnonKey,
   globalImdbCache,
   setGlobalImdbCache,
-  imdbRatingFromCard
+  imdbRatingFromCard,
+  partnerWatchedIds,
+  partnerName
 }: MovieDetailModalProps) {
   const [loadingImdb, setLoadingImdb] = useState(false);
 
@@ -434,6 +438,14 @@ export function MovieDetailModal({
                   </div>
                 )}
               </div>
+
+              {/* Partner watched indicator */}
+              {partnerWatchedIds?.has(movie?.id) && partnerName && (
+                <div className="flex items-center gap-1.5 text-slate-400 text-sm mb-2">
+                  <Users className="size-4 shrink-0" />
+                  <span>{partnerName} has already seen this</span>
+                </div>
+              )}
 
               {/* Genres */}
               {movie.genres && movie.genres.length > 0 && (
