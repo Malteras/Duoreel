@@ -1391,11 +1391,13 @@ export function MoviesTab({
                           </div>
                         )}
                         {movie.overview && <p className="text-slate-300 text-[10px] leading-relaxed line-clamp-2">{movie.overview}</p>}
-                        {/* Partner watched indicator */}
+                        {/* Partner watched eyebrow */}
                         {partnerWatchedIds?.has(movie.id) && partnerName && (
-                          <div className="flex items-center gap-1.5 text-slate-400 text-[10px]">
-                            <Users className="size-3 shrink-0" />
-                            <span>{partnerName} has already seen this</span>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Users className="size-2.5 text-pink-500 shrink-0" />
+                            <span className="text-[9px] font-bold tracking-widest uppercase text-pink-500">
+                              {partnerName} seen
+                            </span>
                           </div>
                         )}
                         {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>}

@@ -414,6 +414,15 @@ export function MovieDetailModal({
           <div className="p-6 space-y-6">
             {/* Title and Meta */}
             <div>
+              {/* Partner watched eyebrow */}
+              {partnerWatchedIds?.has(movie?.id) && partnerName && (
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Users className="size-3.5 text-pink-500 shrink-0" />
+                  <span className="text-xs font-bold tracking-widest uppercase text-pink-500">
+                    {partnerName} has seen this
+                  </span>
+                </div>
+              )}
               <DialogTitle className="text-3xl font-bold text-white mb-3">
                 {cleanTitle(movie.title)}
               </DialogTitle>
@@ -439,13 +448,7 @@ export function MovieDetailModal({
                 )}
               </div>
 
-              {/* Partner watched indicator */}
-              {partnerWatchedIds?.has(movie?.id) && partnerName && (
-                <div className="flex items-center gap-1.5 text-slate-400 text-sm mb-2">
-                  <Users className="size-4 shrink-0" />
-                  <span>{partnerName} has already seen this</span>
-                </div>
-              )}
+              {/* Partner watched indicator moved above title */}
 
               {/* Genres */}
               {movie.genres && movie.genres.length > 0 && (

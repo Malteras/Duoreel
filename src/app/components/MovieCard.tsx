@@ -289,6 +289,15 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
       {/* Movie Info */}
       <div className="p-6 space-y-4">
         <div>
+          {/* Partner watched eyebrow */}
+          {partnerWatchedIds?.has(movie.id) && partnerName && (
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <Users className="size-3 text-pink-500 shrink-0" />
+              <span className="text-[10px] font-bold tracking-widest uppercase text-pink-500">
+                {partnerName} has seen this
+              </span>
+            </div>
+          )}
           <h3 className="text-2xl font-bold text-white mb-2 line-clamp-2">{cleanTitle(movie.title)}</h3>
           
           {/* Year & Runtime */}
@@ -310,13 +319,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
             )}
           </div>
 
-          {/* Partner watched indicator */}
-          {partnerWatchedIds?.has(movie.id) && partnerName && (
-            <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-3">
-              <Users className="size-3 shrink-0" />
-              <span>{partnerName} has already seen this</span>
-            </div>
-          )}
+          {/* Partner watched indicator moved above title */}
 
           {/* Genres */}
           {movie.genres && movie.genres.length > 0 && (

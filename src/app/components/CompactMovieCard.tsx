@@ -120,11 +120,13 @@ export function CompactMovieCard({
             ))}
           </div>
         )}
-        {/* Partner watched indicator */}
+        {/* Partner watched eyebrow */}
         {partnerWatchedIds?.has(movie.id) && partnerName && (
-          <div className="flex items-center gap-1.5 text-slate-400 text-[10px]">
-            <Users className="size-3 shrink-0" />
-            <span>{partnerName} has already seen this</span>
+          <div className="flex items-center gap-1 mt-1">
+            <Users className="size-2.5 text-pink-500 shrink-0" />
+            <span className="text-[9px] font-bold tracking-widest uppercase text-pink-500">
+              {partnerName} seen
+            </span>
           </div>
         )}
         {movie.director && (
