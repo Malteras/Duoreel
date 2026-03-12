@@ -9,7 +9,11 @@ export const supabase = createClient(
   {
     auth: {
       storage: window.localStorage,
-      storageKey: 'supabase.auth.token',
+      // Do NOT set a custom storageKey — Supabase's default is
+      // `sb-{projectId}-auth-token`, and autoRefreshToken reads from
+      // that same key. A custom key causes a mismatch where the session
+      // is written to the default key but refresh reads from the custom
+      // key — finding nothing — so the token is never refreshed.
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
