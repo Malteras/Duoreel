@@ -133,6 +133,7 @@ export function CompactMovieCard({
           <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>
         )}
       </div>
+      {/* TODO: add Watched badge here - QUI-142 */}
     </div>
   );
 }
