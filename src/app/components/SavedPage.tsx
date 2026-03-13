@@ -12,6 +12,7 @@ export function SavedPage() {
       navigateToDiscoverWithFilter={ctx.navigateToDiscoverWithFilter}
       likedMovies={ctx.likedMovies}
       setLikedMovies={ctx.setLikedMovies}
+      likedMoviesError={ctx.likedMoviesError}
       globalImdbCache={ctx.globalImdbCache}
       setGlobalImdbCache={ctx.setGlobalImdbCache}
       savedCache={ctx.savedCache}

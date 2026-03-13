@@ -28,6 +28,7 @@ interface SavedMoviesTabProps {
   navigateToDiscoverWithFilter: (filterType: 'genre' | 'director' | 'actor' | 'year' | 'keyword', value: string | number, extra?: string) => void;
   likedMovies: Movie[];
   setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
+  likedMoviesError?: boolean;
   globalImdbCache: Map<string, string>;
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   savedCache: import('../hooks/useTabCache').SavedCache | null;
@@ -41,6 +42,7 @@ export function SavedMoviesTab({
   navigateToDiscoverWithFilter,
   likedMovies,
   setLikedMovies,
+  likedMoviesError = false,
   globalImdbCache,
   setGlobalImdbCache,
   savedCache,
@@ -73,6 +75,16 @@ export function SavedMoviesTab({
   const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
+
+  const handleRetryLikedMovies = () => {
+    if (!accessToken) return;
+    fetch(`${API_BASE_URL}/movies/liked`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then((data) => { if (data.movies) setLikedMovies(data.movies); })
+      .catch((err) => console.error('Retry liked movies failed:', err));
+  };
 
   // Partner connection state
   const [inviteCode, setInviteCode] = useState('');
@@ -581,6 +593,21 @@ export function SavedMoviesTab({
         ) : viewMode === 'mine' ? (
           filteredLikedMovies.length === 0 ? (
             likedMovies.length === 0 ? (
+              likedMoviesError ? (
+                /* Error state — fetch failed */
+                <div className="text-center py-16">
+                  <div className="relative inline-block mb-6">
+                    <Film className="size-20 mx-auto text-slate-600" />
+                  </div>
+                  <h3 className="text-2xl font-semibold text-white mb-3">Couldn&apos;t load your list</h3>
+                  <p className="text-slate-400 text-lg mb-8 max-w-md mx-auto">
+                    Something went wrong fetching your saved movies. Tap retry to try again.
+                  </p>
+                  <Button onClick={handleRetryLikedMovies} className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+                    Retry
+                  </Button>
+                </div>
+              ) : (
               /* True empty state */
               <div className="text-center py-16">
                 <div className="relative inline-block mb-6">
@@ -609,6 +636,7 @@ export function SavedMoviesTab({
                   <span>Or browse the Discover tab to find movies you'll love</span>
                 </div>
               </div>
+              ) /* closes likedMoviesError ternary */
             ) : (
               /* Filter empty state */
               <div className="text-center py-20">
