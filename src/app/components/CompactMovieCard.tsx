@@ -1,5 +1,5 @@
 import type { Movie } from '../../types/movie';
-import { Film, Loader2, Users } from 'lucide-react';
+import { Eye, Film, Loader2, Users } from 'lucide-react';
 
 interface CompactMovieCardProps {
   movie: Movie;
@@ -59,6 +59,14 @@ export function CompactMovieCard({
         )}
         {topRightOverlay && (
           <div className="absolute top-2 right-2">{topRightOverlay}</div>
+        )}
+        {isWatched && (
+          <div className="absolute top-2 right-2 z-10">
+            <div className="bg-slate-700/80 text-slate-300 rounded-full flex items-center gap-1 px-1.5 py-0.5 shadow-lg backdrop-blur-sm font-medium">
+              <Eye className="size-2.5" />
+              <span className="text-[9px]">Watched</span>
+            </div>
+          </div>
         )}
 
         {movie.vote_average > 0 && (
