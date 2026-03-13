@@ -851,6 +851,7 @@ export function SavedMoviesTab({
         onLanguageClick={() => {}}
         isLikeLoading={isLikeLoading}
         isDislikeLoading={false}
+        showNotInterested={false}
         isWatchedLoading={watchedLoadingIds.has(selectedMovie?.id)}
         projectId={projectId}
         publicAnonKey={publicAnonKey}

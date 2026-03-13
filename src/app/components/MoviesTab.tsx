@@ -1551,6 +1551,7 @@ export function MoviesTab({
         }
         isLikeLoading={isLikeLoading}
         isDislikeLoading={selectedMovie ? pendingRemovals.has(selectedMovie.id) : false}
+        showNotInterested={true}
         isWatchedLoading={
           isWatchedLoading ||
           (selectedMovie
