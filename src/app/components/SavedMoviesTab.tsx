@@ -799,7 +799,9 @@ export function SavedMoviesTab({
               {/* ── Compact grid (partner) ── */}
               {cardViewMode === 'compact' && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {visiblePartnerMovies.map((movie) => (
+                  {visiblePartnerMovies.map((movie) => {
+                    const isLiked = likedMovies.some(m => m.id === movie.id);
+                    return (
                     <CompactMovieCard
                       key={movie.id}
                       movie={movie}
@@ -807,8 +809,22 @@ export function SavedMoviesTab({
                       isWatched={watchedMovieIds.has(movie.id)}
                       imdbRating={imdbRatings.get(movie.id)}
                       globalImdbCache={globalImdbCache}
+                      topLeftOverlay={
+                        <button
+                          className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) { isLiked ? handleUnlike(movie.id) : handleLike(movie); } }}
+                          disabled={likeLoadingIds.has(movie.id)}
+                          aria-label={isLiked ? 'Remove from your list' : 'Save to your list'}
+                        >
+                          {likeLoadingIds.has(movie.id)
+                            ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} />
+                            : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                          }
+                        </button>
+                      }
                     />
-                  ))}
+                    );
+                  })}
                 </div>
               )}
 
