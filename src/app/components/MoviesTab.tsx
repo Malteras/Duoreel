@@ -728,6 +728,7 @@ export function MoviesTab({
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
 
+    setIsLikeLoading(true);
     try {
       const response = await fetch(
         `${baseUrl}/movies/like/${movieId}`,
@@ -746,6 +747,8 @@ export function MoviesTab({
     } catch (error) {
       console.error("Error unliking movie:", error);
       toast.error("Failed to remove movie");
+    } finally {
+      setIsLikeLoading(false);
     }
   };
 
