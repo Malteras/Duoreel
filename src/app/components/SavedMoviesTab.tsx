@@ -276,6 +276,7 @@ export function SavedMoviesTab({
 
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
+    setIsLikeLoading(true);
     try {
       const response = await fetch(`${baseUrl}/movies/like/${movieId}`, {
         method: 'DELETE',
@@ -291,6 +292,8 @@ export function SavedMoviesTab({
     } catch (error) {
       console.error('Error unliking movie:', error);
       toast.error('Failed to unlike movie');
+    } finally {
+      setIsLikeLoading(false);
     }
   };
 
