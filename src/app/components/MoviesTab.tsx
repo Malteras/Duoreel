@@ -389,11 +389,10 @@ export function MoviesTab({
         const data = await response.json();
 
         if (data.results) {
-          // Also filter out liked movies from discover (they already saved them)
+          // Show all movies in Discover including already-saved ones (green bookmark shown on saved cards).
+          // Only exclude movies pending removal (not interested, undo window).
           const newMovies = (data.results as Movie[]).filter(
-            (m) =>
-              !likedMovieIdsRef.current.has(m.id) &&
-              !pendingRemovalsRef.current.has(m.id),
+            (m) => !pendingRemovalsRef.current.has(m.id),
           );
 
           if (append) {
