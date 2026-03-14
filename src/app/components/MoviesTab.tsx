@@ -658,7 +658,7 @@ export function MoviesTab({
   };
 
   // ──────────────── Like / Unlike ────────────────
-  const handleLike = async (movie: Movie) => {
+  const handleLike = async (movie: Movie, skipClose = false) => {
     if (!accessToken) return;
 
     setIsLikeLoading(true);
@@ -714,7 +714,7 @@ export function MoviesTab({
           toast.success(`Saved "${movie.title}"`);
         }
 
-        closeMovie();
+        if (!skipClose) closeMovie();
       }
     } catch (error) {
       console.error("Error liking movie:", error);
@@ -1535,7 +1535,7 @@ export function MoviesTab({
             : false
         }
         onLike={() =>
-          selectedMovie && handleLike(selectedMovie)
+          selectedMovie && handleLike(selectedMovie, true)
         }
         onUnlike={() =>
           selectedMovie && handleUnlike(selectedMovie.id)
