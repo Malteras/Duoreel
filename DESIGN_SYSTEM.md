@@ -31,7 +31,7 @@ The app uses a dark slate theme throughout. Never introduce light backgrounds or
 
 ### Brand Colors
 
-- Primary brand accent (pink): `text-pink-500` / `bg-pink-600` / `hover:bg-pink-700`  
+- Primary brand accent (pink): `text-pink-500` / `bg-pink-600` / `hover:bg-pink-700`
   Used for: "Duo" in the logo, CTA buttons, Match badges, primary actions on landing page
 - Active tab (Discover/Saved): `bg-blue-600 text-white`
 - Active tab (Matches): `bg-pink-600 text-white`
@@ -61,7 +61,7 @@ There are exactly **6** button patterns in this app. Always use one of these —
 
 ```tsx
 <Button className="bg-pink-600 hover:bg-pink-700 text-white font-semibold cursor-pointer">
-  Get Started
+    Get Started
 </Button>
 ```
 
@@ -69,10 +69,10 @@ There are exactly **6** button patterns in this app. Always use one of these —
 
 ```tsx
 <Button
-  variant="outline"
-  className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white cursor-pointer"
+    variant="outline"
+    className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white cursor-pointer"
 >
-  Button Text
+    Button Text
 </Button>
 ```
 
@@ -82,10 +82,10 @@ Ghost buttons have NO background and NO border at rest. On hover, they get a sub
 
 ```tsx
 <Button
-  variant="ghost"
-  className="text-slate-400 hover:bg-slate-700/50 hover:text-white cursor-pointer"
+    variant="ghost"
+    className="text-slate-400 hover:bg-slate-700/50 hover:text-white cursor-pointer"
 >
-  Button Text
+    Button Text
 </Button>
 ```
 
@@ -95,11 +95,11 @@ Ghost buttons have NO background and NO border at rest. On hover, they get a sub
 
 ```tsx
 <Button
-  variant="outline"
-  className="bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800 cursor-pointer"
+    variant="outline"
+    className="bg-slate-900 border-slate-700 text-red-400 hover:bg-red-950 hover:text-red-300 hover:border-red-800 cursor-pointer"
 >
-  <LogOut className="size-4 mr-2" />
-  Sign Out
+    <LogOut className="size-4 mr-2" />
+    Sign Out
 </Button>
 ```
 
@@ -107,11 +107,11 @@ Ghost buttons have NO background and NO border at rest. On hover, they get a sub
 
 ```tsx
 <Button
-  size="icon"
-  variant="secondary"
-  className="rounded-full bg-slate-800/90 hover:bg-slate-700 cursor-pointer"
+    size="icon"
+    variant="secondary"
+    className="rounded-full bg-slate-800/90 hover:bg-slate-700 cursor-pointer"
 >
-  <Icon className="size-5 text-white" />
+    <Icon className="size-5 text-white" />
 </Button>
 ```
 
@@ -119,11 +119,11 @@ Ghost buttons have NO background and NO border at rest. On hover, they get a sub
 
 ```tsx
 <Button
-  size="icon"
-  variant="default"
-  className="rounded-full bg-green-500 hover:bg-green-600 cursor-pointer"
+    size="icon"
+    variant="default"
+    className="rounded-full bg-green-500 hover:bg-green-600 cursor-pointer"
 >
-  <Bookmark className="size-5 fill-white text-white" />
+    <Bookmark className="size-5 fill-white text-white" />
 </Button>
 ```
 
@@ -131,8 +131,8 @@ Ghost buttons have NO background and NO border at rest. On hover, they get a sub
 
 ```tsx
 <Button disabled className="... opacity-50 cursor-not-allowed">
-  <Loader2 className="size-4 mr-2 animate-spin" />
-  Loading...
+    <Loader2 className="size-4 mr-2 animate-spin" />
+    Loading...
 </Button>
 ```
 
