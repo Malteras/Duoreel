@@ -179,6 +179,7 @@ export function MoviesTab({
   } = useMovieModal(accessToken);
 
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [likeLoadingIds, setLikeLoadingIds] = useState<Set<number>>(new Set());
   const [isWatchedLoading, setIsWatchedLoading] = useState(false);
 
   const { handleWatched, handleUnwatched } = useWatchedActions({
@@ -661,6 +662,7 @@ export function MoviesTab({
     if (!accessToken) return;
 
     setIsLikeLoading(true);
+    setLikeLoadingIds((prev) => new Set(prev).add(movie.id));
 
     try {
       const movieData = {
@@ -719,6 +721,7 @@ export function MoviesTab({
       toast.error("Failed to save movie");
     } finally {
       setIsLikeLoading(false);
+      setLikeLoadingIds((prev) => { const s = new Set(prev); s.delete(movie.id); return s; });
     }
   };
 
@@ -1298,11 +1301,15 @@ export function MoviesTab({
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
                         <div className="absolute top-2 left-2">
                           <button
-                            className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'}`}
-                            onClick={(e) => { e.stopPropagation(); isLiked ? handleUnlike(movie.id) : handleLike(movie); }}
+                            className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) { isLiked ? handleUnlike(movie.id) : handleLike(movie); } }}
+                            disabled={likeLoadingIds.has(movie.id)}
                             aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
                           >
-                            <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                            {likeLoadingIds.has(movie.id)
+                              ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} />
+                              : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                            }
                           </button>
                         </div>
                         <div className="absolute top-2 right-2">
