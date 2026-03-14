@@ -303,6 +303,7 @@ export function SavedMoviesTab({
   const handleLike = async (movie: Movie) => {
     if (!accessToken) return;
     setIsLikeLoading(true);
+    setLikeLoadingIds((prev) => new Set(prev).add(movie.id));
     try {
       const response = await fetch(`${baseUrl}/movies/like`, {
         method: 'POST',
@@ -320,6 +321,7 @@ export function SavedMoviesTab({
       toast.error('Failed to like movie');
     } finally {
       setIsLikeLoading(false);
+      setLikeLoadingIds((prev) => { const s = new Set(prev); s.delete(movie.id); return s; });
     }
   };
 
@@ -702,7 +704,7 @@ export function SavedMoviesTab({
                       onGenreClick={(genreId) => navigateToDiscoverWithFilter('genre', genreId)}
                       topLeftOverlay={
                         <button
-                          className={`size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                          className={`size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                           onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) handleUnlike(movie.id); }}
                           disabled={likeLoadingIds.has(movie.id)}
                           aria-label="Remove from watchlist"
@@ -811,7 +813,7 @@ export function SavedMoviesTab({
                       globalImdbCache={globalImdbCache}
                       topLeftOverlay={
                         <button
-                          className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                          className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                           onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) { isLiked ? handleUnlike(movie.id) : handleLike(movie); } }}
                           disabled={likeLoadingIds.has(movie.id)}
                           aria-label={isLiked ? 'Remove from your list' : 'Save to your list'}

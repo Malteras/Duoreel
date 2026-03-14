@@ -748,7 +748,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     partnerName={partnerName}
                     topLeftOverlay={
                       <button
-                        className={`size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
                         onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) handleUnlike(movie.id); }}
                         disabled={likeLoadingIds.has(movie.id)}
                         aria-label="Remove from saved list"
