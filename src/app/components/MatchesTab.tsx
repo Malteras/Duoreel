@@ -337,6 +337,26 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   const [isLikeLoading, setIsLikeLoading] = useState(false);
 
+  const handleLike = async (movie: Movie) => {
+    if (!accessToken) return;
+    setIsLikeLoading(true);
+    try {
+      const response = await fetch(`${baseUrl}/movies/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ movie }),
+      });
+      if (response.ok) {
+        setLikedMovies(prev => new Set(prev).add(movie.id));
+        toast.success(`Saved "${movie.title}"`);
+      }
+    } catch {
+      toast.error('Failed to save movie');
+    } finally {
+      setIsLikeLoading(false);
+    }
+  };
+
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
     setIsLikeLoading(true);
@@ -687,7 +707,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     isLiked={likedMovies.has(movie.id)}
                     isMatch={true}
                     isWatched={watchedMovieIds.has(movie.id)}
-                    onLike={() => {}}
+                    onLike={() => handleLike(movie)}
                     onUnlike={() => handleUnlike(movie.id)}
                     onDislike={() => handleDislike(movie.id)}
                     onClick={() => openMovie(movie)}
@@ -749,7 +769,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         isOpen={modalOpen}
         onClose={closeMovie}
         isLiked={selectedMovie ? likedMovies.has(selectedMovie.id) : false}
-        onLike={() => {}}
+        onLike={() => selectedMovie && handleLike(selectedMovie)}
         onUnlike={() => selectedMovie && handleUnlike(selectedMovie.id)}
         onDislike={() => selectedMovie && handleDislike(selectedMovie.id)}
         isLikeLoading={isLikeLoading}
