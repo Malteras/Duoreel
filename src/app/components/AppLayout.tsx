@@ -27,6 +27,7 @@ export interface AppLayoutContext {
     publicAnonKey: string;
     likedMovies: any[];
     setLikedMovies: React.Dispatch<React.SetStateAction<any[]>>;
+    likedMoviesError: boolean;
     globalImdbCache: Map<string, string>;
     setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
     navigateToDiscoverWithFilter: (
@@ -290,6 +291,7 @@ export function AppLayout() {
 
     const [matchNotificationCount, setMatchNotificationCount] = useState(0);
     const [likedMovies, setLikedMovies] = useState<any[]>([]);
+    const [likedMoviesError, setLikedMoviesError] = useState(false);
     const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(
         new Map(),
     );
@@ -302,9 +304,15 @@ export function AppLayout() {
         })
             .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
             .then((data) => {
-                if (data.movies) setLikedMovies(data.movies);
+                if (data.movies) {
+                    setLikedMovies(data.movies);
+                    setLikedMoviesError(false);
+                }
             })
-            .catch((err) => console.error("Error fetching liked movies:", err));
+            .catch((err) => {
+                console.error("Error fetching liked movies:", err);
+                setLikedMoviesError(true);
+            });
     }, [accessToken]);
 
     // Poll match notifications every 30 s
@@ -389,6 +397,7 @@ export function AppLayout() {
         publicAnonKey,
         likedMovies,
         setLikedMovies,
+        likedMoviesError,
         globalImdbCache,
         setGlobalImdbCache,
         navigateToDiscoverWithFilter,

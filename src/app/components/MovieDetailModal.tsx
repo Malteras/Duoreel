@@ -27,6 +27,7 @@ interface MovieDetailModalProps {
   onActorClick?: (actor: string) => void;
   onLanguageClick?: (language: string) => void;
   onNotInterested?: () => void;
+  showNotInterested?: boolean;
   projectId?: string;
   publicAnonKey?: string;
   globalImdbCache?: Map<string, string>;
@@ -56,6 +57,7 @@ export function MovieDetailModal({
   onActorClick,
   onLanguageClick,
   onNotInterested,
+  showNotInterested = false,
   projectId,
   publicAnonKey,
   globalImdbCache,
@@ -507,6 +509,7 @@ export function MovieDetailModal({
 
               {/* Secondary actions — equal halves on mobile, flex-1 each on desktop */}
               <div className="flex gap-2 sm:gap-3 sm:contents">
+                {showNotInterested && (
                 <Button
                   onClick={onNotInterested || onDislike}
                   variant="outline"
@@ -520,6 +523,7 @@ export function MovieDetailModal({
                   )}
                   Not Interested
                 </Button>
+                )}
 
                 {onWatched && onUnwatched && (
                   <Tooltip>

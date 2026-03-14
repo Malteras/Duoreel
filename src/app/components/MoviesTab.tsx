@@ -1534,9 +1534,12 @@ export function MoviesTab({
           selectedMovie && handleUnlike(selectedMovie.id)
         }
         onDislike={() => {}}
-        onNotInterested={() =>
-          selectedMovie && handleNotInterested(selectedMovie.id)
-        }
+        onNotInterested={() => {
+          if (selectedMovie) {
+            handleNotInterested(selectedMovie.id);
+            closeMovie();
+          }
+        }}
         isWatched={
           selectedMovie ? isWatched(selectedMovie.id) : false
         }
@@ -1547,7 +1550,8 @@ export function MoviesTab({
           selectedMovie && handleUnwatched(selectedMovie.id)
         }
         isLikeLoading={isLikeLoading}
-        isDislikeLoading={false}
+        isDislikeLoading={selectedMovie ? pendingRemovals.has(selectedMovie.id) : false}
+        showNotInterested={true}
         isWatchedLoading={
           isWatchedLoading ||
           (selectedMovie

@@ -41,6 +41,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isMarkingAllRead, setIsMarkingAllRead] = useState(false);
   const [hasMore, setHasMore] = useState(false);
   const [offset, setOffset] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -121,6 +122,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
 
   // Mark all as read
   const handleMarkAllRead = async () => {
+    setIsMarkingAllRead(true);
     try {
       await fetch(`${API_BASE_URL}/notifications/mark-all-read`, {
         method: 'POST',
@@ -131,6 +133,8 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error('Error marking all as read:', error);
+    } finally {
+      setIsMarkingAllRead(false);
     }
   };
 
@@ -490,7 +494,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
 
       <DropdownMenuContent
         align="end"
-        className="w-[380px] max-h-[500px] bg-slate-800 border-slate-700 p-0"
+        className="w-screen max-w-[380px] max-h-[500px] bg-slate-800 border-slate-700 p-0"
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-700">
@@ -498,8 +502,10 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+              disabled={isMarkingAllRead}
+              className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
             >
+              {isMarkingAllRead && <Loader2 className="size-3 animate-spin" />}
               Mark all read
             </button>
           )}

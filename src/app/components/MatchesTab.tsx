@@ -748,6 +748,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         onLike={() => {}}
         onUnlike={() => selectedMovie && handleUnlike(selectedMovie.id)}
         onDislike={() => selectedMovie && handleDislike(selectedMovie.id)}
+        showNotInterested={false}
         isWatched={selectedMovie ? watchedMovieIds.has(selectedMovie.id) : false}
         isWatchedLoading={selectedMovie ? watchedLoadingIds.has(selectedMovie.id) : false}
         onWatched={() => selectedMovie && handleWatched(selectedMovie)}
