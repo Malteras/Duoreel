@@ -335,8 +335,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     } catch { toast.error('Failed to remove partner'); }
   };
 
+  const [isLikeLoading, setIsLikeLoading] = useState(false);
+
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
+    setIsLikeLoading(true);
     try {
       const res = await fetch(`${baseUrl}/movies/like/${movieId}`, {
         method: 'DELETE',
@@ -348,6 +351,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         toast.success('Removed from your list');
       }
     } catch { toast.error('Failed to unlike movie'); }
+    finally { setIsLikeLoading(false); }
   };
 
   const handleDislike = async (movieId: number) => {
@@ -748,6 +752,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         onLike={() => {}}
         onUnlike={() => selectedMovie && handleUnlike(selectedMovie.id)}
         onDislike={() => selectedMovie && handleDislike(selectedMovie.id)}
+        isLikeLoading={isLikeLoading}
         showNotInterested={false}
         isWatched={selectedMovie ? watchedMovieIds.has(selectedMovie.id) : false}
         isWatchedLoading={selectedMovie ? watchedLoadingIds.has(selectedMovie.id) : false}

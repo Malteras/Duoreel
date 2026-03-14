@@ -60,6 +60,7 @@ export function SavedMoviesTab({
   const [loading, setLoading] = useState(true);
   const [likedMoviesReady, setLikedMoviesReady] = useState(false);
   const [isLikeLoading, setIsLikeLoading] = useState(false);
+  const [likeLoadingIds, setLikeLoadingIds] = useState<Set<number>>(new Set());
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
   const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
@@ -277,6 +278,7 @@ export function SavedMoviesTab({
   const handleUnlike = async (movieId: number) => {
     if (!accessToken) return;
     setIsLikeLoading(true);
+    setLikeLoadingIds((prev) => new Set(prev).add(movieId));
     try {
       const response = await fetch(`${baseUrl}/movies/like/${movieId}`, {
         method: 'DELETE',
@@ -294,6 +296,7 @@ export function SavedMoviesTab({
       toast.error('Failed to unlike movie');
     } finally {
       setIsLikeLoading(false);
+      setLikeLoadingIds((prev) => { const s = new Set(prev); s.delete(movieId); return s; });
     }
   };
 
@@ -699,13 +702,15 @@ export function SavedMoviesTab({
                       onGenreClick={(genreId) => navigateToDiscoverWithFilter('genre', genreId)}
                       topLeftOverlay={
                         <button
-                          className="size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors"
-                          onClick={(e) => { e.stopPropagation(); handleUnlike(movie.id); }}
+                          className={`size-8 rounded-full bg-green-500 hover:bg-green-600 flex items-center justify-center transition-colors ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                          onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) handleUnlike(movie.id); }}
+                          disabled={likeLoadingIds.has(movie.id)}
                           aria-label="Remove from watchlist"
                         >
-                          <svg className="size-4 fill-white text-white" fill="currentColor" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                          </svg>
+                          {likeLoadingIds.has(movie.id)
+                            ? <Loader2 className="size-4 text-white animate-spin" />
+                            : <svg className="size-4 fill-white text-white" fill="currentColor" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                          }
                         </button>
                       }
                     />
