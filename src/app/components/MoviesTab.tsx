@@ -695,11 +695,7 @@ export function MoviesTab({
       const data = await response.json();
 
       if (response.ok) {
-        // Add to liked movies and remove from discover feed
         setLikedMovies((prev) => [...prev, movieData]);
-        setMovies((prev) =>
-          prev.filter((m) => m.id !== movie.id),
-        );
 
         if (data.isMatch) {
           toast.success(
