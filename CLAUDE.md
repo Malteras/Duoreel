@@ -48,6 +48,10 @@ vercel.json                   — SPA rewrite rules
 - **Edge function name:** `make-server-5623fde1` (NOT "server")
 - **KV table:** `kv_store_5623fde1`
 
+## Architecture Reference
+
+For KV store key patterns, API endpoints, notification types, and data architecture see `DUOREEL_ARCHITECTURE.md`.
+
 ## Deploy Edge Function (Windows / Git Bash)
 
 ```bash
