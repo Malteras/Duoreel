@@ -266,6 +266,7 @@ export function MoviesTab({
     publicAnonKey,
     baseUrl,
     dep: activeSectionView,
+    batchSize: 10,
   });
 
   // Enrich all section preview row cards atomically (single setSectionPreviews write per batch)

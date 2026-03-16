@@ -322,13 +322,13 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
           {/* Partner watched indicator moved above title */}
 
           {/* Genres */}
-          {movie.genres && movie.genres.length > 0 && (
+          {movie.genres && movie.genres.length > 0 ? (
             <div className="mb-3">
               <div className="flex flex-wrap gap-2">
                 {movie.genres.map((genre) => (
                   <Badge
-                    key={genre.id} 
-                    variant="secondary" 
+                    key={genre.id}
+                    variant="secondary"
                     className="bg-purple-600/70 text-white border-purple-500 cursor-pointer hover:bg-purple-700 hover:border-purple-400 transition-colors text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -340,7 +340,14 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
                 ))}
               </div>
             </div>
-          )}
+          ) : movie.vote_average > 0 ? (
+            <div className="mb-3">
+              <div className="flex flex-wrap gap-2">
+                <div className="h-5 w-16 rounded-full bg-slate-700/60 animate-pulse" />
+                <div className="h-5 w-20 rounded-full bg-slate-700/60 animate-pulse" />
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Description */}
