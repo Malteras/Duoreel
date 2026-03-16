@@ -259,12 +259,32 @@ export function MoviesTab({
   });
 
   // Enrich section view movies (genre tags, director, cast, IMDb)
-  useEnrichMovies({
+  const { resetEnrichment: resetSectionEnrichment } = useEnrichMovies({
     movies: sectionMovies,
     setMovies: setSectionMovies,
     publicAnonKey,
     baseUrl,
     dep: activeSectionView,
+  });
+
+  // Enrich section preview row cards (home view) so they get genres, external_ids, IMDb
+  useEnrichMovies({
+    movies: sectionPreviews.recs,
+    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, recs: typeof updater === 'function' ? updater(prev.recs) : updater })),
+    publicAnonKey,
+    baseUrl,
+  });
+  useEnrichMovies({
+    movies: sectionPreviews.trending,
+    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, trending: typeof updater === 'function' ? updater(prev.trending) : updater })),
+    publicAnonKey,
+    baseUrl,
+  });
+  useEnrichMovies({
+    movies: sectionPreviews.gems,
+    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, gems: typeof updater === 'function' ? updater(prev.gems) : updater })),
+    publicAnonKey,
+    baseUrl,
   });
 
   // Restore enrichedIds from cache on mount (only once)
@@ -752,6 +772,59 @@ export function MoviesTab({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sectionMovies]);
 
+  // ─────────────── Fetch IMDb ratings for section preview row cards ────────────────
+  useEffect(() => {
+    const allPreviews = [
+      ...sectionPreviews.recs,
+      ...sectionPreviews.trending,
+      ...sectionPreviews.gems,
+    ];
+    if (allPreviews.length === 0) return;
+
+    const enrichedWithImdb = allPreviews.filter(
+      (m) => m.external_ids?.imdb_id && !imdbRatings.has(m.id),
+    );
+    if (enrichedWithImdb.length === 0) return;
+
+    const fetchPreviewRatings = async () => {
+      try {
+        const tmdbIds = enrichedWithImdb.map((m) => m.id);
+        const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
+
+        if (cached.size > 0) {
+          setImdbRatings((prev) => {
+            const updated = new Map(prev);
+            cached.forEach((value, tmdbId) => {
+              if (value.rating) updated.set(tmdbId, value.rating);
+            });
+            return updated;
+          });
+          setGlobalImdbCache((prev) => {
+            const updated = new Map(prev);
+            cached.forEach((value, tmdbId) => {
+              const imdbId = enrichedWithImdb.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+              if (imdbId && value.rating) updated.set(imdbId, value.rating);
+            });
+            return updated;
+          });
+        }
+
+        const moviesWithImdbIds = enrichedWithImdb.filter(
+          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
+        );
+        if (moviesWithImdbIds.length > 0) {
+          const visibleIds = new Set(allPreviews.slice(0, 12).map((m) => m.id));
+          fetchMissingRatings(moviesWithImdbIds, visibleIds, projectId, publicAnonKey);
+        }
+      } catch (error) {
+        console.error('Error fetching preview IMDb ratings:', error);
+      }
+    };
+
+    fetchPreviewRatings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionPreviews.recs.length, sectionPreviews.trending.length, sectionPreviews.gems.length]);
+
   // Listen for individual rating updates from background fetch.
   // Uses moviesRef (not movies state) so this effect never re-runs mid-fetch —
   // re-subscribing during fetchMissingRatings would drop emissions in the gap.
@@ -1076,6 +1149,7 @@ export function MoviesTab({
   };
 
   const enterSection = (section: 'recs' | 'trending' | 'gems') => {
+    resetSectionEnrichment(); // clear stale enriched IDs so new section movies enrich immediately
     setActiveSectionView(section);
     setSectionPage(1);
     setSectionMovies([]);
@@ -2065,7 +2139,11 @@ export function MoviesTab({
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}
         setGlobalImdbCache={setGlobalImdbCache}
-        imdbRatingFromCard={selectedMovie ? (imdbRatings.get(selectedMovie.id) || null) : null}
+        imdbRatingFromCard={selectedMovie ? (
+          imdbRatings.get(selectedMovie.id) ||
+          globalImdbCache?.get((selectedMovie as any).external_ids?.imdb_id) ||
+          null
+        ) : null}
         partnerWatchedIds={partnerWatchedIds}
         partnerName={partnerName}
       />
