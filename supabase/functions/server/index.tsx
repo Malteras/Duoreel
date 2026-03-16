@@ -2675,6 +2675,8 @@ app.get("/make-server-5623fde1/movies/discover", async (c) => {
     const sortBy = c.req.query("sortBy") || "popularity";
     const streamingServices = c.req.query("streamingServices"); // pipe-separated list
     const maxVoteCount = c.req.query("maxVoteCount"); // optional upper vote count cap (for hidden gems)
+    const maxReleaseDate = c.req.query("maxReleaseDate");
+    const minVoteCount = c.req.query("minVoteCount");
 
     // Map frontend sort values to TMDb sort_by values
     let tmdbSortBy = "popularity.desc";
@@ -2747,10 +2749,11 @@ app.get("/make-server-5623fde1/movies/discover", async (c) => {
     url += `&primary_release_date.lte=${today}`;
 
     // Add minimum vote count to filter out unreleased/obscure movies
-    url += `&vote_count.gte=10`;
+    url += `&vote_count.gte=${minVoteCount || '10'}`;
 
     // Optional upper vote count cap — used by hidden gems mode (500–5000 votes)
     if (maxVoteCount) url += `&vote_count.lte=${maxVoteCount}`;
+    if (maxReleaseDate) url += `&primary_release_date.lte=${maxReleaseDate}`;
 
     const response = await fetch(url);
     const data = await response.json();
