@@ -70,25 +70,36 @@ export function SectionPreviewCard({
               <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
             </div>
           )}
-          {displayImdbRating && displayImdbRating !== 'N/A' && (
-            <a
-              href={imdbId ? `https://www.imdb.com/title/${imdbId}` : undefined}
-              target={imdbId ? '_blank' : undefined}
-              rel={imdbId ? 'noopener noreferrer' : undefined}
-              onClick={imdbId ? (e) => e.stopPropagation() : undefined}
-              className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0 ${
-                displayImdbRating !== 'NOT_FOUND' ? 'bg-[#F5C518]' : 'bg-[#F5C518]/50'
-              } ${imdbId ? 'hover:opacity-80 transition-opacity' : ''}`}
-            >
-              <span className={`text-[8px] font-bold uppercase tracking-wide ${
-                displayImdbRating !== 'NOT_FOUND' ? 'text-black' : 'text-black/40'
-              }`}>IMDb</span>
-              {displayImdbRating !== 'NOT_FOUND' ? (
-                <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
-              ) : (
-                <span className="text-[10px] font-bold text-black/40">—</span>
-              )}
-            </a>
+          {movie.vote_average > 0 && displayImdbRating !== 'N/A' && (
+            imdbId ? (
+              <a
+                href={`https://www.imdb.com/title/${imdbId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0 hover:opacity-80 transition-opacity ${
+                  displayImdbRating && displayImdbRating !== 'NOT_FOUND'
+                    ? 'bg-[#F5C518]'
+                    : 'bg-[#F5C518]/50'
+                }`}
+              >
+                <span className={`text-[8px] font-bold uppercase tracking-wide ${
+                  displayImdbRating && displayImdbRating !== 'NOT_FOUND' ? 'text-black' : 'text-black/40'
+                }`}>IMDb</span>
+                {!displayImdbRating ? (
+                  <Loader2 className="size-2.5 animate-spin text-black/50" />
+                ) : displayImdbRating === 'NOT_FOUND' ? (
+                  <span className="text-[10px] font-bold text-black/40">—</span>
+                ) : (
+                  <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+                )}
+              </a>
+            ) : (
+              <div className="bg-[#F5C518]/50 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0">
+                <span className="text-[8px] font-bold text-black/40 uppercase tracking-wide">IMDb</span>
+                <Loader2 className="size-2.5 animate-spin text-black/50" />
+              </div>
+            )
           )}
         </div>
 
