@@ -477,7 +477,24 @@ export function MoviesTab({
           .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
           .slice(0, 4);
 
-        setSectionPreviews({ trending: trendingPreview, gems: gemsPreview, recs: recsPreview });
+        setSectionPreviews((prev) => {
+          // Merge new raw data with any existing enrichment already applied.
+          // If a movie from the new fetch is already in prev with enrichment (genres populated),
+          // keep the enriched version. Only use the new raw version if it's truly new.
+          const mergeSlice = (newMovies: Movie[], prevMovies: Movie[]) => {
+            const prevById = new Map(prevMovies.map((m) => [m.id, m]));
+            return newMovies.map((m) => {
+              const existing = prevById.get(m.id);
+              // Prefer existing if it has enrichment data (genres populated)
+              return existing && existing.genres && existing.genres.length > 0 ? existing : m;
+            });
+          };
+          return {
+            trending: mergeSlice(trendingPreview, prev.trending),
+            gems: mergeSlice(gemsPreview, prev.gems),
+            recs: mergeSlice(recsPreview, prev.recs),
+          };
+        });
         setSectionPreviewsLoading(false);
         setDiscoverCache(c => c ? {
           ...c,
