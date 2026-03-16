@@ -268,25 +268,94 @@ export function MoviesTab({
     dep: activeSectionView,
   });
 
-  // Enrich section preview row cards (home view) so they get genres, external_ids, IMDb
-  useEnrichMovies({
-    movies: sectionPreviews.recs,
-    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, recs: typeof updater === 'function' ? updater(prev.recs) : updater })),
+  // Enrich all section preview row cards atomically (single setSectionPreviews write per batch)
+  // This avoids a race condition where concurrent writes from three separate useEnrichMovies
+  // calls overwrite each other's genre/director/cast results.
+  const previewEnrichingRef = useRef<Set<number>>(new Set());
+  useEffect(() => {
+    if (!publicAnonKey) return;
+    const allPreviews = [
+      ...sectionPreviews.recs,
+      ...sectionPreviews.trending,
+      ...sectionPreviews.gems,
+    ];
+    if (allPreviews.length === 0) return;
+
+    const toEnrich = allPreviews.filter(
+      (m) =>
+        (!m.genres || m.genres.length === 0) &&
+        !previewEnrichingRef.current.has(m.id)
+    );
+    if (toEnrich.length === 0) return;
+
+    toEnrich.forEach((m) => previewEnrichingRef.current.add(m.id));
+
+    const enrich = async () => {
+      const BATCH = 5;
+      for (let i = 0; i < toEnrich.length; i += BATCH) {
+        const batch = toEnrich.slice(i, i + BATCH);
+        const results = await Promise.allSettled(
+          batch.map(async (movie) => {
+            try {
+              const res = await fetch(`${baseUrl}/movies/${movie.id}`, {
+                headers: { Authorization: `Bearer ${publicAnonKey}` },
+              });
+              if (!res.ok) return null;
+              return { id: movie.id, data: await res.json() };
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        // Build update map for this batch
+        const updates = new Map<number, Partial<Movie>>();
+        results.forEach((result) => {
+          if (result.status !== 'fulfilled' || !result.value) return;
+          const { id, data: d } = result.value;
+          const director = d.credits?.crew?.find((c: any) => c.job === 'Director')?.name;
+          const actors = d.credits?.cast?.slice(0, 5).map((a: any) => a.name);
+          updates.set(id, {
+            runtime: d.runtime,
+            director,
+            actors,
+            genres: d.genres,
+            external_ids: d.external_ids,
+            homepage: d.homepage,
+            'watch/providers': d['watch/providers'],
+          });
+        });
+
+        if (updates.size === 0) continue;
+
+        // Single atomic write — all three slices updated together, no race
+        setSectionPreviews((prev) => {
+          const applyUpdates = (movies: Movie[]) =>
+            movies.map((m) => {
+              const u = updates.get(m.id);
+              return u ? { ...m, ...u } : m;
+            });
+          return {
+            recs: applyUpdates(prev.recs),
+            trending: applyUpdates(prev.trending),
+            gems: applyUpdates(prev.gems),
+          };
+        });
+
+        if (i + BATCH < toEnrich.length) {
+          await new Promise((r) => setTimeout(r, 200));
+        }
+      }
+    };
+
+    enrich();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    sectionPreviews.recs.length,
+    sectionPreviews.trending.length,
+    sectionPreviews.gems.length,
     publicAnonKey,
-    baseUrl,
-  });
-  useEnrichMovies({
-    movies: sectionPreviews.trending,
-    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, trending: typeof updater === 'function' ? updater(prev.trending) : updater })),
-    publicAnonKey,
-    baseUrl,
-  });
-  useEnrichMovies({
-    movies: sectionPreviews.gems,
-    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, gems: typeof updater === 'function' ? updater(prev.gems) : updater })),
-    publicAnonKey,
-    baseUrl,
-  });
+  ]);
 
   // Restore enrichedIds from cache on mount (only once)
   const restoredEnrichRef = useRef(false);
