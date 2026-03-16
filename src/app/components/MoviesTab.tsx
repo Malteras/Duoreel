@@ -704,6 +704,54 @@ export function MoviesTab({
     fetchRatings();
   }, [movies]);
 
+  // ─────────────── Fetch IMDb ratings for section movies ────────────────
+  useEffect(() => {
+    if (sectionMovies.length === 0) return;
+
+    const enrichedWithImdb = sectionMovies.filter(
+      (m) => m.external_ids?.imdb_id && !imdbRatings.has(m.id),
+    );
+    if (enrichedWithImdb.length === 0) return;
+
+    const fetchSectionRatings = async () => {
+      try {
+        const tmdbIds = enrichedWithImdb.map((m) => m.id);
+        const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
+
+        if (cached.size > 0) {
+          setImdbRatings((prev) => {
+            const updated = new Map(prev);
+            cached.forEach((value, tmdbId) => {
+              if (value.rating) updated.set(tmdbId, value.rating);
+            });
+            return updated;
+          });
+          setGlobalImdbCache((prev) => {
+            const updated = new Map(prev);
+            cached.forEach((value, tmdbId) => {
+              const imdbId = enrichedWithImdb.find(m => m.id === tmdbId)?.external_ids?.imdb_id;
+              if (imdbId && value.rating) updated.set(imdbId, value.rating);
+            });
+            return updated;
+          });
+        }
+
+        const moviesWithImdbIds = enrichedWithImdb.filter(
+          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
+        );
+        if (moviesWithImdbIds.length > 0) {
+          const visibleIds = new Set(sectionMovies.slice(0, 8).map((m) => m.id));
+          fetchMissingRatings(moviesWithImdbIds, visibleIds, projectId, publicAnonKey);
+        }
+      } catch (error) {
+        console.error('Error fetching section IMDb ratings:', error);
+      }
+    };
+
+    fetchSectionRatings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sectionMovies]);
+
   // Listen for individual rating updates from background fetch.
   // Uses moviesRef (not movies state) so this effect never re-runs mid-fetch —
   // re-subscribing during fetchMissingRatings would drop emissions in the gap.
@@ -1515,11 +1563,22 @@ export function MoviesTab({
                   <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium text-slate-400">
-                        Because you saved <span className="text-white">{recSeedMovie.title}</span>
+                        Because you saved{' '}
+                        <span
+                          className="text-white cursor-pointer hover:text-slate-300 transition-colors"
+                          onClick={(e) => { e.stopPropagation(); openMovie(recSeedMovie); }}
+                        >
+                          {recSeedMovie.title}
+                          {recSeedMovie.release_date && (
+                            <span className="text-slate-400 font-normal">
+                              {' '}({new Date(recSeedMovie.release_date).getFullYear()})
+                            </span>
+                          )}
+                        </span>
                       </p>
                       <button
                         onClick={() => enterSection('recs')}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         See all <ChevronRight className="size-3" />
                       </button>
@@ -1534,6 +1593,7 @@ export function MoviesTab({
                           isLiked={likedMovieIds.has(movie.id)}
                           isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
                           isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                          imdbRating={imdbRatings.get(movie.id)}
                           onLike={() => handleSectionLike(movie)}
                           onUnlike={() => handleSectionUnlike(movie.id)}
                           onNotInterested={() => handleNotInterested(movie.id)}
@@ -1551,7 +1611,7 @@ export function MoviesTab({
                       <p className="text-sm font-medium text-slate-400">🔥 Trending this week</p>
                       <button
                         onClick={() => enterSection('trending')}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         See all <ChevronRight className="size-3" />
                       </button>
@@ -1566,6 +1626,7 @@ export function MoviesTab({
                           isLiked={likedMovieIds.has(movie.id)}
                           isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
                           isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                          imdbRating={imdbRatings.get(movie.id)}
                           onLike={() => handleSectionLike(movie)}
                           onUnlike={() => handleSectionUnlike(movie.id)}
                           onNotInterested={() => handleNotInterested(movie.id)}
@@ -1583,7 +1644,7 @@ export function MoviesTab({
                       <p className="text-sm font-medium text-slate-400">💎 Hidden gems</p>
                       <button
                         onClick={() => enterSection('gems')}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 cursor-pointer"
                       >
                         See all <ChevronRight className="size-3" />
                       </button>
@@ -1598,6 +1659,7 @@ export function MoviesTab({
                           isLiked={likedMovieIds.has(movie.id)}
                           isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
                           isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                          imdbRating={imdbRatings.get(movie.id)}
                           onLike={() => handleSectionLike(movie)}
                           onUnlike={() => handleSectionUnlike(movie.id)}
                           onNotInterested={() => handleNotInterested(movie.id)}

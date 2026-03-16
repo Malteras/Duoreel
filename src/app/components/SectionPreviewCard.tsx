@@ -1,4 +1,4 @@
-import { Ban, Bookmark, Loader2, ChevronRight } from 'lucide-react';
+import { Ban, Bookmark, Loader2 } from 'lucide-react';
 import type { Movie } from '../../types/movie';
 
 interface SectionPreviewCardProps {
@@ -8,6 +8,7 @@ interface SectionPreviewCardProps {
   isLiked: boolean;
   isLikeLoading: boolean;
   isNotInterested: boolean;
+  imdbRating?: string | null;
   onLike: () => void;
   onUnlike: () => void;
   onNotInterested: () => void;
@@ -21,6 +22,7 @@ export function SectionPreviewCard({
   isLiked,
   isLikeLoading,
   isNotInterested,
+  imdbRating,
   onLike,
   onUnlike,
   onNotInterested,
@@ -32,9 +34,9 @@ export function SectionPreviewCard({
   const year = movie.release_date
     ? new Date(movie.release_date).getFullYear()
     : '';
-  const runtime = movie.runtime
-    ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m`
-    : '';
+
+  const displayImdbRating = imdbRating || (movie as any).imdbRating || null;
+  const genres = (movie.genres || []).slice(0, 2);
 
   return (
     <div
@@ -48,11 +50,7 @@ export function SectionPreviewCard({
       {/* Poster thumbnail */}
       <div className="w-9 h-[52px] rounded-md overflow-hidden flex-shrink-0 bg-slate-700">
         {posterUrl ? (
-          <img
-            src={posterUrl}
-            alt={movie.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={posterUrl} alt={movie.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-slate-700" />
         )}
@@ -60,34 +58,62 @@ export function SectionPreviewCard({
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-white text-sm font-medium truncate">{movie.title}</p>
-        <p className="text-slate-400 text-xs mt-0.5">
-          {[year, runtime].filter(Boolean).join(' · ')}
-        </p>
+        {/* Row 1: title + ratings */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <p className="text-white text-sm font-medium truncate max-w-[180px]">{movie.title}</p>
+          {movie.vote_average > 0 && (
+            <div className="bg-blue-600/90 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0">
+              <span className="text-[8px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
+              <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
+            </div>
+          )}
+          {displayImdbRating && displayImdbRating !== 'N/A' && (
+            <div className="bg-[#F5C518] px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0">
+              <span className="text-[8px] font-bold text-black uppercase tracking-wide">IMDb</span>
+              <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Row 2: year */}
+        <p className="text-slate-400 text-xs mt-0.5">{year}</p>
+
+        {/* Row 3: section badge | genre tags */}
         {badge && (
-          <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mt-1 ${badgeClassName}`}>
-            {badge}
-          </span>
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+            <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full ${badgeClassName}`}>
+              {badge}
+            </span>
+            {genres.length > 0 && (
+              <>
+                <span className="w-px h-3 bg-slate-600 flex-shrink-0" />
+                {genres.map((genre) => (
+                  <span
+                    key={genre.id}
+                    className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-purple-600/70 text-white border border-purple-500"
+                  >
+                    {genre.name}
+                  </span>
+                ))}
+              </>
+            )}
+          </div>
         )}
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
         <div className="w-px h-5 bg-slate-700" />
-        {/* Not interested — Ban icon, exact same style as MovieCard */}
         <button
-          className="size-7 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors"
+          className="size-7 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
           onClick={(e) => { e.stopPropagation(); onNotInterested(); }}
           aria-label="Not interested"
         >
           <Ban className="size-3.5 text-white" />
         </button>
-        {/* Save — Bookmark icon with loading state, exact same style as MovieCard */}
         <button
-          className={`size-7 rounded-full flex items-center justify-center transition-colors ${
-            isLiked
-              ? 'bg-green-500 hover:bg-green-600'
-              : 'bg-slate-800/90 hover:bg-slate-700'
+          className={`size-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+            isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-800/90 hover:bg-slate-700'
           } ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
           onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? onUnlike() : onLike(); } }}
           disabled={isLikeLoading}
@@ -102,7 +128,6 @@ export function SectionPreviewCard({
             />
           )}
         </button>
-        <ChevronRight className="size-3.5 text-slate-600 ml-1" />
       </div>
     </div>
   );
