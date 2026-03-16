@@ -13,6 +13,7 @@ interface SectionPreviewCardProps {
   onUnlike: () => void;
   onNotInterested: () => void;
   onClick: () => void;
+  onGenreClick?: (genreId: number) => void;
 }
 
 export function SectionPreviewCard({
@@ -27,6 +28,7 @@ export function SectionPreviewCard({
   onUnlike,
   onNotInterested,
   onClick,
+  onGenreClick,
 }: SectionPreviewCardProps) {
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w154${movie.poster_path}`
@@ -37,6 +39,7 @@ export function SectionPreviewCard({
 
   const displayImdbRating = imdbRating || (movie as any).imdbRating || null;
   const genres = (movie.genres || []).slice(0, 2);
+  const imdbId = (movie as any).external_ids?.imdb_id;
 
   return (
     <div
@@ -68,9 +71,15 @@ export function SectionPreviewCard({
             </div>
           )}
           {displayImdbRating && displayImdbRating !== 'N/A' && (
-            <div className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0 ${
-              displayImdbRating !== 'NOT_FOUND' ? 'bg-[#F5C518]' : 'bg-[#F5C518]/50'
-            }`}>
+            <a
+              href={imdbId ? `https://www.imdb.com/title/${imdbId}` : undefined}
+              target={imdbId ? '_blank' : undefined}
+              rel={imdbId ? 'noopener noreferrer' : undefined}
+              onClick={imdbId ? (e) => e.stopPropagation() : undefined}
+              className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0 ${
+                displayImdbRating !== 'NOT_FOUND' ? 'bg-[#F5C518]' : 'bg-[#F5C518]/50'
+              } ${imdbId ? 'hover:opacity-80 transition-opacity' : ''}`}
+            >
               <span className={`text-[8px] font-bold uppercase tracking-wide ${
                 displayImdbRating !== 'NOT_FOUND' ? 'text-black' : 'text-black/40'
               }`}>IMDb</span>
@@ -79,7 +88,7 @@ export function SectionPreviewCard({
               ) : (
                 <span className="text-[10px] font-bold text-black/40">—</span>
               )}
-            </div>
+            </a>
           )}
         </div>
 
@@ -98,7 +107,8 @@ export function SectionPreviewCard({
                 {genres.map((genre) => (
                   <span
                     key={genre.id}
-                    className="inline-block text-[10px] px-1.5 py-0.5 rounded bg-purple-600/70 text-white border border-purple-500"
+                    className={`inline-block text-[10px] px-1.5 py-0.5 rounded bg-purple-600/70 text-white border border-purple-500 ${onGenreClick ? 'cursor-pointer hover:bg-purple-700' : ''}`}
+                    onClick={onGenreClick ? (e) => { e.stopPropagation(); onGenreClick(genre.id); } : undefined}
                   >
                     {genre.name}
                   </span>
