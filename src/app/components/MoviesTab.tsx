@@ -43,6 +43,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Ban,
+  Bookmark,
   X,
   Film,
   LayoutGrid,
@@ -1602,18 +1603,48 @@ export function MoviesTab({
                     )}
                     {viewMode === 'compact' && (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {sectionMovies.map((movie) => (
-                          <CompactMovieCard
-                            key={movie.id}
-                            movie={movie}
-                            onClick={() => openMovie(movie)}
-                            isWatched={isWatched(movie.id)}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            globalImdbCache={globalImdbCache}
-                            partnerWatchedIds={partnerWatchedIds}
-                            partnerName={partnerName}
-                          />
-                        ))}
+                        {sectionMovies.map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={isWatched(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              globalImdbCache={globalImdbCache}
+                              partnerWatchedIds={partnerWatchedIds}
+                              partnerName={partnerName}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                  aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
+                                >
+                                  {isLikeLoading
+                                    ? <Loader2 className={`size-3.5 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} />
+                                    : <Bookmark className={`size-3.5 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} />
+                                  }
+                                </button>
+                              }
+                              topRightOverlay={
+                                <button
+                                  className="size-7 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                                  onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}
+                                  disabled={notInterestedLoadingIds.has(movie.id)}
+                                  aria-label="Not interested"
+                                >
+                                  {notInterestedLoadingIds.has(movie.id)
+                                    ? <Loader2 className="size-3.5 animate-spin text-white" />
+                                    : <Ban className="size-3.5 text-white" />
+                                  }
+                                </button>
+                              }
+                            />
+                          );
+                        })}
                       </div>
                     )}
                     <div ref={sectionSentinelRef} className="flex justify-center mt-8 h-12 items-center">
