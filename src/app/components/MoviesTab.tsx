@@ -794,6 +794,16 @@ export function MoviesTab({
     fetchRatings();
   }, [movies]);
 
+  // Count of enriched preview movies — used as dep to fire IMDb fetch after enrichment completes
+  const enrichedPreviewCount = useMemo(() => {
+    const allPreviews = [
+      ...sectionPreviews.recs,
+      ...sectionPreviews.trending,
+      ...sectionPreviews.gems,
+    ];
+    return allPreviews.filter((m) => (m as any).external_ids?.imdb_id).length;
+  }, [sectionPreviews]);
+
   // ─────────────── Fetch IMDb ratings for section movies ────────────────
   useEffect(() => {
     if (sectionMovies.length === 0) return;
@@ -892,8 +902,9 @@ export function MoviesTab({
     };
 
     fetchPreviewRatings();
+    // enrichedPreviewCount as dep ensures this re-runs after enrichment adds external_ids
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sectionPreviews.recs.length, sectionPreviews.trending.length, sectionPreviews.gems.length]);
+  }, [enrichedPreviewCount]);
 
   // Listen for individual rating updates from background fetch.
   // Uses moviesRef (not movies state) so this effect never re-runs mid-fetch —
