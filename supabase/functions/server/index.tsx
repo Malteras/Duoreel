@@ -2604,6 +2604,55 @@ app.post(
   },
 );
 
+// Trending movies — TMDB /trending/movie/week
+app.get("/make-server-5623fde1/movies/trending", async (c) => {
+  try {
+    const apiKey = Deno.env.get("TMDB_API_KEY");
+    if (!apiKey) {
+      return c.json({ error: "TMDb API key not configured" }, 500);
+    }
+
+    const page = c.req.query("page") || "1";
+
+    const response = await fetch(
+      `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&page=${page}`
+    );
+    const data = await response.json();
+
+    return c.json(data);
+  } catch (error) {
+    console.error("Error fetching trending movies:", error);
+    return c.json({ error: `Failed to fetch trending movies: ${error}` }, 500);
+  }
+});
+
+// Movie recommendations based on a seed movie
+app.get("/make-server-5623fde1/movies/recommendations/:tmdbId", async (c) => {
+  try {
+    const apiKey = Deno.env.get("TMDB_API_KEY");
+    if (!apiKey) {
+      return c.json({ error: "TMDb API key not configured" }, 500);
+    }
+
+    const tmdbId = c.req.param("tmdbId");
+    const page = c.req.query("page") || "1";
+
+    if (!tmdbId || isNaN(Number(tmdbId))) {
+      return c.json({ error: "Invalid tmdbId" }, 400);
+    }
+
+    const response = await fetch(
+      `https://api.themoviedb.org/3/movie/${tmdbId}/recommendations?api_key=${apiKey}&page=${page}`
+    );
+    const data = await response.json();
+
+    return c.json(data);
+  } catch (error) {
+    console.error("Error fetching movie recommendations:", error);
+    return c.json({ error: `Failed to fetch recommendations: ${error}` }, 500);
+  }
+});
+
 // Fetch movies from TMDb
 app.get("/make-server-5623fde1/movies/discover", async (c) => {
   try {
@@ -2625,6 +2674,7 @@ app.get("/make-server-5623fde1/movies/discover", async (c) => {
     const duration = c.req.query("duration");
     const sortBy = c.req.query("sortBy") || "popularity";
     const streamingServices = c.req.query("streamingServices"); // pipe-separated list
+    const maxVoteCount = c.req.query("maxVoteCount"); // optional upper vote count cap (for hidden gems)
 
     // Map frontend sort values to TMDb sort_by values
     let tmdbSortBy = "popularity.desc";
@@ -2698,6 +2748,9 @@ app.get("/make-server-5623fde1/movies/discover", async (c) => {
 
     // Add minimum vote count to filter out unreleased/obscure movies
     url += `&vote_count.gte=10`;
+
+    // Optional upper vote count cap — used by hidden gems mode (500–5000 votes)
+    if (maxVoteCount) url += `&vote_count.lte=${maxVoteCount}`;
 
     const response = await fetch(url);
     const data = await response.json();
