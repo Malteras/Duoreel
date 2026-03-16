@@ -13,6 +13,8 @@ export interface DiscoverCache {
   showWatchedMovies: boolean;
   imdbRatings: Map<number, string>;
   enrichedIds: Set<number>;
+  sectionPreviews?: { recs: Movie[]; trending: Movie[]; gems: Movie[] };
+  recSeedMovie?: Movie | null;
 }
 
 // ── Saved cache ───────────────────────────────────────────────────────────────

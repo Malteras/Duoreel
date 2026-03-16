@@ -210,7 +210,7 @@ export function MoviesTab({
     recs: Movie[];
     trending: Movie[];
     gems: Movie[];
-  }>({ recs: [], trending: [], gems: [] });
+  }>(() => discoverCache?.sectionPreviews ?? { recs: [], trending: [], gems: [] });
   // Section full-view movies (for the slide-in view)
   const [sectionMovies, setSectionMovies] = useState<Movie[]>([]);
   const [sectionLoading, setSectionLoading] = useState(false);
@@ -219,7 +219,7 @@ export function MoviesTab({
   const [sectionHasMore, setSectionHasMore] = useState(true);
   const sectionSentinelRef = useRef<HTMLDivElement | null>(null);
   // Seed movie for "Because you saved X" — random from top 10 liked movies
-  const [recSeedMovie, setRecSeedMovie] = useState<Movie | null>(null);
+  const [recSeedMovie, setRecSeedMovie] = useState<Movie | null>(() => discoverCache?.recSeedMovie ?? null);
   // Track section preview like loading per movie
   const [sectionLikeLoadingIds, setSectionLikeLoadingIds] = useState<Set<number>>(new Set());
 
@@ -256,6 +256,15 @@ export function MoviesTab({
     onEnriched: (updatedMovies) => {
       setDiscoverCache(c => c ? { ...c, movies: updatedMovies } : null);
     },
+  });
+
+  // Enrich section view movies (genre tags, director, cast, IMDb)
+  useEnrichMovies({
+    movies: sectionMovies,
+    setMovies: setSectionMovies,
+    publicAnonKey,
+    baseUrl,
+    dep: activeSectionView,
   });
 
   // Restore enrichedIds from cache on mount (only once)
@@ -345,7 +354,12 @@ export function MoviesTab({
       try {
         const [trendingRes, gemsRes, recsRes] = await Promise.all([
           fetch(`${baseUrl}/movies/trending?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } }),
-          fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&maxVoteCount=5000&page=1`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          (() => {
+            const twoYearsAgo = new Date();
+            twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+            const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
+            return fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=1`, { headers: { Authorization: `Bearer ${accessToken}` } });
+          })(),
           seed
             ? fetch(`${baseUrl}/movies/recommendations/${seed.id}?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } })
             : Promise.resolve(null),
@@ -358,12 +372,22 @@ export function MoviesTab({
         ]);
 
         const likedIds = new Set(likedMovies.map((m) => m.id));
+        const trendingPreview = (trendingData.results || [])
+          .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
+          .slice(0, 4);
+        const gemsPreview = (gemsData.results || [])
+          .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
+          .slice(0, 4);
+        const recsPreview = (recsData.results || [])
+          .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
+          .slice(0, 4);
 
-        setSectionPreviews({
-          trending: (trendingData.results || []).slice(0, 4),
-          gems: (gemsData.results || []).slice(0, 4),
-          recs: (recsData.results || []).filter((m: Movie) => !likedIds.has(m.id)).slice(0, 4),
-        });
+        setSectionPreviews({ trending: trendingPreview, gems: gemsPreview, recs: recsPreview });
+        setDiscoverCache(c => c ? {
+          ...c,
+          sectionPreviews: { trending: trendingPreview, gems: gemsPreview, recs: recsPreview },
+          recSeedMovie: seed,
+        } : null);
       } catch (err) {
         console.error('Error fetching section previews:', err);
       }
@@ -371,7 +395,7 @@ export function MoviesTab({
 
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, contextLoading]);
+  }, [accessToken, contextLoading, likedMovies.length]);
 
   // ──────────────── Fetch genres ────────────────
   useEffect(() => {
@@ -402,7 +426,10 @@ export function MoviesTab({
       if (section === 'trending') {
         url = `${baseUrl}/movies/trending?page=${pageNum}`;
       } else if (section === 'gems') {
-        url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&maxVoteCount=5000&page=${pageNum}`;
+        const twoYearsAgo = new Date();
+        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+        const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
+        url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${pageNum}`;
       } else if (section === 'recs' && recSeedMovie) {
         url = `${baseUrl}/movies/recommendations/${recSeedMovie.id}?page=${pageNum}`;
       } else {
