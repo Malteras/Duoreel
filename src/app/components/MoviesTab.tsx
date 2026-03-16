@@ -21,6 +21,8 @@ import {
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
 import { useEnrichMovies } from "../hooks/useEnrichMovies";
+import { SectionPreviewCard } from './SectionPreviewCard';
+import { CompactMovieCard } from './CompactMovieCard';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
@@ -38,6 +40,8 @@ import {
   SlidersHorizontal,
   Loader2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Ban,
   X,
   Film,
@@ -198,6 +202,27 @@ export function MoviesTab({
   // mid-fetch and lose rating emissions).
   const moviesRef = useRef<typeof movies>(movies);
 
+  // ── Sectioned feed state ──
+  // activeSectionView: which section is slid into view (null = home)
+  const [activeSectionView, setActiveSectionView] = useState<'recs' | 'trending' | 'gems' | null>(null);
+  // Section preview movies (4 each, shown on home view)
+  const [sectionPreviews, setSectionPreviews] = useState<{
+    recs: Movie[];
+    trending: Movie[];
+    gems: Movie[];
+  }>({ recs: [], trending: [], gems: [] });
+  // Section full-view movies (for the slide-in view)
+  const [sectionMovies, setSectionMovies] = useState<Movie[]>([]);
+  const [sectionLoading, setSectionLoading] = useState(false);
+  const [sectionLoadingMore, setSectionLoadingMore] = useState(false);
+  const [sectionPage, setSectionPage] = useState(1);
+  const [sectionHasMore, setSectionHasMore] = useState(true);
+  const sectionSentinelRef = useRef<HTMLDivElement | null>(null);
+  // Seed movie for "Because you saved X" — random from top 10 liked movies
+  const [recSeedMovie, setRecSeedMovie] = useState<Movie | null>(null);
+  // Track section preview like loading per movie
+  const [sectionLikeLoadingIds, setSectionLikeLoadingIds] = useState<Set<number>>(new Set());
+
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
     Set<number>
@@ -301,6 +326,53 @@ export function MoviesTab({
     return count;
   }, [filters]);
 
+  // Sections are hidden when user has intent-based filters active
+  const showSections = useMemo(
+    () => !isSearchMode && !filters.director && !filters.actor && !filters.keyword,
+    [isSearchMode, filters.director, filters.actor, filters.keyword],
+  );
+
+  // ──────────────── Fetch section previews on mount ────────────────
+  useEffect(() => {
+    if (!accessToken || contextLoading) return;
+
+    const fetchSectionPreviews = async () => {
+      // Pick a random seed from top 10 liked movies
+      const top10 = likedMovies.slice(0, 10);
+      const seed = top10.length > 0 ? top10[Math.floor(Math.random() * top10.length)] : null;
+      setRecSeedMovie(seed);
+
+      try {
+        const [trendingRes, gemsRes, recsRes] = await Promise.all([
+          fetch(`${baseUrl}/movies/trending?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&maxVoteCount=5000&page=1`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+          seed
+            ? fetch(`${baseUrl}/movies/recommendations/${seed.id}?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } })
+            : Promise.resolve(null),
+        ]);
+
+        const [trendingData, gemsData, recsData] = await Promise.all([
+          trendingRes.json(),
+          gemsRes.json(),
+          recsRes ? recsRes.json() : { results: [] },
+        ]);
+
+        const likedIds = new Set(likedMovies.map((m) => m.id));
+
+        setSectionPreviews({
+          trending: (trendingData.results || []).slice(0, 4),
+          gems: (gemsData.results || []).slice(0, 4),
+          recs: (recsData.results || []).filter((m: Movie) => !likedIds.has(m.id)).slice(0, 4),
+        });
+      } catch (err) {
+        console.error('Error fetching section previews:', err);
+      }
+    };
+
+    fetchSectionPreviews();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [accessToken, contextLoading]);
+
   // ──────────────── Fetch genres ────────────────
   useEffect(() => {
     const fetchGenres = async () => {
@@ -318,6 +390,46 @@ export function MoviesTab({
     };
     fetchGenres();
   }, []);
+
+  // ──────────────── Fetch full section view movies ────────────────
+  const fetchSectionMovies = useCallback(async (section: 'recs' | 'trending' | 'gems', pageNum: number, append = false) => {
+    if (!accessToken) return;
+    if (pageNum === 1) setSectionLoading(true);
+    else setSectionLoadingMore(true);
+
+    try {
+      let url = '';
+      if (section === 'trending') {
+        url = `${baseUrl}/movies/trending?page=${pageNum}`;
+      } else if (section === 'gems') {
+        url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&maxVoteCount=5000&page=${pageNum}`;
+      } else if (section === 'recs' && recSeedMovie) {
+        url = `${baseUrl}/movies/recommendations/${recSeedMovie.id}?page=${pageNum}`;
+      } else {
+        setSectionLoading(false);
+        return;
+      }
+
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+      const data = await res.json();
+      const results: Movie[] = data.results || [];
+
+      if (append) {
+        setSectionMovies((prev) => {
+          const existingIds = new Set(prev.map((m) => m.id));
+          return [...prev, ...results.filter((m) => !existingIds.has(m.id))];
+        });
+      } else {
+        setSectionMovies(results);
+      }
+      setSectionHasMore(results.length >= 10);
+    } catch (err) {
+      console.error('Error fetching section movies:', err);
+    } finally {
+      setSectionLoading(false);
+      setSectionLoadingMore(false);
+    }
+  }, [accessToken, baseUrl, recSeedMovie]);
 
   // ──────────────── Fetch movies (discover) ────────────────
   const fetchMovies = useCallback(
@@ -844,6 +956,26 @@ export function MoviesTab({
     pendingRemovals,
   ]);
 
+  // ──────────────── Section view infinite scroll ────────────────
+  useEffect(() => {
+    const sentinel = sectionSentinelRef.current;
+    if (!sentinel || !activeSectionView) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && sectionHasMore && !sectionLoadingMore && !sectionLoading) {
+          const nextPage = sectionPage + 1;
+          setSectionPage(nextPage);
+          fetchSectionMovies(activeSectionView, nextPage, true);
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [activeSectionView, sectionHasMore, sectionLoadingMore, sectionLoading, sectionPage, fetchSectionMovies]);
+
   // ──────────────── Filter handlers ────────────────
   const handleApplyFilters = (newFilters: typeof filters) => {
     setFilters(newFilters);
@@ -866,6 +998,57 @@ export function MoviesTab({
     setPage(1);
     setIsSearchMode(false);
     setSearchQuery("");
+  };
+
+  const enterSection = (section: 'recs' | 'trending' | 'gems') => {
+    setActiveSectionView(section);
+    setSectionPage(1);
+    setSectionMovies([]);
+    setSectionHasMore(true);
+    fetchSectionMovies(section, 1, false);
+  };
+
+  const exitSection = () => {
+    setActiveSectionView(null);
+    setSectionMovies([]);
+    setSectionPage(1);
+  };
+
+  const handleSectionLike = async (movie: Movie) => {
+    if (!accessToken) return;
+    setSectionLikeLoadingIds((prev) => new Set(prev).add(movie.id));
+    try {
+      const res = await fetch(`${baseUrl}/movies/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ movie }),
+      });
+      if (res.ok) {
+        setLikedMovies((prev) => [...prev, movie]);
+      }
+    } catch (err) {
+      console.error('Error liking from section:', err);
+    } finally {
+      setSectionLikeLoadingIds((prev) => { const s = new Set(prev); s.delete(movie.id); return s; });
+    }
+  };
+
+  const handleSectionUnlike = async (movieId: number) => {
+    if (!accessToken) return;
+    setSectionLikeLoadingIds((prev) => new Set(prev).add(movieId));
+    try {
+      const res = await fetch(`${baseUrl}/movies/like/${movieId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      if (res.ok) {
+        setLikedMovies((prev) => prev.filter((m) => m.id !== movieId));
+      }
+    } catch (err) {
+      console.error('Error unliking from section:', err);
+    } finally {
+      setSectionLikeLoadingIds((prev) => { const s = new Set(prev); s.delete(movieId); return s; });
+    }
   };
 
   // ──────────────── Visible (non-pending) movies ────────────────
@@ -1205,8 +1388,212 @@ export function MoviesTab({
           )}
         </div>
 
-        {/* Movie Grid */}
-        {loading || contextLoading ? (
+        {/* ── Section slide container ── */}
+        <div className="relative overflow-hidden">
+          {/* Section view (slides in from right) */}
+          <div
+            className="transition-transform duration-300 ease-in-out"
+            style={{ transform: activeSectionView ? 'translateX(0)' : 'translateX(100%)', position: activeSectionView ? 'relative' : 'absolute', top: 0, left: 0, right: 0, display: activeSectionView ? 'block' : 'none' }}
+          >
+            {activeSectionView && (
+              <>
+                {/* Section header with back arrow */}
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    onClick={exitSection}
+                    className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm"
+                  >
+                    <ChevronLeft className="size-4" />
+                    Discover
+                  </button>
+                  <div className="w-px h-4 bg-slate-700" />
+                  <span className="text-white font-medium text-sm">
+                    {activeSectionView === 'recs' && recSeedMovie && `Because you saved ${recSeedMovie.title}`}
+                    {activeSectionView === 'trending' && '🔥 Trending this week'}
+                    {activeSectionView === 'gems' && '💎 Hidden gems'}
+                  </span>
+                </div>
+
+                {/* Section movie grid — exact same as main Discover */}
+                {sectionLoading ? (
+                  <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
+                ) : sectionMovies.length === 0 ? (
+                  <div className="text-center py-20">
+                    <Film className="size-20 mx-auto mb-6 text-slate-700" />
+                    <p className="text-slate-400 text-lg">No movies found</p>
+                  </div>
+                ) : (
+                  <>
+                    {viewMode === 'grid' && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {sectionMovies.map((movie) => (
+                          <MovieCard
+                            key={movie.id}
+                            movie={movie}
+                            isLiked={likedMovieIds.has(movie.id)}
+                            isWatched={isWatched(movie.id)}
+                            onLike={() => handleLike(movie)}
+                            onUnlike={() => handleUnlike(movie.id)}
+                            onNotInterested={() => handleNotInterested(movie.id)}
+                            isNotInterestedLoading={notInterestedLoadingIds.has(movie.id)}
+                            onClick={() => openMovie(movie)}
+                            onDirectorClick={(director) => { exitSection(); updateFilter('director', director); }}
+                            onGenreClick={(genreId) => { exitSection(); updateFilter('genre', genreId.toString()); }}
+                            onYearClick={(year) => { exitSection(); updateFilter('year', year.toString()); }}
+                            onActorClick={(actor) => { exitSection(); updateFilter('actor', actor); }}
+                            imdbRating={imdbRatings.get(movie.id)}
+                            projectId={projectId}
+                            publicAnonKey={publicAnonKey}
+                            globalImdbCache={globalImdbCache}
+                            partnerWatchedIds={partnerWatchedIds}
+                            partnerName={partnerName}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    {viewMode === 'compact' && (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionMovies.map((movie) => (
+                          <CompactMovieCard
+                            key={movie.id}
+                            movie={movie}
+                            onClick={() => openMovie(movie)}
+                            isWatched={isWatched(movie.id)}
+                            imdbRating={imdbRatings.get(movie.id)}
+                            globalImdbCache={globalImdbCache}
+                            partnerWatchedIds={partnerWatchedIds}
+                            partnerName={partnerName}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div ref={sectionSentinelRef} className="flex justify-center mt-8 h-12 items-center">
+                      {sectionLoadingMore && <Film className="size-8 animate-spin text-slate-400" />}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Home view (sections + flat scroll) */}
+          <div style={{ display: activeSectionView ? 'none' : 'block' }}>
+
+            {/* ── Curated sections (hidden when intent filters active) ── */}
+            {showSections && !loading && !contextLoading && (
+              <div className="mb-8 space-y-6">
+
+                {/* Because you saved X */}
+                {recSeedMovie && sectionPreviews.recs.length > 0 && (
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-slate-400">
+                        Because you saved <span className="text-white">{recSeedMovie.title}</span>
+                      </p>
+                      <button
+                        onClick={() => enterSection('recs')}
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                      >
+                        See all <ChevronRight className="size-3" />
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {sectionPreviews.recs.map((movie) => (
+                        <SectionPreviewCard
+                          key={movie.id}
+                          movie={movie}
+                          badge="Recommended"
+                          badgeClassName="bg-sky-900/60 text-sky-300"
+                          isLiked={likedMovieIds.has(movie.id)}
+                          isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
+                          isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                          onLike={() => handleSectionLike(movie)}
+                          onUnlike={() => handleSectionUnlike(movie.id)}
+                          onNotInterested={() => handleNotInterested(movie.id)}
+                          onClick={() => openMovie(movie)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Trending this week */}
+                {sectionPreviews.trending.length > 0 && (
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-slate-400">🔥 Trending this week</p>
+                      <button
+                        onClick={() => enterSection('trending')}
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                      >
+                        See all <ChevronRight className="size-3" />
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {sectionPreviews.trending.map((movie) => (
+                        <SectionPreviewCard
+                          key={movie.id}
+                          movie={movie}
+                          badge="Trending"
+                          badgeClassName="bg-orange-900/60 text-orange-300"
+                          isLiked={likedMovieIds.has(movie.id)}
+                          isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
+                          isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                          onLike={() => handleSectionLike(movie)}
+                          onUnlike={() => handleSectionUnlike(movie.id)}
+                          onNotInterested={() => handleNotInterested(movie.id)}
+                          onClick={() => openMovie(movie)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Hidden gems */}
+                {sectionPreviews.gems.length > 0 && (
+                  <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-slate-400">💎 Hidden gems</p>
+                      <button
+                        onClick={() => enterSection('gems')}
+                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                      >
+                        See all <ChevronRight className="size-3" />
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {sectionPreviews.gems.map((movie) => (
+                        <SectionPreviewCard
+                          key={movie.id}
+                          movie={movie}
+                          badge="Hidden gem"
+                          badgeClassName="bg-purple-900/60 text-purple-300"
+                          isLiked={likedMovieIds.has(movie.id)}
+                          isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
+                          isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                          onLike={() => handleSectionLike(movie)}
+                          onUnlike={() => handleSectionUnlike(movie.id)}
+                          onNotInterested={() => handleNotInterested(movie.id)}
+                          onClick={() => openMovie(movie)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Browse all divider */}
+                {(sectionPreviews.trending.length > 0 || sectionPreviews.gems.length > 0) && (
+                  <div className="relative flex items-center gap-3 py-2">
+                    <div className="flex-1 h-px bg-slate-800" />
+                    <span className="text-xs text-slate-600 font-medium">Browse all</span>
+                    <div className="flex-1 h-px bg-slate-800" />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Movie Grid */}
+            {loading || contextLoading ? (
           <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
         ) : visibleMovies.length === 0 ? (
           <div className="text-center py-20">
@@ -1489,6 +1876,8 @@ export function MoviesTab({
             )}
           </>
         )}
+          </div>{/* end home view */}
+        </div>{/* end section slide container */}
       </div>
 
       {/* ── Mobile Filters FAB — only on mobile, only outside search mode ── */}
