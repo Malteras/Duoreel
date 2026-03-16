@@ -22,6 +22,7 @@ import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
 import { useEnrichMovies } from "../hooks/useEnrichMovies";
 import { SectionPreviewCard } from './SectionPreviewCard';
+import { SectionPreviewCardSkeleton } from './SectionPreviewCardSkeleton';
 import { CompactMovieCard } from './CompactMovieCard';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -223,6 +224,9 @@ export function MoviesTab({
   const [recSeedMovie, setRecSeedMovie] = useState<Movie | null>(() => discoverCache?.recSeedMovie ?? null);
   // Track section preview like loading per movie
   const [sectionLikeLoadingIds, setSectionLikeLoadingIds] = useState<Set<number>>(new Set());
+  const [sectionPreviewsLoading, setSectionPreviewsLoading] = useState(
+    () => !discoverCache?.sectionPreviews  // skip skeleton if restoring from cache
+  );
 
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
@@ -474,6 +478,7 @@ export function MoviesTab({
           .slice(0, 4);
 
         setSectionPreviews({ trending: trendingPreview, gems: gemsPreview, recs: recsPreview });
+        setSectionPreviewsLoading(false);
         setDiscoverCache(c => c ? {
           ...c,
           sectionPreviews: { trending: trendingPreview, gems: gemsPreview, recs: recsPreview },
@@ -481,6 +486,7 @@ export function MoviesTab({
         } : null);
       } catch (err) {
         console.error('Error fetching section previews:', err);
+        setSectionPreviewsLoading(false);
       }
     };
 
@@ -1752,132 +1758,139 @@ export function MoviesTab({
           <div style={{ display: activeSectionView ? 'none' : 'block' }}>
 
             {/* ── Curated sections (hidden when intent filters active) ── */}
-            {showSections && !loading && !contextLoading && (
+            {showSections && !contextLoading && (
               <div className="mb-8 space-y-6">
 
-                {/* Because you saved X */}
-                {recSeedMovie && sectionPreviews.recs.length > 0 && (
-                  <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-medium text-slate-400">
-                        Because you saved{' '}
-                        <span
-                          className="text-white cursor-pointer hover:text-slate-300 transition-colors"
-                          onClick={(e) => { e.stopPropagation(); openMovie(recSeedMovie); }}
-                        >
-                          {recSeedMovie.title}
-                          {recSeedMovie.release_date && (
-                            <span className="text-slate-400 font-normal">
-                              {' '}({new Date(recSeedMovie.release_date).getFullYear()})
-                            </span>
-                          )}
-                        </span>
-                      </p>
-                      <button
-                        onClick={() => enterSection('recs')}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        See all <ChevronRight className="size-3" />
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {sectionPreviews.recs.map((movie) => (
-                        <SectionPreviewCard
-                          key={movie.id}
-                          movie={movie}
-                          badge="Recommended"
-                          badgeClassName="bg-sky-900/60 text-sky-300"
-                          isLiked={likedMovieIds.has(movie.id)}
-                          isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                          isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                          imdbRating={imdbRatings.get(movie.id)}
-                          onLike={() => handleSectionLike(movie)}
-                          onUnlike={() => handleSectionUnlike(movie.id)}
-                          onNotInterested={() => handleNotInterested(movie.id)}
-                          onClick={() => openMovie(movie)}
-                          onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
-                        />
-                      ))}
-                    </div>
+                {/* Because you saved X — always rendered in position, skeleton until loaded */}
+                <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-slate-400">
+                      {sectionPreviewsLoading || !recSeedMovie ? (
+                        <span>Because you saved <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
+                      ) : (
+                        <>
+                          Because you saved{' '}
+                          <span
+                            className="text-white cursor-pointer hover:text-slate-300 transition-colors"
+                            onClick={(e) => { e.stopPropagation(); openMovie(recSeedMovie); }}
+                          >
+                            {recSeedMovie.title}
+                            {recSeedMovie.release_date && (
+                              <span className="text-slate-400 font-normal">
+                                {' '}({new Date(recSeedMovie.release_date).getFullYear()})
+                              </span>
+                            )}
+                          </span>
+                        </>
+                      )}
+                    </p>
+                    <button
+                      onClick={() => !sectionPreviewsLoading && enterSection('recs')}
+                      className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                    >
+                      See all <ChevronRight className="size-3" />
+                    </button>
                   </div>
-                )}
+                  <div className="space-y-2">
+                    {sectionPreviewsLoading || sectionPreviews.recs.length === 0
+                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
+                      : sectionPreviews.recs.map((movie) => (
+                          <SectionPreviewCard
+                            key={movie.id}
+                            movie={movie}
+                            badge="Recommended"
+                            badgeClassName="bg-sky-900/60 text-sky-300"
+                            isLiked={likedMovieIds.has(movie.id)}
+                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
+                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                            imdbRating={imdbRatings.get(movie.id)}
+                            onLike={() => handleSectionLike(movie)}
+                            onUnlike={() => handleSectionUnlike(movie.id)}
+                            onNotInterested={() => handleNotInterested(movie.id)}
+                            onClick={() => openMovie(movie)}
+                            onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
+                          />
+                        ))
+                    }
+                  </div>
+                </div>
 
-                {/* Trending this week */}
-                {sectionPreviews.trending.length > 0 && (
-                  <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-medium text-slate-400">🔥 Trending this week</p>
-                      <button
-                        onClick={() => enterSection('trending')}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        See all <ChevronRight className="size-3" />
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {sectionPreviews.trending.map((movie) => (
-                        <SectionPreviewCard
-                          key={movie.id}
-                          movie={movie}
-                          badge="Trending"
-                          badgeClassName="bg-orange-900/60 text-orange-300"
-                          isLiked={likedMovieIds.has(movie.id)}
-                          isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                          isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                          imdbRating={imdbRatings.get(movie.id)}
-                          onLike={() => handleSectionLike(movie)}
-                          onUnlike={() => handleSectionUnlike(movie.id)}
-                          onNotInterested={() => handleNotInterested(movie.id)}
-                          onClick={() => openMovie(movie)}
-                          onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
-                        />
-                      ))}
-                    </div>
+                {/* Trending this week — always rendered in position */}
+                <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-slate-400">🔥 Trending this week</p>
+                    <button
+                      onClick={() => !sectionPreviewsLoading && enterSection('trending')}
+                      className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                    >
+                      See all <ChevronRight className="size-3" />
+                    </button>
                   </div>
-                )}
+                  <div className="space-y-2">
+                    {sectionPreviewsLoading || sectionPreviews.trending.length === 0
+                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
+                      : sectionPreviews.trending.map((movie) => (
+                          <SectionPreviewCard
+                            key={movie.id}
+                            movie={movie}
+                            badge="Trending"
+                            badgeClassName="bg-orange-900/60 text-orange-300"
+                            isLiked={likedMovieIds.has(movie.id)}
+                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
+                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                            imdbRating={imdbRatings.get(movie.id)}
+                            onLike={() => handleSectionLike(movie)}
+                            onUnlike={() => handleSectionUnlike(movie.id)}
+                            onNotInterested={() => handleNotInterested(movie.id)}
+                            onClick={() => openMovie(movie)}
+                            onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
+                          />
+                        ))
+                    }
+                  </div>
+                </div>
 
-                {/* Hidden gems */}
-                {sectionPreviews.gems.length > 0 && (
-                  <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-medium text-slate-400">💎 Hidden gems</p>
-                      <button
-                        onClick={() => enterSection('gems')}
-                        className="text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 cursor-pointer"
-                      >
-                        See all <ChevronRight className="size-3" />
-                      </button>
-                    </div>
-                    <div className="space-y-2">
-                      {sectionPreviews.gems.map((movie) => (
-                        <SectionPreviewCard
-                          key={movie.id}
-                          movie={movie}
-                          badge="Hidden gem"
-                          badgeClassName="bg-purple-900/60 text-purple-300"
-                          isLiked={likedMovieIds.has(movie.id)}
-                          isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                          isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                          imdbRating={imdbRatings.get(movie.id)}
-                          onLike={() => handleSectionLike(movie)}
-                          onUnlike={() => handleSectionUnlike(movie.id)}
-                          onNotInterested={() => handleNotInterested(movie.id)}
-                          onClick={() => openMovie(movie)}
-                          onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
-                        />
-                      ))}
-                    </div>
+                {/* Hidden gems — always rendered in position */}
+                <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-slate-400">💎 Hidden gems</p>
+                    <button
+                      onClick={() => !sectionPreviewsLoading && enterSection('gems')}
+                      className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                    >
+                      See all <ChevronRight className="size-3" />
+                    </button>
                   </div>
-                )}
+                  <div className="space-y-2">
+                    {sectionPreviewsLoading || sectionPreviews.gems.length === 0
+                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
+                      : sectionPreviews.gems.map((movie) => (
+                          <SectionPreviewCard
+                            key={movie.id}
+                            movie={movie}
+                            badge="Hidden gem"
+                            badgeClassName="bg-purple-900/60 text-purple-300"
+                            isLiked={likedMovieIds.has(movie.id)}
+                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
+                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
+                            imdbRating={imdbRatings.get(movie.id)}
+                            onLike={() => handleSectionLike(movie)}
+                            onUnlike={() => handleSectionUnlike(movie.id)}
+                            onNotInterested={() => handleNotInterested(movie.id)}
+                            onClick={() => openMovie(movie)}
+                            onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
+                          />
+                        ))
+                    }
+                  </div>
+                </div>
 
                 {/* Browse all divider */}
-                {(sectionPreviews.trending.length > 0 || sectionPreviews.gems.length > 0) && (
-                  <div className="relative flex items-center gap-3 py-2">
-                    <div className="flex-1 h-px bg-slate-800" />
-                    <span className="text-xs text-slate-600 font-medium">Browse all</span>
-                    <div className="flex-1 h-px bg-slate-800" />
-                  </div>
-                )}
+                <div className="relative flex items-center gap-3 py-2">
+                  <div className="flex-1 h-px bg-slate-800" />
+                  <span className="text-xs text-slate-600 font-medium">Browse all</span>
+                  <div className="flex-1 h-px bg-slate-800" />
+                </div>
               </div>
             )}
 
