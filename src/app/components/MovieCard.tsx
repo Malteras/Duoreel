@@ -356,7 +356,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
         </p>
 
         {/* Director */}
-        {movie.director && (
+        {movie.director ? (
           <div className="text-sm">
             <div className="flex items-center gap-1.5">
               <Film className="size-4 text-slate-400" />
@@ -372,7 +372,9 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
               </span>
             </div>
           </div>
-        )}
+        ) : movie.vote_average > 0 ? (
+          <div className="h-3.5 w-32 rounded bg-slate-700/60 animate-pulse" />
+        ) : null}
 
         {/* Cast */}
         {movie.actors && movie.actors.length > 0 && (

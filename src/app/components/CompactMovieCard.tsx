@@ -115,7 +115,7 @@ export function CompactMovieCard({
           {year && runtime && <span className="text-slate-500">·</span>}
           {runtime && <span>{runtime}</span>}
         </div>
-        {movie.genres && movie.genres.length > 0 && (
+        {movie.genres && movie.genres.length > 0 ? (
           <div className="flex flex-wrap gap-1">
             {movie.genres.slice(0, 2).map((genre) => (
               <span
@@ -127,7 +127,12 @@ export function CompactMovieCard({
               </span>
             ))}
           </div>
-        )}
+        ) : movie.vote_average > 0 ? (
+          <div className="flex flex-wrap gap-1">
+            <div className="h-[18px] w-12 rounded-full bg-slate-700/60 animate-pulse" />
+            <div className="h-[18px] w-16 rounded-full bg-slate-700/60 animate-pulse" />
+          </div>
+        ) : null}
         {/* Partner watched eyebrow */}
         {partnerWatchedIds?.has(movie.id) && partnerName && (
           <div className="flex items-center gap-1 mt-1">
@@ -137,9 +142,11 @@ export function CompactMovieCard({
             </span>
           </div>
         )}
-        {movie.director && (
+        {movie.director ? (
           <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>
-        )}
+        ) : movie.vote_average > 0 ? (
+          <div className="h-[12px] w-24 rounded bg-slate-700/60 animate-pulse mt-0.5" />
+        ) : null}
       </div>
     </div>
   );
