@@ -1079,7 +1079,12 @@ export function MoviesTab({
 
   // ──────────────── Not Interested (pending removal + undo toast) ────────────────
   const handleNotInterested = (movieId: number) => {
-    const movie = movies.find((m) => m.id === movieId);
+    const movie =
+      movies.find((m) => m.id === movieId) ||
+      sectionPreviews.recs.find((m) => m.id === movieId) ||
+      sectionPreviews.trending.find((m) => m.id === movieId) ||
+      sectionPreviews.gems.find((m) => m.id === movieId) ||
+      sectionMovies.find((m) => m.id === movieId);
     if (!movie) return;
 
     // Immediately hide from feed (optimistic)
@@ -1090,9 +1095,15 @@ export function MoviesTab({
       try {
         await toggleNotInterested(movieId, true);
         // Remove movie from list permanently
-        setMovies((prev) =>
-          prev.filter((m) => m.id !== movieId),
-        );
+        setMovies((prev) => prev.filter((m) => m.id !== movieId));
+        // Also remove from section previews if present
+        setSectionPreviews((prev) => ({
+          recs: prev.recs.filter((m) => m.id !== movieId),
+          trending: prev.trending.filter((m) => m.id !== movieId),
+          gems: prev.gems.filter((m) => m.id !== movieId),
+        }));
+        // Also remove from section view movies if present
+        setSectionMovies((prev) => prev.filter((m) => m.id !== movieId));
       } catch (error) {
         console.error("Error marking not interested:", error);
       } finally {
@@ -1772,6 +1783,7 @@ export function MoviesTab({
                           onUnlike={() => handleSectionUnlike(movie.id)}
                           onNotInterested={() => handleNotInterested(movie.id)}
                           onClick={() => openMovie(movie)}
+                          onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
                         />
                       ))}
                     </div>
@@ -1805,6 +1817,7 @@ export function MoviesTab({
                           onUnlike={() => handleSectionUnlike(movie.id)}
                           onNotInterested={() => handleNotInterested(movie.id)}
                           onClick={() => openMovie(movie)}
+                          onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
                         />
                       ))}
                     </div>
@@ -1838,6 +1851,7 @@ export function MoviesTab({
                           onUnlike={() => handleSectionUnlike(movie.id)}
                           onNotInterested={() => handleNotInterested(movie.id)}
                           onClick={() => openMovie(movie)}
+                          onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
                         />
                       ))}
                     </div>
