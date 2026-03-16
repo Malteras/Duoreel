@@ -68,9 +68,17 @@ export function SectionPreviewCard({
             </div>
           )}
           {displayImdbRating && displayImdbRating !== 'N/A' && (
-            <div className="bg-[#F5C518] px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0">
-              <span className="text-[8px] font-bold text-black uppercase tracking-wide">IMDb</span>
-              <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+            <div className={`px-1.5 py-0.5 rounded-full flex items-center gap-0.5 flex-shrink-0 ${
+              displayImdbRating !== 'NOT_FOUND' ? 'bg-[#F5C518]' : 'bg-[#F5C518]/50'
+            }`}>
+              <span className={`text-[8px] font-bold uppercase tracking-wide ${
+                displayImdbRating !== 'NOT_FOUND' ? 'text-black' : 'text-black/40'
+              }`}>IMDb</span>
+              {displayImdbRating !== 'NOT_FOUND' ? (
+                <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
+              ) : (
+                <span className="text-[10px] font-bold text-black/40">—</span>
+              )}
             </div>
           )}
         </div>
