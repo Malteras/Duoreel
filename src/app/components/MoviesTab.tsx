@@ -1691,7 +1691,7 @@ export function MoviesTab({
                   <>
                     {viewMode === 'grid' && (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {sectionMovies.map((movie) => (
+                        {sectionMovies.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <MovieCard
                             key={movie.id}
                             movie={movie}
@@ -1718,7 +1718,7 @@ export function MoviesTab({
                     )}
                     {viewMode === 'compact' && (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {sectionMovies.map((movie) => {
+                        {sectionMovies.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           return (
@@ -1811,7 +1811,7 @@ export function MoviesTab({
                   <div className="space-y-2">
                     {sectionPreviewsLoading || sectionPreviews.recs.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.recs.map((movie) => (
+                      : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
                             key={movie.id}
                             movie={movie}
@@ -1846,7 +1846,7 @@ export function MoviesTab({
                   <div className="space-y-2">
                     {sectionPreviewsLoading || sectionPreviews.trending.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.trending.map((movie) => (
+                      : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
                             key={movie.id}
                             movie={movie}
@@ -1881,7 +1881,7 @@ export function MoviesTab({
                   <div className="space-y-2">
                     {sectionPreviewsLoading || sectionPreviews.gems.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.gems.map((movie) => (
+                      : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
                             key={movie.id}
                             movie={movie}
