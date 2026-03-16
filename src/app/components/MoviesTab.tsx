@@ -268,22 +268,25 @@ export function MoviesTab({
     dep: activeSectionView,
   });
 
-  // Enrich section preview row cards (home view) so they get genres, external_ids, IMDb
+  // Enrich section preview row cards so they get genres, external_ids, IMDb
   useEnrichMovies({
     movies: sectionPreviews.recs,
-    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, recs: typeof updater === 'function' ? updater(prev.recs) : updater })),
+    setMovies: (updater) =>
+      setSectionPreviews((prev) => ({ ...prev, recs: updater(prev.recs) })),
     publicAnonKey,
     baseUrl,
   });
   useEnrichMovies({
     movies: sectionPreviews.trending,
-    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, trending: typeof updater === 'function' ? updater(prev.trending) : updater })),
+    setMovies: (updater) =>
+      setSectionPreviews((prev) => ({ ...prev, trending: updater(prev.trending) })),
     publicAnonKey,
     baseUrl,
   });
   useEnrichMovies({
     movies: sectionPreviews.gems,
-    setMovies: (updater) => setSectionPreviews((prev) => ({ ...prev, gems: typeof updater === 'function' ? updater(prev.gems) : updater })),
+    setMovies: (updater) =>
+      setSectionPreviews((prev) => ({ ...prev, gems: updater(prev.gems) })),
     publicAnonKey,
     baseUrl,
   });
