@@ -96,7 +96,7 @@ export function CompactMovieCard({
                   ) : displayImdbRating === 'NOT_FOUND' ? (
                     <span className="text-[10px] font-bold text-black/40 leading-none">—</span>
                   ) : (
-                    <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                    <Loader2 className="size-3 text-black/50 animate-spin" />
                   )}
                 </span>
               </a>
