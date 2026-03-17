@@ -47,7 +47,6 @@ export function useEnrichMovies({
     const enrich = async () => {
       const toEnrich = movies.filter(
         (m) =>
-          !enrichedIds.has(m.id) &&
           !enrichingRef.current.has(m.id)
       );
       if (toEnrich.length === 0) return;
