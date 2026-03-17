@@ -90,13 +90,15 @@ export function CompactMovieCard({
                 <span className={`text-[7px] font-bold uppercase tracking-wide ${
                   displayImdbRating && displayImdbRating !== 'N/A' ? 'text-black/70' : 'text-black/40'
                 }`}>IMDb</span>
-                {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
-                  <span className="text-[10px] font-bold text-black">{displayImdbRating}</span>
-                ) : displayImdbRating === 'NOT_FOUND' ? (
-                  <span className="text-[10px] font-bold text-black/40">—</span>
-                ) : (
-                  <Loader2 className="size-2.5 text-black/50 animate-spin" />
-                )}
+                <span className="inline-flex items-center justify-center min-w-[18px] h-[12px]">
+                  {displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND' ? (
+                    <span className="text-[10px] font-bold text-black leading-none">{displayImdbRating}</span>
+                  ) : displayImdbRating === 'NOT_FOUND' ? (
+                    <span className="text-[10px] font-bold text-black/40 leading-none">—</span>
+                  ) : (
+                    <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                  )}
+                </span>
               </a>
             ) : (
               <div className="bg-[#F5C518]/30 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
