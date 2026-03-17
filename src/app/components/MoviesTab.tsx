@@ -669,9 +669,8 @@ export function MoviesTab({
           } else {
             setMovies(newMovies);
             // Write cache with the fresh list.
-            // Clear enrichedIds on fresh fetch — preserving old IDs here causes
-            // the cache restore to re-poison enrichingRef with stale IDs on next
-            // mount, silently blocking re-enrichment after filter changes.
+            // Clear enrichedIds — preserving old IDs here causes the cache restore
+            // to re-poison enrichingRef with stale IDs on next mount, blocking enrichment.
             setDiscoverCache(c => ({
               movies: newMovies,
               page: pageNum,
@@ -731,7 +730,20 @@ export function MoviesTab({
 
     setPage(1);
     resetEnrichment();
-    setImdbRatings(new Map());
+    // Preserve IMDb ratings for section preview cards — they don't change with filter.
+    // Only wipe ratings for the main Discover movies by keeping preview movie ratings.
+    setImdbRatings((prev) => {
+      const allPreviewIds = new Set([
+        ...sectionPreviews.recs.map((m) => m.id),
+        ...sectionPreviews.trending.map((m) => m.id),
+        ...sectionPreviews.gems.map((m) => m.id),
+      ]);
+      const preserved = new Map<number, string>();
+      prev.forEach((rating, tmdbId) => {
+        if (allPreviewIds.has(tmdbId)) preserved.set(tmdbId, rating);
+      });
+      return preserved;
+    });
     // Reset the in-flight guard so the ratings effect isn't skipped if a
     // previous OMDb fetch was still running when the new filter fired.
     fetchingRatingsRef.current = false;
