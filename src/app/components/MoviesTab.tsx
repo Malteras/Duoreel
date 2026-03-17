@@ -258,6 +258,7 @@ export function MoviesTab({
     publicAnonKey,
     baseUrl,
     batchSize: 5,
+    dep: filters,
     onEnriched: (updatedMovies) => {
       setDiscoverCache(c => c ? { ...c, movies: updatedMovies } : null);
     },
