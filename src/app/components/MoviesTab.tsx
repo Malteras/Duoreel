@@ -668,7 +668,10 @@ export function MoviesTab({
             });
           } else {
             setMovies(newMovies);
-            // Write cache with the fresh list
+            // Write cache with the fresh list.
+            // Clear enrichedIds on fresh fetch — preserving old IDs here causes
+            // the cache restore to re-poison enrichingRef with stale IDs on next
+            // mount, silently blocking re-enrichment after filter changes.
             setDiscoverCache(c => ({
               movies: newMovies,
               page: pageNum,
@@ -676,7 +679,7 @@ export function MoviesTab({
               sortBy,
               showWatchedMovies,
               imdbRatings,
-              enrichedIds: c?.enrichedIds ?? new Set(),
+              enrichedIds: new Set(),
             }));
           }
 
