@@ -73,7 +73,7 @@ export function CompactMovieCard({
           <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
             <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
               <span className="text-[7px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
-              <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
+              <span className="text-[10px] font-bold text-white leading-none">{movie.vote_average.toFixed(1)}</span>
             </div>
             {hasImdbId ? (
               <a
@@ -96,7 +96,7 @@ export function CompactMovieCard({
                   ) : displayImdbRating === 'NOT_FOUND' ? (
                     <span className="text-[10px] font-bold text-black/40 leading-none">—</span>
                   ) : (
-                    <Loader2 className="size-2.5 text-black/50 animate-spin" />
+                    <Loader2 className="size-[10px] text-black/50 animate-spin" />
                   )}
                 </span>
               </a>
