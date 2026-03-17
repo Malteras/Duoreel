@@ -1061,6 +1061,7 @@ export function MoviesTab({
       "watch/providers": movie["watch/providers"],
       original_language: movie.original_language,
       homepage: movie.homepage,
+      timestamp: Date.now(),
     };
 
     // Optimistic update — add to Saved immediately so navigating to Saved
