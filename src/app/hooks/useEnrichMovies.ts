@@ -47,7 +47,9 @@ export function useEnrichMovies({
     const enrich = async () => {
       const toEnrich = movies.filter(
         (m) =>
-          !enrichingRef.current.has(m.id)
+          !enrichingRef.current.has(m.id) &&
+          // Skip movies already enriched server-side (genres populated = enriched)
+          (!m.genres || m.genres.length === 0)
       );
       if (toEnrich.length === 0) return;
 

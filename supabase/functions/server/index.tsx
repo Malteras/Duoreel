@@ -4111,11 +4111,49 @@ app.get(
         `Returning ${finalMovies.length} filtered movies after ${attempts} API calls`,
       );
 
+      // Server-side parallel enrichment — eliminates 20 client-side round trips.
+      // Previously the client fetched each movie detail individually in batches of 5
+      // with 200ms delays (2-3 seconds of skeleton loading). Now the server fetches
+      // all details in parallel and returns fully-enriched movies in one response.
+      const enrichedMovies = await Promise.all(
+        finalMovies.map(async (movie: any) => {
+          try {
+            const detailUrl =
+              `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=credits,external_ids,watch/providers,keywords,videos`;
+            const detailRes = await fetch(detailUrl);
+            if (!detailRes.ok) return movie;
+            const d = await detailRes.json();
+            const director = d.credits?.crew?.find((c: any) => c.job === "Director")?.name;
+            const actors = d.credits?.cast?.slice(0, 5).map((a: any) => a.name);
+            return {
+              ...movie,
+              runtime: d.runtime || movie.runtime,
+              director: director || movie.director,
+              actors: actors || movie.actors,
+              genres: d.genres || movie.genres,
+              external_ids: d.external_ids || movie.external_ids,
+              homepage: d.homepage || movie.homepage,
+              "watch/providers": d["watch/providers"] || movie["watch/providers"],
+              keywords: d.keywords?.keywords || movie.keywords,
+              tagline: d.tagline ?? movie.tagline,
+              budget: d.budget ?? movie.budget,
+              revenue: d.revenue ?? movie.revenue,
+              original_language: d.original_language || movie.original_language,
+              status: d.status ?? movie.status,
+              vote_count: d.vote_count || movie.vote_count,
+              videos: d.videos || movie.videos,
+            };
+          } catch {
+            return movie; // Fall back to basic data if enrichment fails
+          }
+        }),
+      );
+
       return c.json({
-        results: finalMovies,
+        results: enrichedMovies,
         page: requestedPage,
-        total_pages: 500, // TMDb limit
-        total_results: finalMovies.length,
+        total_pages: 500,
+        total_results: enrichedMovies.length,
       });
     } catch (error) {
       console.error("Error fetching filtered movies:", error);
