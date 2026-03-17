@@ -1044,26 +1044,32 @@ export function MoviesTab({
     setIsLikeLoading(true);
     setLikeLoadingIds((prev) => new Set(prev).add(movie.id));
 
-    try {
-      const movieData = {
-        id: movie.id,
-        title: movie.title,
-        poster_path: movie.poster_path,
-        backdrop_path: movie.backdrop_path,
-        overview: movie.overview,
-        release_date: movie.release_date,
-        vote_average: movie.vote_average,
-        genre_ids: movie.genre_ids,
-        genres: movie.genres,
-        runtime: movie.runtime,
-        director: movie.director,
-        actors: movie.actors,
-        external_ids: movie.external_ids,
-        "watch/providers": movie["watch/providers"],
-        original_language: movie.original_language,
-        homepage: movie.homepage,
-      };
+    const movieData = {
+      id: movie.id,
+      title: movie.title,
+      poster_path: movie.poster_path,
+      backdrop_path: movie.backdrop_path,
+      overview: movie.overview,
+      release_date: movie.release_date,
+      vote_average: movie.vote_average,
+      genre_ids: movie.genre_ids,
+      genres: movie.genres,
+      runtime: movie.runtime,
+      director: movie.director,
+      actors: movie.actors,
+      external_ids: movie.external_ids,
+      "watch/providers": movie["watch/providers"],
+      original_language: movie.original_language,
+      homepage: movie.homepage,
+      timestamp: Date.now(),
+    };
 
+    // Optimistic update — add to Saved immediately so navigating to Saved
+    // tab shows the movie without waiting for the server round-trip (QUI-155).
+    setLikedMovies((prev) => [...prev, movieData]);
+    if (!skipClose) closeMovie();
+
+    try {
       const response = await fetch(`${baseUrl}/movies/like`, {
         method: "POST",
         headers: {
@@ -1076,24 +1082,23 @@ export function MoviesTab({
       const data = await response.json();
 
       if (response.ok) {
-        setLikedMovies((prev) => [...prev, movieData]);
-
         if (data.isMatch) {
           toast.success(
             `It's a match! You both like "${movie.title}"`,
-            {
-              duration: 5000,
-              icon: "💕",
-            },
+            { duration: 5000, icon: "💕" },
           );
         } else {
           toast.success(`Saved "${movie.title}"`);
         }
-
-        if (!skipClose) closeMovie();
+      } else {
+        // Server rejected — revert optimistic update
+        setLikedMovies((prev) => prev.filter((m) => m.id !== movie.id));
+        toast.error("Failed to save movie");
       }
     } catch (error) {
+      // Network error — revert optimistic update
       console.error("Error liking movie:", error);
+      setLikedMovies((prev) => prev.filter((m) => m.id !== movie.id));
       toast.error("Failed to save movie");
     } finally {
       setIsLikeLoading(false);
