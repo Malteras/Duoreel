@@ -36,7 +36,18 @@ export function UserInteractionsProvider({
   children: ReactNode;
   accessToken: string | null;
 }) {
-  const [interactions, setInteractions] = useState<Map<number, MovieInteraction>>(new Map());
+  // Seed from localStorage so watchedMovieIds is available instantly on mount
+  // before interactions/all returns (prevents 10s+ delay showing watched state)
+  const [interactions, setInteractions] = useState<Map<number, MovieInteraction>>(() => {
+    try {
+      const cached = localStorage.getItem('duoreel-interactions-cache');
+      if (cached) {
+        const arr = JSON.parse(cached) as [number, MovieInteraction][];
+        return new Map(arr);
+      }
+    } catch {}
+    return new Map();
+  });
   const [watchedLoadingIds, setWatchedLoadingIds] = useState<Set<number>>(new Set());
   const [notInterestedLoadingIds, setNotInterestedLoadingIds] = useState<Set<number>>(new Set());
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -54,6 +65,8 @@ export function UserInteractionsProvider({
   const refreshInteractions = useCallback(async () => {
     if (!accessToken) {
       setInteractions(new Map());
+      // Clear cache on sign-out so stale data doesn't persist across accounts
+      try { localStorage.removeItem('duoreel-interactions-cache'); } catch {}
       // No token — we can't load interactions, but we must clear isInitialLoading
       // so MoviesTab doesn't spin forever waiting for a fetch that will never happen.
       setIsInitialLoading(false);
@@ -82,6 +95,10 @@ export function UserInteractionsProvider({
           }
         });
         setInteractions(map);
+        // Persist to localStorage so next mount has instant watched state
+        try {
+          localStorage.setItem('duoreel-interactions-cache', JSON.stringify(Array.from(map.entries())));
+        } catch {}
       } else {
         console.error('refreshInteractions: unexpected response shape', data);
       }
