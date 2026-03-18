@@ -1802,26 +1802,6 @@ export function MoviesTab({
             {showSections && !contextLoading && (
               <div className="mb-8 space-y-6">
 
-                {/* Refresh suggestions button */}
-                <div className="flex justify-end -mb-3">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => fetchSectionPreviews()}
-                        disabled={sectionPreviewsLoading}
-                        className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                        aria-label="Refresh suggestions"
-                      >
-                        <RefreshCw className={`size-3.5 ${sectionPreviewsLoading ? 'animate-spin' : ''}`} />
-                        <span className="text-xs">Refresh</span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 text-xs">
-                      Refresh suggestions
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-
                 {/* Because you saved X — always rendered in position, skeleton until loaded */}
                 <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="flex items-center justify-between mb-3">
@@ -1845,12 +1825,32 @@ export function MoviesTab({
                         </>
                       )}
                     </p>
-                    <button
-                      onClick={() => !sectionPreviewsLoading && enterSection('recs')}
-                      className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
-                    >
-                      See all <ChevronRight className="size-3" />
-                    </button>
+                    <div className="flex items-center gap-3">
+                      {recSeedMovie && !sectionPreviewsLoading && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              onClick={() => fetchSectionPreviews()}
+                              disabled={sectionPreviewsLoading}
+                              className="flex items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                              aria-label="Refresh suggestions"
+                            >
+                              <RefreshCw className="size-3.5" />
+                              <span className="text-xs">Refresh</span>
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 text-xs">
+                            Refresh suggestions
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      <button
+                        onClick={() => !sectionPreviewsLoading && enterSection('recs')}
+                        className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                      >
+                        See all <ChevronRight className="size-3" />
+                      </button>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     {sectionPreviewsLoading || sectionPreviews.recs.length === 0
