@@ -15,6 +15,8 @@ export function MatchesPage() {
       matchesCache={ctx.matchesCache}
       setMatchesCache={ctx.setMatchesCache}
       matchNotificationCount={ctx.matchNotificationCount}
+      cardViewMode={ctx.cardViewMode}
+      setCardViewMode={ctx.setCardViewMode}
     />
   );
 }

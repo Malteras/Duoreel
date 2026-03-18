@@ -17,6 +17,8 @@ export function SavedPage() {
       setGlobalImdbCache={ctx.setGlobalImdbCache}
       savedCache={ctx.savedCache}
       setSavedCache={ctx.setSavedCache}
+      cardViewMode={ctx.cardViewMode}
+      setCardViewMode={ctx.setCardViewMode}
     />
   );
 }

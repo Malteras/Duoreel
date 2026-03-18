@@ -45,6 +45,8 @@ export function DiscoverPage() {
       setLikedMovies={ctx.setLikedMovies}
       discoverCache={ctx.discoverCache}
       setDiscoverCache={ctx.setDiscoverCache}
+      cardViewMode={ctx.cardViewMode}
+      setCardViewMode={ctx.setCardViewMode}
     />
   );
 }

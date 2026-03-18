@@ -44,6 +44,8 @@ export interface AppLayoutContext {
     matchesCache: MatchesCache | null;
     setMatchesCache: React.Dispatch<React.SetStateAction<MatchesCache | null>>;
     matchNotificationCount: number;
+    cardViewMode: 'grid' | 'compact' | 'list';
+    setCardViewMode: (mode: 'grid' | 'compact' | 'list') => void;
 }
 
 export function useAppLayoutContext() {
@@ -296,6 +298,24 @@ export function AppLayout() {
         new Map(),
     );
 
+    // Shared card view mode — synced across all three tabs
+    const [cardViewMode, setCardViewModeState] = useState<'grid' | 'compact' | 'list'>(() => {
+        // Migrate from per-tab keys if shared key not yet set
+        const shared = localStorage.getItem('duoreel-viewmode') as 'grid' | 'compact' | 'list' | null;
+        if (shared) return shared;
+        const legacy = (
+            localStorage.getItem('duoreel-viewmode-discover') ||
+            localStorage.getItem('duoreel-viewmode-saved') ||
+            localStorage.getItem('duoreel-viewmode-matches')
+        ) as 'grid' | 'compact' | 'list' | null;
+        if (legacy) { localStorage.setItem('duoreel-viewmode', legacy); return legacy; }
+        return window.innerWidth < 768 ? 'compact' : 'grid';
+    });
+    const setCardViewMode = (mode: 'grid' | 'compact' | 'list') => {
+        setCardViewModeState(mode);
+        localStorage.setItem('duoreel-viewmode', mode);
+    };
+
     // Fetch liked movies once on mount
     useEffect(() => {
         if (!accessToken) return;
@@ -425,6 +445,8 @@ export function AppLayout() {
         matchesCache,
         setMatchesCache,
         matchNotificationCount,
+        cardViewMode,
+        setCardViewMode,
     };
 
     return (
