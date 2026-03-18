@@ -109,8 +109,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   );
 
   // ── Data fetching ──────────────────────────────────────────────────────────
-  const fetchData = useCallback(async () => {
-    setLoading(true);
+  const fetchData = useCallback(async (showSpinner = true) => {
+    if (showSpinner) setLoading(true);
     try {
       const [partnerRes, incomingRes, outgoingRes, matchesRes, inviteCodeRes] = await Promise.all([
         fetch(`${baseUrl}/partner`, { headers: { Authorization: `Bearer ${accessToken}` } }),
@@ -147,10 +147,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         matchCountAtLoad: matchNotificationCount,
       });
 
-      await fetch(`${baseUrl}/notifications/matches/seen`, {
+      // Fire-and-forget — must not delay showing matches
+      fetch(`${baseUrl}/notifications/matches/seen`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${accessToken}` },
-      });
+      }).catch(() => {});
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -161,13 +162,19 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   useEffect(() => {
     if (!accessToken) return;
 
-    // Skip fetch if cache exists and no new matches have appeared since last load.
-    // matchNotificationCount > matchCountAtLoad means new matches → must re-fetch.
+    // Skip fetch entirely if cache is fresh (no new matches)
     if (matchesCache && matchNotificationCount <= matchesCache.matchCountAtLoad) {
       return;
     }
 
-    fetchData();
+    // If cache exists but stale (new matches), refresh silently in background
+    if (matchesCache) {
+      fetchData(false);
+      return;
+    }
+
+    // No cache — fetch with loading spinner
+    fetchData(true);
   }, [accessToken, fetchData, matchesCache, matchNotificationCount]);
 
   // ── IMDb ratings — keyed by tmdbId to avoid external_ids dependency ────────

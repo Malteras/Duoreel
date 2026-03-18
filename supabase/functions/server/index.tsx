@@ -3783,11 +3783,14 @@ app.get(
       // the key (for reliable tmdbId extraction from suffix) and the value
       // (for timestamp etc.), without ever building a URL with thousands of
       // key params (which caused TypeError: Invalid URL with kv.mget).
-      const watchedPrefix = `watched:${user.id}:`;
-      const watchedRaw = await getByPrefixPaginatedWithKeys(watchedPrefix);
+      // Fetch watched and not-interested in parallel — they are independent queries
+      const [watchedRaw, notInterestedItems] = await Promise.all([
+        getByPrefixPaginatedWithKeys(`watched:${user.id}:`),
+        getByPrefixPaginated(`notinterested:${user.id}:`),
+      ]);
 
       console.log(
-        `interactions/all: Found ${watchedRaw.length} watched items for user ${user.id}`,
+        `interactions/all: Found ${watchedRaw.length} watched, ${notInterestedItems.length} not-interested items for user ${user.id}`,
       );
 
       for (const { key, value } of watchedRaw) {
@@ -3829,14 +3832,6 @@ app.get(
           }
         }
       }
-
-      // Fetch all not-interested movies — paginated for safety
-      const notInterestedItems = await getByPrefixPaginated(
-        `notinterested:${user.id}:`,
-      );
-      console.log(
-        `interactions/all: Found ${notInterestedItems.length} not-interested items for user ${user.id}`,
-      );
 
       for (const item of notInterestedItems) {
         const tmdbId = Number(item.movieId ?? item.id);
