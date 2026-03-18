@@ -52,6 +52,7 @@ import {
   LayoutList,
   ArrowUpDown,
   Users,
+  RefreshCw,
 } from "lucide-react";
 
 interface MoviesTabProps {
@@ -433,80 +434,86 @@ export function MoviesTab({
     [isSearchMode, filters.director, filters.actor, filters.keyword],
   );
 
-  // ──────────────── Fetch section previews on mount ────────────────
+  // ──────────────── Fetch section previews ────────────────
+  // likedMovies is read via a ref so fetchSectionPreviews stays stable
+  // and does NOT re-run every time a movie is saved.
+  const likedMoviesRef = useRef(likedMovies);
+  useEffect(() => { likedMoviesRef.current = likedMovies; }, [likedMovies]);
+
+  const fetchSectionPreviews = useCallback(async () => {
+    if (!accessToken) return;
+    setSectionPreviewsLoading(true);
+
+    const currentLiked = likedMoviesRef.current;
+    const top10 = currentLiked.slice(0, 10);
+    const seed = top10.length > 0 ? top10[Math.floor(Math.random() * top10.length)] : null;
+    setRecSeedMovie(seed);
+
+    try {
+      const [trendingRes, gemsRes, recsRes] = await Promise.all([
+        fetch(`${baseUrl}/movies/trending?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        (() => {
+          const twoYearsAgo = new Date();
+          twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+          const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
+          return fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=1`, { headers: { Authorization: `Bearer ${accessToken}` } });
+        })(),
+        seed
+          ? fetch(`${baseUrl}/movies/recommendations/${seed.id}?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } })
+          : Promise.resolve(null),
+      ]);
+
+      const [trendingData, gemsData, recsData] = await Promise.all([
+        trendingRes.json(),
+        gemsRes.json(),
+        recsRes ? recsRes.json() : { results: [] },
+      ]);
+
+      const likedIds = new Set(currentLiked.map((m) => m.id));
+      const trendingPreview = (trendingData.results || [])
+        .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
+        .slice(0, 4);
+      const gemsPreview = (gemsData.results || [])
+        .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
+        .slice(0, 4);
+      const recsPreview = (recsData.results || [])
+        .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
+        .slice(0, 4);
+
+      setSectionPreviews((prev) => {
+        const mergeSlice = (newMovies: Movie[], prevMovies: Movie[]) => {
+          const prevById = new Map(prevMovies.map((m) => [m.id, m]));
+          return newMovies.map((m) => {
+            const existing = prevById.get(m.id);
+            return existing && existing.genres && existing.genres.length > 0 ? existing : m;
+          });
+        };
+        return {
+          trending: mergeSlice(trendingPreview, prev.trending),
+          gems: mergeSlice(gemsPreview, prev.gems),
+          recs: mergeSlice(recsPreview, prev.recs),
+        };
+      });
+      setSectionPreviewsLoading(false);
+      setDiscoverCache(c => c ? {
+        ...c,
+        sectionPreviews: { trending: trendingPreview, gems: gemsPreview, recs: recsPreview },
+        recSeedMovie: seed,
+      } : null);
+    } catch (err) {
+      console.error('Error fetching section previews:', err);
+      setSectionPreviewsLoading(false);
+    }
+  }, [accessToken, baseUrl, notInterestedMovieIds, watchedMovieIds]);
+
+  // Run once on mount when auth + context are ready.
+  // Does NOT re-run when likedMovies changes (saves no longer trigger a refresh).
   useEffect(() => {
     if (!accessToken || contextLoading) return;
-
-    const fetchSectionPreviews = async () => {
-      // Pick a random seed from top 10 liked movies
-      const top10 = likedMovies.slice(0, 10);
-      const seed = top10.length > 0 ? top10[Math.floor(Math.random() * top10.length)] : null;
-      setRecSeedMovie(seed);
-
-      try {
-        const [trendingRes, gemsRes, recsRes] = await Promise.all([
-          fetch(`${baseUrl}/movies/trending?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } }),
-          (() => {
-            const twoYearsAgo = new Date();
-            twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-            const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
-            return fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=1`, { headers: { Authorization: `Bearer ${accessToken}` } });
-          })(),
-          seed
-            ? fetch(`${baseUrl}/movies/recommendations/${seed.id}?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } })
-            : Promise.resolve(null),
-        ]);
-
-        const [trendingData, gemsData, recsData] = await Promise.all([
-          trendingRes.json(),
-          gemsRes.json(),
-          recsRes ? recsRes.json() : { results: [] },
-        ]);
-
-        const likedIds = new Set(likedMovies.map((m) => m.id));
-        const trendingPreview = (trendingData.results || [])
-          .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-          .slice(0, 4);
-        const gemsPreview = (gemsData.results || [])
-          .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-          .slice(0, 4);
-        const recsPreview = (recsData.results || [])
-          .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-          .slice(0, 4);
-
-        setSectionPreviews((prev) => {
-          // Merge new raw data with any existing enrichment already applied.
-          // If a movie from the new fetch is already in prev with enrichment (genres populated),
-          // keep the enriched version. Only use the new raw version if it's truly new.
-          const mergeSlice = (newMovies: Movie[], prevMovies: Movie[]) => {
-            const prevById = new Map(prevMovies.map((m) => [m.id, m]));
-            return newMovies.map((m) => {
-              const existing = prevById.get(m.id);
-              // Prefer existing if it has enrichment data (genres populated)
-              return existing && existing.genres && existing.genres.length > 0 ? existing : m;
-            });
-          };
-          return {
-            trending: mergeSlice(trendingPreview, prev.trending),
-            gems: mergeSlice(gemsPreview, prev.gems),
-            recs: mergeSlice(recsPreview, prev.recs),
-          };
-        });
-        setSectionPreviewsLoading(false);
-        setDiscoverCache(c => c ? {
-          ...c,
-          sectionPreviews: { trending: trendingPreview, gems: gemsPreview, recs: recsPreview },
-          recSeedMovie: seed,
-        } : null);
-      } catch (err) {
-        console.error('Error fetching section previews:', err);
-        setSectionPreviewsLoading(false);
-      }
-    };
-
+    if (discoverCache?.sectionPreviews) return; // already restored from cache
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, contextLoading, likedMovies.length]);
+  }, [accessToken, contextLoading]);
 
   // ──────────────── Fetch genres ────────────────
   useEffect(() => {
@@ -1794,6 +1801,26 @@ export function MoviesTab({
             {/* ── Curated sections (hidden when intent filters active) ── */}
             {showSections && !contextLoading && (
               <div className="mb-8 space-y-6">
+
+                {/* Refresh suggestions button */}
+                <div className="flex justify-end -mb-3">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => fetchSectionPreviews()}
+                        disabled={sectionPreviewsLoading}
+                        className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        aria-label="Refresh suggestions"
+                      >
+                        <RefreshCw className={`size-3.5 ${sectionPreviewsLoading ? 'animate-spin' : ''}`} />
+                        <span className="text-xs">Refresh</span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 text-xs">
+                      Refresh suggestions
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
 
                 {/* Because you saved X — always rendered in position, skeleton until loaded */}
                 <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
