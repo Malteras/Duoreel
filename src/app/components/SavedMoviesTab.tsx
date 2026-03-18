@@ -33,6 +33,8 @@ interface SavedMoviesTabProps {
   setGlobalImdbCache: React.Dispatch<React.SetStateAction<Map<string, string>>>;
   savedCache: import('../hooks/useTabCache').SavedCache | null;
   setSavedCache: React.Dispatch<React.SetStateAction<import('../hooks/useTabCache').SavedCache | null>>;
+  cardViewMode: 'grid' | 'compact' | 'list';
+  setCardViewMode: (mode: 'grid' | 'compact' | 'list') => void;
 }
 
 export function SavedMoviesTab({
@@ -47,6 +49,8 @@ export function SavedMoviesTab({
   setGlobalImdbCache,
   savedCache,
   setSavedCache,
+  cardViewMode: cardViewModeProp,
+  setCardViewMode,
 }: SavedMoviesTabProps) {
   const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
   const { selectedMovie, modalOpen, openMovie, closeMovie, isLoadingDeepLink } = useMovieModal(accessToken);
@@ -64,15 +68,9 @@ export function SavedMoviesTab({
   const [viewMode, setViewMode] = useState<'mine' | 'partner'>('mine');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'title' | 'rating' | 'release-newest' | 'release-oldest'>('newest');
   const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
-  const [cardViewMode, setCardViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
-    const saved = localStorage.getItem('duoreel-viewmode-saved') as 'grid' | 'compact' | 'list' | null;
-    if (saved) return saved;
-    return window.innerWidth < 768 ? 'compact' : 'grid';
-  });
-  const handleCardViewMode = (mode: 'grid' | 'compact' | 'list') => {
-    setCardViewMode(mode);
-    localStorage.setItem('duoreel-viewmode-saved', mode);
-  };
+  // View mode — shared across all tabs via AppLayout
+  const cardViewMode = cardViewModeProp;
+  const handleCardViewMode = setCardViewMode;
   const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);

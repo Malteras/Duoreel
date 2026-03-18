@@ -73,6 +73,8 @@ interface MoviesTabProps {
   setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
   discoverCache: import('../hooks/useTabCache').DiscoverCache | null;
   setDiscoverCache: React.Dispatch<React.SetStateAction<import('../hooks/useTabCache').DiscoverCache | null>>;
+  cardViewMode: 'grid' | 'compact' | 'list';
+  setCardViewMode: (mode: 'grid' | 'compact' | 'list') => void;
 }
 
 const SORT_OPTIONS = [
@@ -117,6 +119,8 @@ export function MoviesTab({
   setLikedMovies,
   discoverCache,
   setDiscoverCache,
+  cardViewMode: cardViewModeProp,
+  setCardViewMode,
 }: MoviesTabProps) {
   // Core state — restored from cache if available
   // When arriving via cross-tab navigation (initial* filter props), don't restore
@@ -157,17 +161,9 @@ export function MoviesTab({
   const [showFiltersModal, setShowFiltersModal] =
     useState(false);
 
-  // View mode — persisted per tab
-  const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
-    const saved = localStorage.getItem('duoreel-viewmode-discover') as 'grid' | 'compact' | 'list' | null;
-    if (saved) return saved;
-    return window.innerWidth < 768 ? 'compact' : 'grid';
-  });
-
-  const handleViewMode = (mode: 'grid' | 'compact' | 'list') => {
-    setViewMode(mode);
-    localStorage.setItem('duoreel-viewmode-discover', mode);
-  };
+  // View mode — shared across all tabs via AppLayout
+  const viewMode = cardViewModeProp;
+  const handleViewMode = setCardViewMode;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");

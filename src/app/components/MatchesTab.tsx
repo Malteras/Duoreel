@@ -55,9 +55,11 @@ interface MatchesTabProps {
   matchesCache: MatchesCache | null;
   setMatchesCache: React.Dispatch<React.SetStateAction<MatchesCache | null>>;
   matchNotificationCount: number;
+  cardViewMode: 'grid' | 'compact' | 'list';
+  setCardViewMode: (mode: 'grid' | 'compact' | 'list') => void;
 }
 
-export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter, globalImdbCache, setGlobalImdbCache, matchesCache, setMatchesCache, matchNotificationCount }: MatchesTabProps) {
+export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDiscoverWithFilter, globalImdbCache, setGlobalImdbCache, matchesCache, setMatchesCache, matchNotificationCount, cardViewMode: cardViewModeProp, setCardViewMode }: MatchesTabProps) {
   const { watchedMovieIds, isWatched, watchedLoadingIds, partnerWatchedIds, partnerName } = useUserInteractions();
   const [partner, setPartner] = useState<any>(matchesCache?.partner ?? null);
   const [matchedMovies, setMatchedMovies] = useState<Movie[]>(matchesCache?.matchedMovies ?? []);
@@ -71,15 +73,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [selectedService, setSelectedService] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'default' | 'rating' | 'year-new' | 'year-old'>('default');
   const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
-  const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>(() => {
-    const saved = localStorage.getItem('duoreel-viewmode-matches') as 'grid' | 'compact' | 'list' | null;
-    if (saved) return saved;
-    return window.innerWidth < 768 ? 'compact' : 'grid';
-  });
-  const handleViewMode = (mode: 'grid' | 'compact' | 'list') => {
-    setViewMode(mode);
-    localStorage.setItem('duoreel-viewmode-matches', mode);
-  };
+  // View mode — shared across all tabs via AppLayout
+  const viewMode = cardViewModeProp;
+  const handleViewMode = setCardViewMode;
 
   const baseUrl = API_BASE_URL;
 
