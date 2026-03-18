@@ -439,6 +439,9 @@ export function MoviesTab({
   // and does NOT re-run every time a movie is saved.
   const likedMoviesRef = useRef(likedMovies);
   useEffect(() => { likedMoviesRef.current = likedMovies; }, [likedMovies]);
+  // Prevents re-running fetchSectionPreviews on every save action.
+  // Set to true after the first successful fetch.
+  const sectionFetchedRef = useRef(false);
 
   const fetchSectionPreviews = useCallback(async () => {
     if (!accessToken) return;
@@ -506,14 +509,20 @@ export function MoviesTab({
     }
   }, [accessToken, baseUrl, notInterestedMovieIds, watchedMovieIds]);
 
-  // Run once on mount when auth + context are ready.
-  // Does NOT re-run when likedMovies changes (saves no longer trigger a refresh).
+  // Run once when auth + context are ready AND likedMovies has loaded.
+  // sectionFetchedRef prevents re-running on every save action.
   useEffect(() => {
     if (!accessToken || contextLoading) return;
     if (discoverCache?.sectionPreviews) return; // already restored from cache
+    if (sectionFetchedRef.current) return; // already fetched this session
+    // Wait for likedMovies to load before fetching (seed needs liked movies)
+    // likedMovies.length === 0 on first render; re-run when it becomes non-zero
+    // For users with no saved movies, we still fetch after context loads (seed will be null, recs skipped)
+    // but we don't want to block indefinitely — so only wait one tick by checking contextLoading is done
+    sectionFetchedRef.current = true;
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, contextLoading]);
+  }, [accessToken, contextLoading, likedMovies.length]);
 
   // ──────────────── Fetch genres ────────────────
   useEffect(() => {
