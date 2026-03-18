@@ -224,6 +224,26 @@ export function MoviesTab({
     () => !discoverCache?.sectionPreviews  // skip skeleton if restoring from cache
   );
 
+  // Filtered section previews — derived from raw sectionPreviews, re-computed when
+  // interactions load. Shows sections immediately; removes watched/not-interested reactively.
+  const filteredSectionPreviews = useMemo(() => {
+    const filter = (movies: Movie[], excludeLiked = false) => {
+      const likedIds = excludeLiked ? new Set(likedMovies.map((m: Movie) => m.id)) : null;
+      return movies
+        .filter((m: Movie) =>
+          !notInterestedMovieIds?.has(m.id) &&
+          !watchedMovieIds.has(m.id) &&
+          (!likedIds || !likedIds.has(m.id))
+        )
+        .slice(0, 4);
+    };
+    return {
+      trending: filter(sectionPreviews.trending),
+      gems: filter(sectionPreviews.gems),
+      recs: filter(sectionPreviews.recs, true),
+    };
+  }, [sectionPreviews, watchedMovieIds, notInterestedMovieIds, likedMovies]);
+
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
     Set<number>
@@ -435,7 +455,7 @@ export function MoviesTab({
 
   // ──────────────── Fetch section previews on mount ────────────────
   useEffect(() => {
-    if (!accessToken || contextLoading) return;
+    if (!accessToken) return;
 
     const fetchSectionPreviews = async () => {
       // Pick a random seed from top 10 liked movies
@@ -463,16 +483,14 @@ export function MoviesTab({
           recsRes ? recsRes.json() : { results: [] },
         ]);
 
+        // Store raw results — filtering is applied reactively via useMemo below
+        // so sections show immediately without waiting for interactions to load (QUI-176)
         const likedIds = new Set(likedMovies.map((m) => m.id));
-        const trendingPreview = (trendingData.results || [])
-          .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-          .slice(0, 4);
-        const gemsPreview = (gemsData.results || [])
-          .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-          .slice(0, 4);
+        const trendingPreview = (trendingData.results || []).slice(0, 8);
+        const gemsPreview = (gemsData.results || []).slice(0, 8);
         const recsPreview = (recsData.results || [])
-          .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-          .slice(0, 4);
+          .filter((m: Movie) => !likedIds.has(m.id))
+          .slice(0, 8);
 
         setSectionPreviews((prev) => {
           // Merge new raw data with any existing enrichment already applied.
@@ -506,7 +524,7 @@ export function MoviesTab({
 
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, contextLoading, likedMovies.length]);
+  }, [accessToken, likedMovies.length]);
 
   // ──────────────── Fetch genres ────────────────
   useEffect(() => {
@@ -1826,9 +1844,9 @@ export function MoviesTab({
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.recs.length === 0
+                    {sectionPreviewsLoading || filteredSectionPreviews.recs.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
+                      : filteredSectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
                             key={movie.id}
                             movie={movie}
@@ -1861,9 +1879,9 @@ export function MoviesTab({
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.trending.length === 0
+                    {sectionPreviewsLoading || filteredSectionPreviews.trending.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
+                      : filteredSectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
                             key={movie.id}
                             movie={movie}
@@ -1896,9 +1914,9 @@ export function MoviesTab({
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.gems.length === 0
+                    {sectionPreviewsLoading || filteredSectionPreviews.gems.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
+                      : filteredSectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
                             key={movie.id}
                             movie={movie}
