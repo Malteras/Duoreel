@@ -336,6 +336,21 @@ export function AppLayout() {
         return () => clearInterval(interval);
     }, [accessToken]);
 
+    // --- Keep-warm ping — prevents Supabase edge function cold starts ---------
+    // Without this, the function sleeps after ~5min of inactivity and the next
+    // request pays a 15-20s cold-start penalty on supabase.auth.getUser().
+    // Pinging /health every 4 minutes keeps it warm at near-zero cost.
+    useEffect(() => {
+        const warmInterval = setInterval(() => {
+            fetch(`${API_BASE_URL}/health`).catch(() => {});
+        }, 4 * 60 * 1000);
+
+        // Fire immediately on mount too
+        fetch(`${API_BASE_URL}/health`).catch(() => {});
+
+        return () => clearInterval(warmInterval);
+    }, []);
+
     // ─── Auto-sync Letterboxd on app load ────────────────────────────────────
     const hasAutoSyncedLetterboxd = useRef(false);
     useEffect(() => {
