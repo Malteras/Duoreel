@@ -109,7 +109,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   );
 
   // ── Data fetching ──────────────────────────────────────────────────────────
+  const fetchInFlightRef = useRef(false);
   const fetchData = useCallback(async (showSpinner = true) => {
+    // Prevent concurrent fetches — if one is already running, skip
+    if (fetchInFlightRef.current) return;
+    fetchInFlightRef.current = true;
     if (showSpinner) setLoading(true);
     try {
       const [partnerRes, incomingRes, outgoingRes, matchesRes, inviteCodeRes] = await Promise.all([
@@ -155,27 +159,33 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
+      fetchInFlightRef.current = false;
       setLoading(false);
     }
-  }, [accessToken, baseUrl]);
+  }, [accessToken, baseUrl, matchNotificationCount]);
+
+  const matchesCacheRef = useRef(matchesCache);
+  matchesCacheRef.current = matchesCache;
 
   useEffect(() => {
     if (!accessToken) return;
 
+    const cache = matchesCacheRef.current;
+
     // Skip fetch entirely if cache is fresh (no new matches)
-    if (matchesCache && matchNotificationCount <= matchesCache.matchCountAtLoad) {
+    if (cache && matchNotificationCount <= cache.matchCountAtLoad) {
       return;
     }
 
-    // If cache exists but stale (new matches), refresh silently in background
-    if (matchesCache) {
+    // If cache exists but stale, refresh silently in background
+    if (cache) {
       fetchData(false);
       return;
     }
 
     // No cache — fetch with loading spinner
     fetchData(true);
-  }, [accessToken, fetchData, matchesCache, matchNotificationCount]);
+  }, [accessToken, fetchData, matchNotificationCount]);
 
   // ── IMDb ratings — keyed by tmdbId to avoid external_ids dependency ────────
   useEffect(() => {
