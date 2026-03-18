@@ -71,7 +71,7 @@ export function CompactMovieCard({
 
         {movie.vote_average > 0 && (
           <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
-            <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg">
+            <div className="bg-blue-600/90 backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg min-h-[19px]">
               <span className="text-[7px] font-bold text-blue-200 uppercase tracking-wide">TMDB</span>
               <span className="text-[10px] font-bold text-white">{movie.vote_average.toFixed(1)}</span>
             </div>
@@ -81,7 +81,7 @@ export function CompactMovieCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className={`backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg transition-colors ${
+                className={`backdrop-blur-sm px-1.5 py-0.5 rounded-full flex items-center gap-1 shadow-lg transition-colors min-h-[19px] ${
                   displayImdbRating && displayImdbRating !== 'N/A' && displayImdbRating !== 'NOT_FOUND'
                     ? 'bg-[#F5C518] hover:bg-[#F5C518]/80'
                     : 'bg-[#F5C518]/50 hover:bg-[#F5C518]/60'
