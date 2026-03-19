@@ -17,6 +17,7 @@ import {
   bulkFetchCachedRatings,
   fetchMissingRatings,
   onRatingFetched,
+  readLocalImdbCache,
 } from "../../utils/imdbRatings";
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
@@ -192,9 +193,14 @@ export function MoviesTab({
   });
 
   // IMDb ratings local state (keyed by TMDb ID) — restored from cache if available
-  const [imdbRatings, setImdbRatings] = useState<
-    Map<number, string>
-  >(discoverCache?.imdbRatings ?? new Map());
+  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(() => {
+    const local = readLocalImdbCache();
+    if (discoverCache?.imdbRatings && discoverCache.imdbRatings.size > 0) {
+      // discoverCache wins for entries it has (more recent), localStorage fills the rest
+      return new Map([...local, ...discoverCache.imdbRatings]);
+    }
+    return local;
+  });
 
   // Keep a ref to movies so the onRatingFetched listener can look up IMDb IDs
   // without needing movies in its dep array (which would cause resubscription

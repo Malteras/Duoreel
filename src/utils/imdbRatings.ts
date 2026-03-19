@@ -1,6 +1,83 @@
 // IMDb Rating Fetching Utilities with Smart Caching
 import { API_BASE_URL } from './api';
 
+// ── localStorage IMDb ratings cache (L1 cache, in front of server KV) ──────────
+
+const LS_KEY = 'duoreel:imdb-ratings';
+
+interface LocalImdbCacheEntry {
+  rating: string;
+  storedAt: number;
+  releaseDate?: string; // ISO date string, used to determine TTL
+}
+
+interface LocalImdbCacheStore {
+  version: 1;
+  entries: Record<string, LocalImdbCacheEntry>; // key = tmdbId as string
+}
+
+const TTL_NEW_MOVIE_MS = 7 * 24 * 60 * 60 * 1000;   // 7 days  (< 6 months old)
+const TTL_OLD_MOVIE_MS = 30 * 24 * 60 * 60 * 1000;  // 30 days (≥ 6 months old)
+const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000;
+
+function getTtl(releaseDate?: string): number {
+  if (!releaseDate) return TTL_OLD_MOVIE_MS;
+  const age = Date.now() - new Date(releaseDate).getTime();
+  return age < SIX_MONTHS_MS ? TTL_NEW_MOVIE_MS : TTL_OLD_MOVIE_MS;
+}
+
+function readRawLocalCache(): LocalImdbCacheStore | null {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as LocalImdbCacheStore;
+    if (parsed.version !== 1) return null;
+    return parsed;
+  } catch {
+    try { localStorage.removeItem(LS_KEY); } catch {}
+    return null;
+  }
+}
+
+/** Read localStorage cache, prune expired entries, return Map<tmdbId, rating> */
+export function readLocalImdbCache(): Map<number, string> {
+  const store = readRawLocalCache();
+  if (!store) return new Map();
+
+  const now = Date.now();
+  const result = new Map<number, string>();
+  const pruned: Record<string, LocalImdbCacheEntry> = {};
+
+  for (const [key, entry] of Object.entries(store.entries)) {
+    const ttl = getTtl(entry.releaseDate);
+    if (now - entry.storedAt < ttl) {
+      result.set(Number(key), entry.rating);
+      pruned[key] = entry;
+    }
+  }
+
+  // Write back pruned store if any entries were removed
+  if (Object.keys(pruned).length !== Object.keys(store.entries).length) {
+    try {
+      localStorage.setItem(LS_KEY, JSON.stringify({ version: 1, entries: pruned }));
+    } catch {}
+  }
+
+  return result;
+}
+
+/** Write a single rating into localStorage. Never writes NOT_FOUND. */
+export function writeLocalImdbCache(tmdbId: number, rating: string, releaseDate?: string): void {
+  if (!rating || rating === 'NOT_FOUND') return;
+  try {
+    const store = readRawLocalCache() ?? { version: 1 as const, entries: {} };
+    store.entries[String(tmdbId)] = { rating, storedAt: Date.now(), releaseDate };
+    localStorage.setItem(LS_KEY, JSON.stringify(store));
+  } catch {
+    // Storage quota or unavailable — fail silently
+  }
+}
+
 interface ImdbRatingCache {
   imdbId: string;
   tmdbId: number;
@@ -27,7 +104,10 @@ export function onRatingFetched(callback: RatingUpdateListener) {
   return () => ratingUpdateListeners.delete(callback);
 }
 
-function emitRatingUpdate(tmdbId: number, rating: string) {
+function emitRatingUpdate(tmdbId: number, rating: string, releaseDate?: string) {
+  if (rating && rating !== 'NOT_FOUND') {
+    writeLocalImdbCache(tmdbId, rating, releaseDate);
+  }
   ratingUpdateListeners.forEach(listener => listener(tmdbId, rating));
 }
 
@@ -102,7 +182,7 @@ export async function fetchAndStoreRating(
     
     // Emit update event — includes NOT_FOUND so spinner resolves to dash
     if (data.rating) {
-      emitRatingUpdate(movie.id, data.rating);
+      emitRatingUpdate(movie.id, data.rating, movie.release_date);
     }
     
     // If server returned NOT_FOUND, treat as null so callers know to show dash

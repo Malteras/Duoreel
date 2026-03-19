@@ -37,7 +37,7 @@ import {
 import { toast } from 'sonner';
 import { useMovieModal } from '../hooks/useMovieModal';
 import { STREAMING_SERVICES } from '../../constants/streaming';
-import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched } from '../../utils/imdbRatings';
+import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched, readLocalImdbCache } from '../../utils/imdbRatings';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useWatchedActions } from '../hooks/useWatchedActions';
@@ -90,7 +90,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   });
 
   // IMDb ratings keyed by tmdbId to avoid external_ids dependency
-  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(new Map());
+  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(() => readLocalImdbCache());
 
   // Invite code state
   const [inviteCode, setInviteCode] = useState(matchesCache?.inviteCode ?? '');
