@@ -224,6 +224,8 @@ export function MoviesTab({
   const [sectionPreviewsLoading, setSectionPreviewsLoading] = useState(
     () => !discoverCache?.sectionPreviews  // skip skeleton if restoring from cache
   );
+  // Separate loading state for recs-only refresh (doesn't affect trending/gems)
+  const [recsRefreshLoading, setRecsRefreshLoading] = useState(false);
 
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
@@ -556,7 +558,7 @@ export function MoviesTab({
     const pool = otherSeeds.length > 0 ? otherSeeds : top10;
     const newSeed = pool[Math.floor(Math.random() * pool.length)];
     setRecSeedMovie(newSeed);
-    setSectionPreviewsLoading(true);
+    setRecsRefreshLoading(true);
 
     try {
       const res = await fetch(
@@ -587,7 +589,7 @@ export function MoviesTab({
     } catch (err) {
       console.error('Error refreshing recs:', err);
     } finally {
-      setSectionPreviewsLoading(false);
+      setRecsRefreshLoading(false);
     }
   }, [accessToken, baseUrl, recSeedMovie, notInterestedMovieIds, watchedMovieIds]);
 
@@ -1894,7 +1896,7 @@ export function MoviesTab({
                 <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-400">
-                      {sectionPreviewsLoading || !recSeedMovie ? (
+                      {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
                         <span>Because you saved <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
                       ) : (
                         <>
@@ -1914,12 +1916,12 @@ export function MoviesTab({
                       )}
                     </p>
                     <div className="flex items-center gap-3">
-                      {recSeedMovie && !sectionPreviewsLoading && (
+                      {recSeedMovie && !sectionPreviewsLoading && !recsRefreshLoading && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
                               onClick={() => refreshRecs()}
-                              disabled={sectionPreviewsLoading}
+                              disabled={recsRefreshLoading}
                               className="flex items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                               aria-label="Refresh suggestions"
                             >
@@ -1933,15 +1935,15 @@ export function MoviesTab({
                         </Tooltip>
                       )}
                       <button
-                        onClick={() => !sectionPreviewsLoading && enterSection('recs')}
-                        className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                        onClick={() => !(sectionPreviewsLoading || recsRefreshLoading) && enterSection('recs')}
+                        className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${(sectionPreviewsLoading || recsRefreshLoading) ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
                       >
                         See all <ChevronRight className="size-3" />
                       </button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.recs.length === 0
+                    {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
                       : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
