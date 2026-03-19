@@ -401,6 +401,26 @@ export function MoviesTab({
     partnerName,
   } = useUserInteractions();
 
+  // Filtered section previews — declared AFTER useUserInteractions so
+  // watchedMovieIds/notInterestedMovieIds are in scope (fixes TDZ ReferenceError).
+  const filteredSectionPreviews = useMemo(() => {
+    const filter = (movies: Movie[], excludeLiked = false) => {
+      const likedIds = excludeLiked ? new Set(likedMovies.map((m: Movie) => m.id)) : null;
+      return movies
+        .filter((m: Movie) =>
+          !notInterestedMovieIds?.has(m.id) &&
+          !watchedMovieIds.has(m.id) &&
+          (!likedIds || !likedIds.has(m.id))
+        )
+        .slice(0, 4);
+    };
+    return {
+      trending: filter(sectionPreviews.trending),
+      gems: filter(sectionPreviews.gems),
+      recs: filter(sectionPreviews.recs, true),
+    };
+  }, [sectionPreviews, watchedMovieIds, notInterestedMovieIds, likedMovies]);
+
   // Liked movie IDs set for quick lookup
   const likedMovieIds = useMemo(
     () => new Set(likedMovies.map((m) => m.id)),
