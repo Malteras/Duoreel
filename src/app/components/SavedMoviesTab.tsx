@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
-import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched } from '../../utils/imdbRatings';
+import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched, readLocalImdbCache } from '../../utils/imdbRatings';
 import { MovieCard } from './MovieCard';
 import { CompactMovieCard } from './CompactMovieCard';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -58,7 +58,7 @@ export function SavedMoviesTab({
   const { handleWatched, handleUnwatched } = useWatchedActions({ accessToken, closeMovie });
 
   const [partnerLikedMovies, setPartnerLikedMovies] = useState<Movie[]>(savedCache?.partnerLikedMovies ?? []);
-  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(new Map());
+  const [imdbRatings, setImdbRatings] = useState<Map<number, string>>(() => readLocalImdbCache());
   const [partnerName, setPartnerName] = useState<string>(savedCache?.partnerName ?? '');
   const [hasPartner, setHasPartner] = useState(savedCache?.hasPartner ?? false);
   const [loading, setLoading] = useState(true);
