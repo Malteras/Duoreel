@@ -12,6 +12,7 @@ interface CompactMovieCardProps {
   topRightOverlay?: React.ReactNode;
   partnerWatchedIds?: Set<number>;
   partnerName?: string;
+  activeGenreId?: number | null;
 }
 
 export function CompactMovieCard({
@@ -25,6 +26,7 @@ export function CompactMovieCard({
   topRightOverlay,
   partnerWatchedIds,
   partnerName,
+  activeGenreId,
 }: CompactMovieCardProps) {
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -126,7 +128,13 @@ export function CompactMovieCard({
         </div>
         {movie.genres && movie.genres.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {movie.genres.slice(0, 2).map((genre) => (
+            {(activeGenreId
+              ? [
+                  ...movie.genres.filter(g => g.id === activeGenreId),
+                  ...movie.genres.filter(g => g.id !== activeGenreId),
+                ]
+              : movie.genres
+            ).slice(0, 2).map((genre) => (
               <span
                 key={genre.id}
                 className={`bg-purple-600/70 text-white border border-purple-500 text-[9px] px-1.5 py-0.5 rounded-full ${onGenreClick ? 'cursor-pointer hover:bg-purple-700' : ''}`}
