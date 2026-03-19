@@ -509,16 +509,13 @@ export function MoviesTab({
     }
   }, [accessToken, baseUrl, notInterestedMovieIds, watchedMovieIds]);
 
-  // Run once when auth + context are ready AND likedMovies has loaded.
-  // sectionFetchedRef prevents re-running on every save action.
+  // Fires once likedMovies has loaded so seed picks a real movie.
+  // sectionFetchedRef prevents re-running on every subsequent save action.
   useEffect(() => {
     if (!accessToken || contextLoading) return;
     if (discoverCache?.sectionPreviews) return; // already restored from cache
-    if (sectionFetchedRef.current) return; // already fetched this session
-    // Wait for likedMovies to load before fetching (seed needs liked movies)
-    // likedMovies.length === 0 on first render; re-run when it becomes non-zero
-    // For users with no saved movies, we still fetch after context loads (seed will be null, recs skipped)
-    // but we don't want to block indefinitely — so only wait one tick by checking contextLoading is done
+    if (sectionFetchedRef.current) return;
+    if (likedMovies.length === 0) return;
     sectionFetchedRef.current = true;
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1839,7 +1836,7 @@ export function MoviesTab({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
-                              onClick={() => fetchSectionPreviews()}
+                              onClick={() => { sectionFetchedRef.current = false; fetchSectionPreviews(); }}
                               disabled={sectionPreviewsLoading}
                               className="flex items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                               aria-label="Refresh suggestions"
