@@ -224,6 +224,8 @@ export function MoviesTab({
   const [sectionPreviewsLoading, setSectionPreviewsLoading] = useState(
     () => !discoverCache?.sectionPreviews  // skip skeleton if restoring from cache
   );
+  // Separate loading state for recs-only refresh (doesn't affect trending/gems)
+  const [recsRefreshLoading, setRecsRefreshLoading] = useState(false);
 
   // "Not Interested" pending removal state
   const [pendingRemovals, setPendingRemovals] = useState<
@@ -271,10 +273,30 @@ export function MoviesTab({
     batchSize: 10,
   });
 
+  // Identity keys — change whenever movie IDs change, not just count.
+  // Used as deps for the enrichment useEffect so it re-runs after Refresh.
+  const recsKey = useMemo(
+    () => sectionPreviews.recs.map((m) => m.id).join(','),
+    [sectionPreviews.recs],
+  );
+  const trendingKey = useMemo(
+    () => sectionPreviews.trending.map((m) => m.id).join(','),
+    [sectionPreviews.trending],
+  );
+  const gemsKey = useMemo(
+    () => sectionPreviews.gems.map((m) => m.id).join(','),
+    [sectionPreviews.gems],
+  );
+
   // Enrich all section preview row cards atomically (single setSectionPreviews write per batch)
   // This avoids a race condition where concurrent writes from three separate useEnrichMovies
   // calls overwrite each other's genre/director/cast results.
   const previewEnrichingRef = useRef<Set<number>>(new Set());
+
+  // Reset enriching ref when recs are replaced (e.g. after Refresh) so new movies get enriched
+  useEffect(() => {
+    previewEnrichingRef.current = new Set();
+  }, [recsKey]);
   useEffect(() => {
     if (!publicAnonKey) return;
     const allPreviews = [
@@ -353,12 +375,7 @@ export function MoviesTab({
 
     enrich();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    sectionPreviews.recs.length,
-    sectionPreviews.trending.length,
-    sectionPreviews.gems.length,
-    publicAnonKey,
-  ]);
+  }, [recsKey, trendingKey, gemsKey, publicAnonKey]);
 
   // Restore enrichedIds from cache on mount (only once)
   const restoredEnrichRef = useRef(false);
@@ -400,26 +417,6 @@ export function MoviesTab({
     partnerWatchedIds,
     partnerName,
   } = useUserInteractions();
-
-  // Filtered section previews — declared AFTER useUserInteractions so
-  // watchedMovieIds/notInterestedMovieIds are in scope (fixes TDZ ReferenceError).
-  const filteredSectionPreviews = useMemo(() => {
-    const filter = (movies: Movie[], excludeLiked = false) => {
-      const likedIds = excludeLiked ? new Set(likedMovies.map((m: Movie) => m.id)) : null;
-      return movies
-        .filter((m: Movie) =>
-          !notInterestedMovieIds?.has(m.id) &&
-          !watchedMovieIds.has(m.id) &&
-          (!likedIds || !likedIds.has(m.id))
-        )
-        .slice(0, 4);
-    };
-    return {
-      trending: filter(sectionPreviews.trending),
-      gems: filter(sectionPreviews.gems),
-      recs: filter(sectionPreviews.recs, true),
-    };
-  }, [sectionPreviews, watchedMovieIds, notInterestedMovieIds, likedMovies]);
 
   // Liked movie IDs set for quick lookup
   const likedMovieIds = useMemo(
@@ -528,6 +525,53 @@ export function MoviesTab({
       setSectionPreviewsLoading(false);
     }
   }, [accessToken, baseUrl, notInterestedMovieIds, watchedMovieIds]);
+
+  // Refresh ONLY the "Because you saved X" recs — does not touch trending or hidden gems
+  const refreshRecs = useCallback(async () => {
+    if (!accessToken) return;
+    const currentLiked = likedMoviesRef.current;
+    const top10 = currentLiked.slice(0, 10);
+    if (top10.length === 0) return;
+
+    // Pick a different seed from current if possible
+    const otherSeeds = top10.filter((m) => m.id !== recSeedMovie?.id);
+    const pool = otherSeeds.length > 0 ? otherSeeds : top10;
+    const newSeed = pool[Math.floor(Math.random() * pool.length)];
+    setRecSeedMovie(newSeed);
+    setRecsRefreshLoading(true);
+
+    try {
+      const res = await fetch(
+        `${baseUrl}/movies/recommendations/${newSeed.id}?page=1`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+      const data = await res.json();
+      const currentLikedIds = new Set(likedMoviesRef.current.map((m) => m.id));
+      const recsPreview = (data.results || [])
+        .filter(
+          (m: Movie) =>
+            !currentLikedIds.has(m.id) &&
+            !notInterestedMovieIds?.has(m.id) &&
+            !watchedMovieIds.has(m.id),
+        )
+        .slice(0, 4);
+
+      setSectionPreviews((prev) => ({ ...prev, recs: recsPreview }));
+      setDiscoverCache((c) =>
+        c
+          ? {
+              ...c,
+              sectionPreviews: { ...c.sectionPreviews, recs: recsPreview },
+              recSeedMovie: newSeed,
+            }
+          : null,
+      );
+    } catch (err) {
+      console.error('Error refreshing recs:', err);
+    } finally {
+      setRecsRefreshLoading(false);
+    }
+  }, [accessToken, baseUrl, recSeedMovie, notInterestedMovieIds, watchedMovieIds]);
 
   // Fires once likedMovies has loaded so seed picks a real movie.
   // sectionFetchedRef prevents re-running on every subsequent save action.
@@ -1832,7 +1876,7 @@ export function MoviesTab({
                 <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-400">
-                      {sectionPreviewsLoading || !recSeedMovie ? (
+                      {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
                         <span>Because you saved <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
                       ) : (
                         <>
@@ -1852,12 +1896,12 @@ export function MoviesTab({
                       )}
                     </p>
                     <div className="flex items-center gap-3">
-                      {recSeedMovie && !sectionPreviewsLoading && (
+                      {recSeedMovie && !sectionPreviewsLoading && !recsRefreshLoading && (
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
-                              onClick={() => { sectionFetchedRef.current = false; fetchSectionPreviews(); }}
-                              disabled={sectionPreviewsLoading}
+                              onClick={() => refreshRecs()}
+                              disabled={recsRefreshLoading}
                               className="flex items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                               aria-label="Refresh suggestions"
                             >
@@ -1871,15 +1915,15 @@ export function MoviesTab({
                         </Tooltip>
                       )}
                       <button
-                        onClick={() => !sectionPreviewsLoading && enterSection('recs')}
-                        className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                        onClick={() => !(sectionPreviewsLoading || recsRefreshLoading) && enterSection('recs')}
+                        className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${(sectionPreviewsLoading || recsRefreshLoading) ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
                       >
                         See all <ChevronRight className="size-3" />
                       </button>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.recs.length === 0
+                    {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
                       ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
                       : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
                           <SectionPreviewCard
