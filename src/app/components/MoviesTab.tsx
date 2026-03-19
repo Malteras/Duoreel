@@ -1821,6 +1821,7 @@ export function MoviesTab({
                               movie={movie}
                               onClick={() => openMovie(movie)}
                               isWatched={isWatched(movie.id)}
+                              activeGenreId={filters.genre !== 'all' ? parseInt(filters.genre, 10) : null}
                               imdbRating={imdbRatings.get(movie.id)}
                               globalImdbCache={globalImdbCache}
                               partnerWatchedIds={partnerWatchedIds}
@@ -2219,7 +2220,13 @@ export function MoviesTab({
                         </div>
                         {movie.genres && movie.genres.length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {movie.genres.slice(0, 2).map((genre) => (
+                            {(filters.genre !== 'all'
+                              ? [
+                                  ...movie.genres.filter(g => g.id.toString() === filters.genre),
+                                  ...movie.genres.filter(g => g.id.toString() !== filters.genre),
+                                ]
+                              : movie.genres
+                            ).slice(0, 2).map((genre) => (
                               <span key={genre.id} className="bg-purple-600/70 text-white border border-purple-500 text-[9px] px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-purple-700" onClick={(e) => { e.stopPropagation(); updateFilter("genre", genre.id.toString()); }}>{genre.name}</span>
                             ))}
                           </div>
