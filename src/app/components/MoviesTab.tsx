@@ -271,10 +271,30 @@ export function MoviesTab({
     batchSize: 10,
   });
 
+  // Identity keys — change whenever movie IDs change, not just count.
+  // Used as deps for the enrichment useEffect so it re-runs after Refresh.
+  const recsKey = useMemo(
+    () => sectionPreviews.recs.map((m) => m.id).join(','),
+    [sectionPreviews.recs],
+  );
+  const trendingKey = useMemo(
+    () => sectionPreviews.trending.map((m) => m.id).join(','),
+    [sectionPreviews.trending],
+  );
+  const gemsKey = useMemo(
+    () => sectionPreviews.gems.map((m) => m.id).join(','),
+    [sectionPreviews.gems],
+  );
+
   // Enrich all section preview row cards atomically (single setSectionPreviews write per batch)
   // This avoids a race condition where concurrent writes from three separate useEnrichMovies
   // calls overwrite each other's genre/director/cast results.
   const previewEnrichingRef = useRef<Set<number>>(new Set());
+
+  // Reset enriching ref when recs are replaced (e.g. after Refresh) so new movies get enriched
+  useEffect(() => {
+    previewEnrichingRef.current = new Set();
+  }, [recsKey]);
   useEffect(() => {
     if (!publicAnonKey) return;
     const allPreviews = [
@@ -353,12 +373,7 @@ export function MoviesTab({
 
     enrich();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    sectionPreviews.recs.length,
-    sectionPreviews.trending.length,
-    sectionPreviews.gems.length,
-    publicAnonKey,
-  ]);
+  }, [recsKey, trendingKey, gemsKey, publicAnonKey]);
 
   // Restore enrichedIds from cache on mount (only once)
   const restoredEnrichRef = useRef(false);
@@ -528,6 +543,53 @@ export function MoviesTab({
       setSectionPreviewsLoading(false);
     }
   }, [accessToken, baseUrl, notInterestedMovieIds, watchedMovieIds]);
+
+  // Refresh ONLY the "Because you saved X" recs — does not touch trending or hidden gems
+  const refreshRecs = useCallback(async () => {
+    if (!accessToken) return;
+    const currentLiked = likedMoviesRef.current;
+    const top10 = currentLiked.slice(0, 10);
+    if (top10.length === 0) return;
+
+    // Pick a different seed from current if possible
+    const otherSeeds = top10.filter((m) => m.id !== recSeedMovie?.id);
+    const pool = otherSeeds.length > 0 ? otherSeeds : top10;
+    const newSeed = pool[Math.floor(Math.random() * pool.length)];
+    setRecSeedMovie(newSeed);
+    setSectionPreviewsLoading(true);
+
+    try {
+      const res = await fetch(
+        `${baseUrl}/movies/recommendations/${newSeed.id}?page=1`,
+        { headers: { Authorization: `Bearer ${accessToken}` } },
+      );
+      const data = await res.json();
+      const currentLikedIds = new Set(likedMoviesRef.current.map((m) => m.id));
+      const recsPreview = (data.results || [])
+        .filter(
+          (m: Movie) =>
+            !currentLikedIds.has(m.id) &&
+            !notInterestedMovieIds?.has(m.id) &&
+            !watchedMovieIds.has(m.id),
+        )
+        .slice(0, 4);
+
+      setSectionPreviews((prev) => ({ ...prev, recs: recsPreview }));
+      setDiscoverCache((c) =>
+        c
+          ? {
+              ...c,
+              sectionPreviews: { ...c.sectionPreviews, recs: recsPreview },
+              recSeedMovie: newSeed,
+            }
+          : null,
+      );
+    } catch (err) {
+      console.error('Error refreshing recs:', err);
+    } finally {
+      setSectionPreviewsLoading(false);
+    }
+  }, [accessToken, baseUrl, recSeedMovie, notInterestedMovieIds, watchedMovieIds]);
 
   // Fires once likedMovies has loaded so seed picks a real movie.
   // sectionFetchedRef prevents re-running on every subsequent save action.
@@ -1856,7 +1918,7 @@ export function MoviesTab({
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <button
-                              onClick={() => { sectionFetchedRef.current = false; fetchSectionPreviews(); }}
+                              onClick={() => refreshRecs()}
                               disabled={sectionPreviewsLoading}
                               className="flex items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
                               aria-label="Refresh suggestions"
