@@ -853,8 +853,12 @@ export function MoviesTab({
     const fetchRatings = async () => {
       fetchingRatingsRef.current = true;
       try {
-        // Get TMDb IDs for bulk fetch
-        const tmdbIds = movies.map((m) => m.id);
+        // Get TMDb IDs for bulk fetch — skip IDs already in state (seeded from localStorage)
+        const tmdbIds = movies.map((m) => m.id).filter((id) => !imdbRatings.has(id));
+        if (tmdbIds.length === 0) {
+          fetchingRatingsRef.current = false;
+          return;
+        }
 
         // Bulk fetch cached ratings
         const cached = await bulkFetchCachedRatings(
@@ -946,7 +950,8 @@ export function MoviesTab({
 
     const fetchSectionRatings = async () => {
       try {
-        const tmdbIds = enrichedWithImdb.map((m) => m.id);
+        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatings.has(id));
+        if (tmdbIds.length === 0) return;
         const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
         if (cached.size > 0) {
@@ -1008,7 +1013,8 @@ export function MoviesTab({
 
     const fetchPreviewRatings = async () => {
       try {
-        const tmdbIds = enrichedWithImdb.map((m) => m.id);
+        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatings.has(id));
+        if (tmdbIds.length === 0) return;
         const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
         if (cached.size > 0) {
