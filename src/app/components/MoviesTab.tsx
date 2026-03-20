@@ -859,7 +859,8 @@ export function MoviesTab({
       fetchingRatingsRef.current = true;
       try {
         // Get TMDb IDs for bulk fetch — skip IDs already in state (seeded from localStorage)
-        const tmdbIds = movies.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id));
+        const localCache = readLocalImdbCache();
+        const tmdbIds = movies.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id) && !localCache.has(id));
         if (tmdbIds.length === 0) {
           fetchingRatingsRef.current = false;
           return;
@@ -910,7 +911,7 @@ export function MoviesTab({
         // Also skip movies whose rating is already in local imdbRatings state —
         // they were fetched on a previous visit and don't need another OMDb call.
         const moviesWithImdbIds = movies.filter(
-          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
+          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id) && !readLocalImdbCache().has(m.id),
         );
 
         if (moviesWithImdbIds.length > 0) {
@@ -955,7 +956,8 @@ export function MoviesTab({
 
     const fetchSectionRatings = async () => {
       try {
-        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id));
+        const localCache = readLocalImdbCache();
+        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id) && !localCache.has(id));
         if (tmdbIds.length === 0) return;
         const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
@@ -987,7 +989,7 @@ export function MoviesTab({
         }
 
         const moviesWithImdbIds = enrichedWithImdb.filter(
-          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
+          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id) && !readLocalImdbCache().has(m.id),
         );
         if (moviesWithImdbIds.length > 0) {
           const visibleIds = new Set(sectionMovies.slice(0, 8).map((m) => m.id));
@@ -1018,7 +1020,8 @@ export function MoviesTab({
 
     const fetchPreviewRatings = async () => {
       try {
-        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id));
+        const localCache = readLocalImdbCache();
+        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id) && !localCache.has(id));
         if (tmdbIds.length === 0) return;
         const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
@@ -1050,7 +1053,7 @@ export function MoviesTab({
         }
 
         const moviesWithImdbIds = enrichedWithImdb.filter(
-          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id),
+          (m) => m.external_ids?.imdb_id && !cached.has(m.id) && !imdbRatings.has(m.id) && !readLocalImdbCache().has(m.id),
         );
         if (moviesWithImdbIds.length > 0) {
           const visibleIds = new Set(allPreviews.slice(0, 12).map((m) => m.id));
