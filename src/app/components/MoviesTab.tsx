@@ -208,6 +208,10 @@ export function MoviesTab({
   // mid-fetch and lose rating emissions).
   const moviesRef = useRef<typeof movies>(movies);
 
+  // Keep a ref to imdbRatings so bulkFetchCachedRatings effects can filter
+  // already-cached IDs without stale closure issues.
+  const imdbRatingsRef = useRef<Map<number, string>>(imdbRatings);
+
   // ── Sectioned feed state ──
   // activeSectionView: which section is slid into view (null = home)
   const [activeSectionView, setActiveSectionView] = useState<'recs' | 'trending' | 'gems' | null>(null);
@@ -253,7 +257,8 @@ export function MoviesTab({
   // without movies being in its dep array.
   useEffect(() => {
     moviesRef.current = movies;
-  }, [movies]);
+    imdbRatingsRef.current = imdbRatings;
+  }, [movies, imdbRatings]);
 
   const baseUrl = API_BASE_URL;
 
@@ -854,7 +859,7 @@ export function MoviesTab({
       fetchingRatingsRef.current = true;
       try {
         // Get TMDb IDs for bulk fetch — skip IDs already in state (seeded from localStorage)
-        const tmdbIds = movies.map((m) => m.id).filter((id) => !imdbRatings.has(id));
+        const tmdbIds = movies.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id));
         if (tmdbIds.length === 0) {
           fetchingRatingsRef.current = false;
           return;
@@ -950,7 +955,7 @@ export function MoviesTab({
 
     const fetchSectionRatings = async () => {
       try {
-        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatings.has(id));
+        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id));
         if (tmdbIds.length === 0) return;
         const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
@@ -1013,7 +1018,7 @@ export function MoviesTab({
 
     const fetchPreviewRatings = async () => {
       try {
-        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatings.has(id));
+        const tmdbIds = enrichedWithImdb.map((m) => m.id).filter((id) => !imdbRatingsRef.current.has(id));
         if (tmdbIds.length === 0) return;
         const cached = await bulkFetchCachedRatings(tmdbIds, projectId, publicAnonKey);
 
