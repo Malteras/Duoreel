@@ -18,7 +18,7 @@ import {
   fetchMissingRatings,
   onRatingFetched,
   readLocalImdbCache,
-  writeLocalImdbCache,
+  writeBulkLocalImdbCache,
 } from "../../utils/imdbRatings";
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
@@ -876,12 +876,15 @@ export function MoviesTab({
           });
 
           // Write bulk results to localStorage so returning sessions skip this fetch
-          cached.forEach((value, tmdbId) => {
-            if (value.rating && value.rating !== 'NOT_FOUND') {
-              const releaseDate = movies.find(m => m.id === tmdbId)?.release_date;
-              writeLocalImdbCache(tmdbId, value.rating, releaseDate);
-            }
-          });
+          writeBulkLocalImdbCache(
+            [...cached.entries()]
+              .filter(([, v]) => v.rating && v.rating !== 'NOT_FOUND')
+              .map(([tmdbId, v]) => ({
+                tmdbId,
+                rating: v.rating,
+                releaseDate: movies.find(m => m.id === tmdbId)?.release_date,
+              }))
+          );
 
           // Also write into globalImdbCache (keyed by IMDb ID) so Saved and Matches tabs benefit
           setGlobalImdbCache((prev) => {
@@ -954,12 +957,15 @@ export function MoviesTab({
             });
             return updated;
           });
-          cached.forEach((value, tmdbId) => {
-            if (value.rating && value.rating !== 'NOT_FOUND') {
-              const releaseDate = enrichedWithImdb.find(m => m.id === tmdbId)?.release_date;
-              writeLocalImdbCache(tmdbId, value.rating, releaseDate);
-            }
-          });
+          writeBulkLocalImdbCache(
+            [...cached.entries()]
+              .filter(([, v]) => v.rating && v.rating !== 'NOT_FOUND')
+              .map(([tmdbId, v]) => ({
+                tmdbId,
+                rating: v.rating,
+                releaseDate: enrichedWithImdb.find(m => m.id === tmdbId)?.release_date,
+              }))
+          );
           setGlobalImdbCache((prev) => {
             const updated = new Map(prev);
             cached.forEach((value, tmdbId) => {
@@ -1013,12 +1019,15 @@ export function MoviesTab({
             });
             return updated;
           });
-          cached.forEach((value, tmdbId) => {
-            if (value.rating && value.rating !== 'NOT_FOUND') {
-              const releaseDate = enrichedWithImdb.find(m => m.id === tmdbId)?.release_date;
-              writeLocalImdbCache(tmdbId, value.rating, releaseDate);
-            }
-          });
+          writeBulkLocalImdbCache(
+            [...cached.entries()]
+              .filter(([, v]) => v.rating && v.rating !== 'NOT_FOUND')
+              .map(([tmdbId, v]) => ({
+                tmdbId,
+                rating: v.rating,
+                releaseDate: enrichedWithImdb.find(m => m.id === tmdbId)?.release_date,
+              }))
+          );
           setGlobalImdbCache((prev) => {
             const updated = new Map(prev);
             cached.forEach((value, tmdbId) => {

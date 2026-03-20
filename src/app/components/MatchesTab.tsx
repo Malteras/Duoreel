@@ -37,7 +37,7 @@ import {
 import { toast } from 'sonner';
 import { useMovieModal } from '../hooks/useMovieModal';
 import { STREAMING_SERVICES } from '../../constants/streaming';
-import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched, readLocalImdbCache, writeLocalImdbCache } from '../../utils/imdbRatings';
+import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched, readLocalImdbCache, writeBulkLocalImdbCache } from '../../utils/imdbRatings';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { useUserInteractions } from './UserInteractionsContext';
 import { useWatchedActions } from '../hooks/useWatchedActions';
@@ -202,12 +202,15 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           });
           return updated;
         });
-        cached.forEach((value, tmdbId) => {
-          if (value.rating && value.rating !== 'NOT_FOUND') {
-            const releaseDate = matchedMovies.find(m => m.id === tmdbId)?.release_date;
-            writeLocalImdbCache(tmdbId, value.rating, releaseDate);
-          }
-        });
+        writeBulkLocalImdbCache(
+          [...cached.entries()]
+            .filter(([, v]) => v.rating && v.rating !== 'NOT_FOUND')
+            .map(([tmdbId, v]) => ({
+              tmdbId,
+              rating: v.rating,
+              releaseDate: matchedMovies.find(m => m.id === tmdbId)?.release_date,
+            }))
+        );
 
         // Also populate globalImdbCache for movies that DO have external_ids
         // (used by MovieDetailModal's imdbRatingFromCard prop)
