@@ -949,7 +949,7 @@ export function MoviesTab({
     if (sectionMovies.length === 0) return;
 
     const enrichedWithImdb = sectionMovies.filter(
-      (m) => m.external_ids?.imdb_id && !imdbRatings.has(m.id),
+      (m) => m.external_ids?.imdb_id && !imdbRatingsRef.current.has(m.id),
     );
     if (enrichedWithImdb.length === 0) return;
 
@@ -1012,7 +1012,7 @@ export function MoviesTab({
     if (allPreviews.length === 0) return;
 
     const enrichedWithImdb = allPreviews.filter(
-      (m) => m.external_ids?.imdb_id && !imdbRatings.has(m.id),
+      (m) => m.external_ids?.imdb_id && !imdbRatingsRef.current.has(m.id),
     );
     if (enrichedWithImdb.length === 0) return;
 
