@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import type { Movie } from '../../types/movie';
 import { API_BASE_URL } from '../../utils/api';
-import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched, readLocalImdbCache } from '../../utils/imdbRatings';
+import { bulkFetchCachedRatings, fetchMissingRatings, onRatingFetched, readLocalImdbCache, writeLocalImdbCache } from '../../utils/imdbRatings';
 import { MovieCard } from './MovieCard';
 import { CompactMovieCard } from './CompactMovieCard';
 import { MovieCardSkeletonGrid } from './MovieCardSkeleton';
@@ -389,6 +389,14 @@ export function SavedMoviesTab({
             if (value.rating) updated.set(tmdbId, value.rating);
           });
           return updated;
+        });
+        cached.forEach((value, tmdbId) => {
+          if (value.rating && value.rating !== 'NOT_FOUND') {
+            const releaseDate =
+              likedMovies.find(m => m.id === tmdbId)?.release_date ||
+              partnerLikedMovies.find(m => m.id === tmdbId)?.release_date;
+            writeLocalImdbCache(tmdbId, value.rating, releaseDate);
+          }
         });
         setGlobalImdbCache(prev => {
           const updated = new Map(prev);
