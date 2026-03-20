@@ -78,6 +78,26 @@ export function writeLocalImdbCache(tmdbId: number, rating: string, releaseDate?
   }
 }
 
+/** Write multiple ratings into localStorage in a single read-modify-write.
+ *  Use this instead of calling writeLocalImdbCache in a forEach loop — looping
+ *  causes each call to read stale data and clobber the previous write. */
+export function writeBulkLocalImdbCache(
+  entries: Array<{ tmdbId: number; rating: string; releaseDate?: string }>
+): void {
+  if (entries.length === 0) return;
+  try {
+    const store = readRawLocalCache() ?? { version: 1 as const, entries: {} };
+    const now = Date.now();
+    for (const { tmdbId, rating, releaseDate } of entries) {
+      if (!rating || rating === 'NOT_FOUND') continue;
+      store.entries[String(tmdbId)] = { rating, storedAt: now, releaseDate };
+    }
+    localStorage.setItem(LS_KEY, JSON.stringify(store));
+  } catch {
+    // Storage quota or unavailable — fail silently
+  }
+}
+
 interface ImdbRatingCache {
   imdbId: string;
   tmdbId: number;
