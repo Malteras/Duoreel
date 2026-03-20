@@ -264,3 +264,5 @@ export async function fetchMissingRatings(
     }
   }
 }
+// cache version
+export const IMDB_CACHE_VERSION = 2;
