@@ -18,6 +18,7 @@ import {
   fetchMissingRatings,
   onRatingFetched,
   readLocalImdbCache,
+  writeLocalImdbCache,
 } from "../../utils/imdbRatings";
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
@@ -874,6 +875,14 @@ export function MoviesTab({
             return updated;
           });
 
+          // Write bulk results to localStorage so returning sessions skip this fetch
+          cached.forEach((value, tmdbId) => {
+            if (value.rating && value.rating !== 'NOT_FOUND') {
+              const releaseDate = movies.find(m => m.id === tmdbId)?.release_date;
+              writeLocalImdbCache(tmdbId, value.rating, releaseDate);
+            }
+          });
+
           // Also write into globalImdbCache (keyed by IMDb ID) so Saved and Matches tabs benefit
           setGlobalImdbCache((prev) => {
             const updated = new Map(prev);
@@ -945,6 +954,12 @@ export function MoviesTab({
             });
             return updated;
           });
+          cached.forEach((value, tmdbId) => {
+            if (value.rating && value.rating !== 'NOT_FOUND') {
+              const releaseDate = enrichedWithImdb.find(m => m.id === tmdbId)?.release_date;
+              writeLocalImdbCache(tmdbId, value.rating, releaseDate);
+            }
+          });
           setGlobalImdbCache((prev) => {
             const updated = new Map(prev);
             cached.forEach((value, tmdbId) => {
@@ -997,6 +1012,12 @@ export function MoviesTab({
               if (value.rating) updated.set(tmdbId, value.rating);
             });
             return updated;
+          });
+          cached.forEach((value, tmdbId) => {
+            if (value.rating && value.rating !== 'NOT_FOUND') {
+              const releaseDate = enrichedWithImdb.find(m => m.id === tmdbId)?.release_date;
+              writeLocalImdbCache(tmdbId, value.rating, releaseDate);
+            }
           });
           setGlobalImdbCache((prev) => {
             const updated = new Map(prev);
