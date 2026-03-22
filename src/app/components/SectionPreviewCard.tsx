@@ -141,7 +141,7 @@ export function SectionPreviewCard({
                                 {genres.map((genre) => (
                                     <span
                                         key={genre.id}
-                                        className={`inline-block text-[10px] px-1.5 py-0.5 rounded bg-purple-600/70 text-white border border-purple-500 ${onGenreClick ? "cursor-pointer hover:bg-purple-700" : ""}`}
+                                        className={`inline-block text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30 ${onGenreClick ? "cursor-pointer hover:bg-purple-500/30" : ""}`}
                                         onClick={
                                             onGenreClick
                                                 ? (e) => {

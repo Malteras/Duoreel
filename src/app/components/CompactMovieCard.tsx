@@ -155,6 +155,7 @@ export function CompactMovieCard({
         ) : movie.vote_average > 0 ? (
           <div className="h-[12px] w-24 rounded bg-slate-700/60 animate-pulse mt-0.5" />
         ) : null}
+        {movie.overview && <p className="text-slate-300 text-[10px] leading-relaxed line-clamp-2">{movie.overview}</p>}
       </div>
     </div>
   );

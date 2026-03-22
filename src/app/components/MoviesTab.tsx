@@ -2289,7 +2289,7 @@ export function MoviesTab({
                                 ]
                               : movie.genres
                             ).slice(0, 2).map((genre) => (
-                              <span key={genre.id} className="bg-purple-600/70 text-white border border-purple-500 text-[9px] px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-purple-700" onClick={(e) => { e.stopPropagation(); updateFilter("genre", genre.id.toString()); }}>{genre.name}</span>
+                              <span key={genre.id} className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-purple-500/30" onClick={(e) => { e.stopPropagation(); updateFilter("genre", genre.id.toString()); }}>{genre.name}</span>
                             ))}
                           </div>
                         )}

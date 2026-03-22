@@ -459,7 +459,7 @@ export function MovieDetailModal({
                     <Badge 
                       key={genre.id} 
                       variant="secondary" 
-                      className="rounded-full bg-purple-600/70 text-white border-purple-500 cursor-pointer hover:bg-purple-700 hover:border-purple-400 transition-colors" 
+                      className="rounded-full bg-purple-500/20 text-purple-300 border-purple-500/30 cursor-pointer hover:bg-purple-500/30 hover:border-purple-400/50 transition-colors" 
                       onClick={() => {
                         onGenreClick?.(genre.id);
                       }}
