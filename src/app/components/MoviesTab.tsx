@@ -1556,68 +1556,27 @@ export function MoviesTab({
             {/* Genre · Decade · Rating — desktop only */}
             <div className="hidden md:flex gap-3 items-center">
               {/* Genre */}
-              {/* Genre multi-select */}
-              <div className="relative">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {filters.genres.length === 0 ? (
-                    <Select
-                      value=""
-                      onValueChange={(value) => {
-                        if (value) {
-                          updateFilter("genres", [...filters.genres, value]);
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[150px]">
-                        <SelectValue placeholder="All Genres" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {genres.map((g) => (
-                          <SelectItem key={g.id} value={g.id.toString()}>
-                            {g.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {filters.genres.map((gId) => (
-                        <span
-                          key={gId}
-                          className="flex items-center gap-1 bg-purple-600 border border-purple-400 text-white text-xs px-2.5 py-1 rounded-full cursor-pointer"
-                          onClick={() => updateFilter("genres", filters.genres.filter((id) => id !== gId))}
-                        >
-                          {getGenreName(gId)}
-                          <X className="size-3" />
-                        </span>
-                      ))}
-                      {filters.genres.length < 3 && (
-                        <Select
-                          value=""
-                          onValueChange={(value) => {
-                            if (value && !filters.genres.includes(value)) {
-                              updateFilter("genres", [...filters.genres, value]);
-                            }
-                          }}
-                        >
-                          <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-8 w-[110px] text-xs">
-                            <SelectValue placeholder="+ Add genre" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {genres
-                              .filter((g) => !filters.genres.includes(g.id.toString()))
-                              .map((g) => (
-                                <SelectItem key={g.id} value={g.id.toString()}>
-                                  {g.name}
-                                </SelectItem>
-                              ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <Select
+                value=""
+                onValueChange={(value) => {
+                  if (value && !filters.genres.includes(value)) {
+                    updateFilter("genres", [...filters.genres, value]);
+                  }
+                }}
+              >
+                <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[150px]">
+                  <SelectValue placeholder={filters.genres.length > 0 ? `${filters.genres.length} genre${filters.genres.length > 1 ? 's' : ''}` : "All Genres"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {genres
+                    .filter((g) => !filters.genres.includes(g.id.toString()))
+                    .map((g) => (
+                      <SelectItem key={g.id} value={g.id.toString()}>
+                        {g.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
 
               {/* Decade */}
               <Select
@@ -1721,7 +1680,20 @@ export function MoviesTab({
               </SelectContent>
             </Select>
 
-            {/* Active filter badges — Genre/Decade/Rating handled by inline dropdowns above */}
+            {/* Genre chips — multi-select active genres */}
+            {filters.genres.map((gId) => (
+              <Badge
+                key={gId}
+                variant="secondary"
+                className="bg-purple-600/80 text-white border-purple-400 cursor-pointer hover:bg-purple-700"
+                onClick={() => updateFilter("genres", filters.genres.filter((id) => id !== gId))}
+              >
+                {getGenreName(gId)}
+                <X className="size-3 ml-1" />
+              </Badge>
+            ))}
+
+            {/* Active filter badges — Director/Actor/Year/etc */}
             {filters.director && (
               <Badge
                 variant="secondary"
