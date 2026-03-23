@@ -783,6 +783,11 @@ export function SavedMoviesTab({
                   inputId="partnerEmailSaved"
                 />
               </div>
+              <div className="text-center mt-10">
+                <Users className="size-16 mx-auto mb-4 text-slate-600" />
+                <h3 className="text-xl font-bold text-white mb-2">No Partner Connected</h3>
+                <p className="text-slate-400 text-center">Connect with your partner above to start finding movies you both love!</p>
+              </div>
             </div>
           ) : sortedPartnerMovies.length === 0 ? (
             <div className="text-center py-20">
