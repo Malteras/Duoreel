@@ -585,13 +585,14 @@ export function MoviesTab({
     }
   }, [accessToken, baseUrl, recSeedMovie, notInterestedMovieIds, watchedMovieIds]);
 
-  // Fires once likedMovies has loaded so seed picks a real movie.
+  // Fires on mount (for new users: loads trending + gems immediately).
   // sectionFetchedRef prevents re-running on every subsequent save action.
   useEffect(() => {
     if (!accessToken) return;
     if (discoverCache?.sectionPreviews) return; // already restored from cache
     if (sectionFetchedRef.current) return;
-    if (likedMovies.length === 0) return;
+    // likedMovies.length guard removed — trending and gems have no dependency on
+    // liked movies. fetchSectionPreviews handles seed=null gracefully.
     // contextLoading guard removed — watchedMovieIds/notInterestedMovieIds are already
     // available from the interactions localStorage cache seeded on mount.
     // Worst case: a watched movie briefly shows in a section preview until the
@@ -1952,8 +1953,8 @@ export function MoviesTab({
             {showSections && !contextLoading && (
               <div className="mb-8 space-y-6">
 
-                {/* Because you saved X — always rendered in position, skeleton until loaded */}
-                <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
+                {/* Because you saved X — only rendered when user has liked movies */}
+                {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-400">
                       {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
@@ -2024,7 +2025,7 @@ export function MoviesTab({
                         ))
                     }
                   </div>
-                </div>
+                </div>}
 
                 {/* Trending this week — always rendered in position */}
                 <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
