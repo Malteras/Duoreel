@@ -114,6 +114,8 @@ export function SavedMoviesTab({
     // Removals are handled optimistically — no re-fetch needed.
     if (savedCache && likedMovies.length <= savedCache.likedMoviesLengthAtLoad) {
       setLoading(false);
+      if (savedCache.inviteCode) setInviteCode(savedCache.inviteCode);
+      if (savedCache.outgoingRequests) setOutgoingRequests(savedCache.outgoingRequests);
       return;
     }
 
@@ -759,6 +761,11 @@ export function SavedMoviesTab({
           /* ── Partner's List view ── */
           !hasPartner ? (
             <div className="py-16 px-4">
+              <div className="text-center mb-10">
+                <Users className="size-16 mx-auto mb-4 text-slate-600" />
+                <h3 className="text-xl font-bold text-white mb-2">No Partner Connected</h3>
+                <p className="text-slate-400 text-center">Connect with your partner above to start finding movies you both love!</p>
+              </div>
               <div className="max-w-lg mx-auto bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
                 {/* Card header */}
                 <div className="flex items-center gap-3 mb-6">
