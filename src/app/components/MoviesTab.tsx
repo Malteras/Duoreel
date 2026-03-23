@@ -134,7 +134,7 @@ export function MoviesTab({
   const crossTabFilters = useMemo(() => {
     if (!hasCrossTabFilter) return null;
     const f = { ...DEFAULT_FILTERS };
-    if (initialGenre) f.genre = initialGenre;
+    if (initialGenre) f.genres = [initialGenre];
     if (initialDirector) f.director = initialDirector;
     if (initialActor) f.actor = initialActor;
     if (initialYear) f.year = initialYear.toString();
@@ -444,7 +444,7 @@ export function MoviesTab({
   // Active filter count for badge display
   const activeFilterCount = useMemo(() => {
     let count = 0;
-    if (filters.genre !== "all") count++;
+    if (filters.genres.length > 0) count++;
     if (filters.decade !== "all") count++;
     if (filters.rating !== "all") count++;
     if (filters.year !== "all") count++;
@@ -675,8 +675,8 @@ export function MoviesTab({
           page: pageNum.toString(),
         });
 
-        if (filters.genre !== "all")
-          params.append("genre", filters.genre);
+        if (filters.genres.length > 0)
+          params.append("genre", filters.genres.join(","));
         if (filters.rating !== "all")
           params.append("minRating", filters.rating);
         if (filters.director)
@@ -1557,24 +1557,24 @@ export function MoviesTab({
             <div className="hidden md:flex gap-3 items-center">
               {/* Genre */}
               <Select
-                value={filters.genre}
-                onValueChange={(value) => updateFilter("genre", value)}
+                value=""
+                onValueChange={(value) => {
+                  if (value && !filters.genres.includes(value)) {
+                    updateFilter("genres", [...filters.genres, value]);
+                  }
+                }}
               >
                 <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[150px]">
-                  <SelectValue placeholder="All Genres" />
+                  <SelectValue placeholder={filters.genres.length > 0 ? `${filters.genres.length} genre${filters.genres.length > 1 ? 's' : ''}` : "All Genres"} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">
-                    All Genres
-                  </SelectItem>
-                  {genres.map((g) => (
-                    <SelectItem
-                      key={g.id}
-                      value={g.id.toString()}
-                    >
-                      {g.name}
-                    </SelectItem>
-                  ))}
+                  {genres
+                    .filter((g) => !filters.genres.includes(g.id.toString()))
+                    .map((g) => (
+                      <SelectItem key={g.id} value={g.id.toString()}>
+                        {g.name}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
 
@@ -1680,7 +1680,20 @@ export function MoviesTab({
               </SelectContent>
             </Select>
 
-            {/* Active filter badges — Genre/Decade/Rating handled by inline dropdowns above */}
+            {/* Genre chips — multi-select active genres */}
+            {filters.genres.map((gId) => (
+              <Badge
+                key={gId}
+                variant="secondary"
+                className="bg-purple-600/80 text-white border-purple-400 cursor-pointer hover:bg-purple-700"
+                onClick={() => updateFilter("genres", filters.genres.filter((id) => id !== gId))}
+              >
+                {getGenreName(gId)}
+                <X className="size-3 ml-1" />
+              </Badge>
+            ))}
+
+            {/* Active filter badges — Director/Actor/Year/etc */}
             {filters.director && (
               <Badge
                 variant="secondary"
@@ -1859,7 +1872,7 @@ export function MoviesTab({
                             isNotInterestedLoading={notInterestedLoadingIds.has(movie.id)}
                             onClick={() => openMovie(movie)}
                             onDirectorClick={(director) => { exitSection(); updateFilter('director', director); }}
-                            onGenreClick={(genreId) => { exitSection(); updateFilter('genre', genreId.toString()); }}
+                            onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]); }}
                             onYearClick={(year) => { exitSection(); updateFilter('year', year.toString()); }}
                             onActorClick={(actor) => { exitSection(); updateFilter('actor', actor); }}
                             imdbRating={imdbRatings.get(movie.id)}
@@ -1883,7 +1896,7 @@ export function MoviesTab({
                               movie={movie}
                               onClick={() => openMovie(movie)}
                               isWatched={isWatched(movie.id)}
-                              activeGenreId={filters.genre !== 'all' ? parseInt(filters.genre, 10) : null}
+                              activeGenreIds={filters.genres.length > 0 ? filters.genres.map(Number) : null}
                               imdbRating={imdbRatings.get(movie.id)}
                               globalImdbCache={globalImdbCache}
                               partnerWatchedIds={partnerWatchedIds}
@@ -2002,7 +2015,7 @@ export function MoviesTab({
                             onUnlike={() => handleSectionUnlike(movie.id)}
                             onNotInterested={() => handleNotInterested(movie.id)}
                             onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
+                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
                           />
                         ))
                     }
@@ -2037,7 +2050,7 @@ export function MoviesTab({
                             onUnlike={() => handleSectionUnlike(movie.id)}
                             onNotInterested={() => handleNotInterested(movie.id)}
                             onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
+                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
                           />
                         ))
                     }
@@ -2072,7 +2085,7 @@ export function MoviesTab({
                             onUnlike={() => handleSectionUnlike(movie.id)}
                             onNotInterested={() => handleNotInterested(movie.id)}
                             onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter('genre', genreId.toString())}
+                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
                           />
                         ))
                     }
@@ -2134,7 +2147,7 @@ export function MoviesTab({
                     )}
                     onClick={() => openMovie(movie)}
                     onDirectorClick={(director) => updateFilter("director", director)}
-                    onGenreClick={(genreId) => updateFilter("genre", genreId.toString())}
+                    onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
                     onKeywordClick={(keywordId, keywordName) => {
                       setFilters(prev => ({ ...prev, keyword: keywordId.toString(), keywordName }));
                       setPage(1);
@@ -2282,14 +2295,14 @@ export function MoviesTab({
                         </div>
                         {movie.genres && movie.genres.length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {(filters.genre !== 'all'
+                            {(filters.genres.length > 0
                               ? [
-                                  ...movie.genres.filter(g => g.id.toString() === filters.genre),
-                                  ...movie.genres.filter(g => g.id.toString() !== filters.genre),
+                                  ...movie.genres.filter(g => filters.genres.includes(g.id.toString())),
+                                  ...movie.genres.filter(g => !filters.genres.includes(g.id.toString())),
                                 ]
                               : movie.genres
                             ).slice(0, 2).map((genre) => (
-                              <span key={genre.id} className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-purple-500/30" onClick={(e) => { e.stopPropagation(); updateFilter("genre", genre.id.toString()); }}>{genre.name}</span>
+                              <span key={genre.id} className="bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] px-1.5 py-0.5 rounded-full cursor-pointer hover:bg-purple-500/30" onClick={(e) => { e.stopPropagation(); updateFilter("genres", filters.genres.includes(genre.id.toString()) ? filters.genres.filter(id => id !== genre.id.toString()) : [...filters.genres, genre.id.toString()]); }}>{genre.name}</span>
                             ))}
                           </div>
                         )}
@@ -2455,7 +2468,7 @@ export function MoviesTab({
             : false)
         }
         onGenreClick={(genreId) => {
-          updateFilter("genre", genreId.toString());
+          updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]);
           closeMovie();
         }}
         onKeywordClick={(keywordId, keywordName) => {

@@ -12,7 +12,7 @@ interface CompactMovieCardProps {
   topRightOverlay?: React.ReactNode;
   partnerWatchedIds?: Set<number>;
   partnerName?: string;
-  activeGenreId?: number | null;
+  activeGenreIds?: number[] | null;
 }
 
 export function CompactMovieCard({
@@ -26,7 +26,7 @@ export function CompactMovieCard({
   topRightOverlay,
   partnerWatchedIds,
   partnerName,
-  activeGenreId,
+  activeGenreIds,
 }: CompactMovieCardProps) {
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -128,16 +128,16 @@ export function CompactMovieCard({
         </div>
         {movie.genres && movie.genres.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {(activeGenreId
+            {(activeGenreIds && activeGenreIds.length > 0
               ? [
-                  ...movie.genres.filter(g => g.id === activeGenreId),
-                  ...movie.genres.filter(g => g.id !== activeGenreId),
+                  ...movie.genres.filter(g => activeGenreIds.includes(g.id)),
+                  ...movie.genres.filter(g => !activeGenreIds.includes(g.id)),
                 ]
               : movie.genres
             ).slice(0, 2).map((genre) => (
               <span
                 key={genre.id}
-                className={`bg-purple-500/20 text-purple-300 border border-purple-500/30 text-[9px] px-1.5 py-0.5 rounded-full ${onGenreClick ? 'cursor-pointer hover:bg-purple-500/30' : ''}`}
+                className={`${activeGenreIds?.includes(genre.id) ? 'bg-purple-600 border-purple-400 text-white' : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'} text-[9px] px-1.5 py-0.5 rounded-full ${onGenreClick ? 'cursor-pointer hover:bg-purple-500/30' : ''}`}
                 onClick={onGenreClick ? (e) => { e.stopPropagation(); onGenreClick(genre.id); } : undefined}
               >
                 {genre.name}
