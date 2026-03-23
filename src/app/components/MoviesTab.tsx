@@ -134,7 +134,7 @@ export function MoviesTab({
   const crossTabFilters = useMemo(() => {
     if (!hasCrossTabFilter) return null;
     const f = { ...DEFAULT_FILTERS };
-    if (initialGenre) f.genre = initialGenre;
+    if (initialGenre) f.genres = [initialGenre];
     if (initialDirector) f.director = initialDirector;
     if (initialActor) f.actor = initialActor;
     if (initialYear) f.year = initialYear.toString();
@@ -1561,9 +1561,9 @@ export function MoviesTab({
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {filters.genres.length === 0 ? (
                     <Select
-                      value="placeholder"
+                      value=""
                       onValueChange={(value) => {
-                        if (value !== "placeholder") {
+                        if (value) {
                           updateFilter("genres", [...filters.genres, value]);
                         }
                       }}
@@ -1572,7 +1572,6 @@ export function MoviesTab({
                         <SelectValue placeholder="All Genres" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="placeholder" disabled>All Genres</SelectItem>
                         {genres.map((g) => (
                           <SelectItem key={g.id} value={g.id.toString()}>
                             {g.name}
@@ -1594,9 +1593,9 @@ export function MoviesTab({
                       ))}
                       {filters.genres.length < 3 && (
                         <Select
-                          value="placeholder"
+                          value=""
                           onValueChange={(value) => {
-                            if (value !== "placeholder" && !filters.genres.includes(value)) {
+                            if (value && !filters.genres.includes(value)) {
                               updateFilter("genres", [...filters.genres, value]);
                             }
                           }}
@@ -1605,7 +1604,6 @@ export function MoviesTab({
                             <SelectValue placeholder="+ Add genre" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="placeholder" disabled>+ Add genre</SelectItem>
                             {genres
                               .filter((g) => !filters.genres.includes(g.id.toString()))
                               .map((g) => (
