@@ -4,7 +4,7 @@ export function MovieCardSkeleton() {
       {/* Card Container */}
       <div className="relative rounded-xl overflow-hidden bg-slate-800/50 backdrop-blur-sm border border-slate-700/50">
         {/* Poster Skeleton */}
-        <div className="aspect-[3/4] bg-gradient-to-br from-slate-700 to-slate-800"></div>
+        <div className="aspect-[2/3] bg-gradient-to-br from-slate-700 to-slate-800"></div>
 
         {/* Bottom Info Section */}
         <div className="p-4 space-y-3">
@@ -27,7 +27,7 @@ export function CompactMovieCardSkeleton() {
     <div className="relative animate-pulse">
       <div className="relative rounded-2xl overflow-hidden bg-slate-800/50 border border-slate-700/50">
         {/* Poster Skeleton */}
-        <div className="aspect-[3/4] bg-gradient-to-br from-slate-700 to-slate-800">
+        <div className="aspect-[2/3] bg-gradient-to-br from-slate-700 to-slate-800">
           {/* Gradient overlay like the real card */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
           {/* Rating badges at bottom-right */}
