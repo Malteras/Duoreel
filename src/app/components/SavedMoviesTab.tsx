@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { useNavigate } from 'react-router';
 import { useImportContext } from './ImportContext';
 import { ImportDialog } from './ImportDialog';
 import { PartnerConnectCard } from './PartnerConnectCard';
@@ -52,6 +53,7 @@ export function SavedMoviesTab({
   cardViewMode: cardViewModeProp,
   setCardViewMode,
 }: SavedMoviesTabProps) {
+  const navigate = useNavigate();
   const { watchedMovieIds, isWatched, watchedLoadingIds } = useUserInteractions();
   const { selectedMovie, modalOpen, openMovie, closeMovie, isLoadingDeepLink } = useMovieModal(accessToken);
 
@@ -650,7 +652,16 @@ export function SavedMoviesTab({
                 </div>
                 <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
                   <Film className="size-4" />
-                  <span>Or browse the Discover tab to find movies you'll love</span>
+                  <span>
+                    Or browse the{' '}
+                    <button
+                      onClick={() => navigate('/discover')}
+                      className="text-slate-400 underline underline-offset-2 hover:text-blue-400 transition-colors cursor-pointer"
+                    >
+                      Discover tab
+                    </button>
+                    {' '}to find movies you'll love
+                  </span>
                 </div>
               </div>
               ) /* closes likedMoviesError ternary */
