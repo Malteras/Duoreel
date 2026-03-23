@@ -3,7 +3,7 @@
  * Import these wherever the filter shape is needed — MoviesTab, AdvancedFiltersModal, etc.
  */
 export interface Filters {
-  genre: string;
+  genres: string[];
   decade: string;
   rating: string;
   year: string;
@@ -17,7 +17,7 @@ export interface Filters {
 }
 
 export const DEFAULT_FILTERS: Filters = {
-  genre: "all",
+  genres: [],
   decade: "all",
   rating: "all",
   year: "all",

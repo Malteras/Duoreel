@@ -279,7 +279,7 @@ export function AdvancedFiltersModal({
           {/* Genre */}
           <div>
             <Label className="text-slate-300 mb-2 block">Genre</Label>
-            <Select value={filters.genre} onValueChange={(value) => setFilters({ ...filters, genre: value })}>
+            <Select value={filters.genres.length > 0 ? filters.genres[0] : "all"} onValueChange={(value) => setFilters({ ...filters, genres: value === "all" ? [] : [value] })}>
               <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                 <SelectValue placeholder="All Genres" />
               </SelectTrigger>
