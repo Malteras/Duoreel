@@ -292,7 +292,13 @@ export function AppLayout() {
     const navigate = useNavigate();
 
     const [matchNotificationCount, setMatchNotificationCount] = useState(0);
-    const [likedMovies, setLikedMovies] = useState<any[]>([]);
+    const [likedMovies, setLikedMovies] = useState<any[]>(() => {
+        try {
+            const cached = localStorage.getItem('duoreel-liked-movies-cache');
+            if (cached) return JSON.parse(cached);
+        } catch {}
+        return [];
+    });
     const [likedMoviesError, setLikedMoviesError] = useState(false);
     const [globalImdbCache, setGlobalImdbCache] = useState<Map<string, string>>(
         new Map(),
@@ -327,6 +333,9 @@ export function AppLayout() {
                 if (data.movies) {
                     setLikedMovies(data.movies);
                     setLikedMoviesError(false);
+                    try {
+                        localStorage.setItem('duoreel-liked-movies-cache', JSON.stringify(data.movies));
+                    } catch {}
                 }
             })
             .catch((err) => {
@@ -334,6 +343,14 @@ export function AppLayout() {
                 setLikedMoviesError(true);
             });
     }, [accessToken]);
+
+    // Keep liked-movies cache in sync — ensures like/unlike actions update the cache for next session
+    useEffect(() => {
+        if (likedMovies.length === 0) return; // don't overwrite cache with empty on first render before fetch
+        try {
+            localStorage.setItem('duoreel-liked-movies-cache', JSON.stringify(likedMovies));
+        } catch {}
+    }, [likedMovies]);
 
     // Poll match notifications every 30 s
     useEffect(() => {
@@ -395,6 +412,7 @@ export function AppLayout() {
         } catch (err) {
             console.error("Sign-out request error:", err);
         }
+        try { localStorage.removeItem('duoreel-liked-movies-cache'); } catch {}
         await signOut();
         toast.success("Signed out successfully");
         navigate("/");
