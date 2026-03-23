@@ -539,30 +539,32 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           </div>
         ) : !loading ? (
           /* ── Full connection card (no partner) ── */
-          <Card className="bg-slate-800/50 border-slate-700 mb-8">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Users className="size-6" />Partner Connection
-              </CardTitle>
-              <CardDescription className="text-slate-400">
-                Connect with your partner to find movie matches
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <PartnerConnectCard
-                inviteCode={inviteCode}
-                onCopyLink={handleCopyInviteLink}
-                onRegenerate={handleRegenerateCode}
-                regenerating={regeneratingCode}
-                partnerEmail={partnerEmail}
-                onPartnerEmailChange={setPartnerEmail}
-                onSendRequest={handleSendRequest}
-                sending={saving}
-                outgoingRequests={outgoingRequests}
-                inputId="partnerEmailMatches"
-              />
-            </CardContent>
-          </Card>
+          <div className="max-w-lg mx-auto mb-8">
+            <Card className="bg-slate-800/50 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Users className="size-6" />Partner Connection
+                </CardTitle>
+                <CardDescription className="text-slate-400">
+                  Connect with your partner to find movie matches
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <PartnerConnectCard
+                  inviteCode={inviteCode}
+                  onCopyLink={handleCopyInviteLink}
+                  onRegenerate={handleRegenerateCode}
+                  regenerating={regeneratingCode}
+                  partnerEmail={partnerEmail}
+                  onPartnerEmailChange={setPartnerEmail}
+                  onSendRequest={handleSendRequest}
+                  sending={saving}
+                  outgoingRequests={outgoingRequests}
+                  inputId="partnerEmailMatches"
+                />
+              </CardContent>
+            </Card>
+          </div>
         ) : null}
 
         {/* ── Heading + controls ── */}
