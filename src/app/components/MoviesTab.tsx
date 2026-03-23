@@ -588,14 +588,18 @@ export function MoviesTab({
   // Fires once likedMovies has loaded so seed picks a real movie.
   // sectionFetchedRef prevents re-running on every subsequent save action.
   useEffect(() => {
-    if (!accessToken || contextLoading) return;
+    if (!accessToken) return;
     if (discoverCache?.sectionPreviews) return; // already restored from cache
     if (sectionFetchedRef.current) return;
     if (likedMovies.length === 0) return;
+    // contextLoading guard removed — watchedMovieIds/notInterestedMovieIds are already
+    // available from the interactions localStorage cache seeded on mount.
+    // Worst case: a watched movie briefly shows in a section preview until the
+    // full interactions/all fetch completes and updates the sets. Acceptable.
     sectionFetchedRef.current = true;
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, contextLoading, likedMovies.length]);
+  }, [accessToken, likedMovies.length]);
 
   // ──────────────── Fetch genres ────────────────
   useEffect(() => {
