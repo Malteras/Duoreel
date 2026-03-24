@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play } from 'lucide-react';
+import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play, ScanSearch } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
@@ -28,6 +28,7 @@ interface MovieDetailModalProps {
   onLanguageClick?: (language: string) => void;
   onNotInterested?: () => void;
   showNotInterested?: boolean;
+  onFindSimilar?: () => void;
   projectId?: string;
   publicAnonKey?: string;
   globalImdbCache?: Map<string, string>;
@@ -58,6 +59,7 @@ export function MovieDetailModal({
   onLanguageClick,
   onNotInterested,
   showNotInterested = false,
+  onFindSimilar,
   projectId,
   publicAnonKey,
   globalImdbCache,
@@ -546,6 +548,17 @@ export function MovieDetailModal({
                       <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
                     </TooltipContent>
                   </Tooltip>
+                )}
+
+                {onFindSimilar && (
+                  <Button
+                    onClick={onFindSimilar}
+                    variant="outline"
+                    className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                  >
+                    <ScanSearch className="size-5 mr-2" />
+                    Find Similar
+                  </Button>
                 )}
               </div>
             </div>
