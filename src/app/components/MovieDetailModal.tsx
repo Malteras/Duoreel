@@ -491,41 +491,40 @@ export function MovieDetailModal({
               )}
             </div>
 
-            {/* Actions — 2 rows of 2 */}
+            {/* Actions — Option A: Save full-width, NI+Watched row, Find Similar as link */}
             <div className="flex flex-col gap-2">
-              {/* Row 1: Save + Not Interested */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={isLiked ? onUnlike : onLike}
-                  className={`flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
-                  disabled={isLikeLoading}
-                >
-                  {isLikeLoading ? (
-                    <Loader2 className="size-5 mr-2 animate-spin" />
-                  ) : (
-                    <Bookmark className={`size-5 mr-2 ${isLiked ? 'fill-white' : 'fill-slate-900'}`} />
-                  )}
-                  {isLiked ? 'Remove' : 'Save'}
-                </Button>
-                {showNotInterested && (
-                  <Button
-                    onClick={onNotInterested || onDislike}
-                    variant="outline"
-                    className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                    disabled={isDislikeLoading}
-                  >
-                    {isDislikeLoading ? (
-                      <Loader2 className="size-5 mr-2 animate-spin" />
-                    ) : (
-                      <Ban className="size-5 mr-2" />
-                    )}
-                    Not Interested
-                  </Button>
+              {/* Row 1: Save — full width, dominant */}
+              <Button
+                onClick={isLiked ? onUnlike : onLike}
+                className={`w-full ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
+                disabled={isLikeLoading}
+              >
+                {isLikeLoading ? (
+                  <Loader2 className="size-5 mr-2 animate-spin" />
+                ) : (
+                  <Bookmark className={`size-5 mr-2 ${isLiked ? 'fill-white' : 'fill-slate-900'}`} />
                 )}
-              </div>
-              {/* Row 2: Watched + Find Similar */}
-              {(onWatched && onUnwatched || onFindSimilar) && (
+                {isLiked ? 'Remove' : 'Save'}
+              </Button>
+
+              {/* Row 2: Not Interested + Watched — secondary pair */}
+              {(showNotInterested || (onWatched && onUnwatched)) && (
                 <div className="flex gap-2">
+                  {showNotInterested && (
+                    <Button
+                      onClick={onNotInterested || onDislike}
+                      variant="outline"
+                      className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                      disabled={isDislikeLoading}
+                    >
+                      {isDislikeLoading ? (
+                        <Loader2 className="size-5 mr-2 animate-spin" />
+                      ) : (
+                        <Ban className="size-5 mr-2" />
+                      )}
+                      Not Interested
+                    </Button>
+                  )}
                   {onWatched && onUnwatched && (
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -548,16 +547,20 @@ export function MovieDetailModal({
                       </TooltipContent>
                     </Tooltip>
                   )}
-                  {onFindSimilar && (
-                    <Button
-                      onClick={onFindSimilar}
-                      variant="outline"
-                      className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                    >
-                      <ScanSearch className="size-5 mr-2" />
-                      Find Similar
-                    </Button>
-                  )}
+                </div>
+              )}
+
+              {/* Find Similar — navigation link, not an action */}
+              {onFindSimilar && (
+                <div className="flex items-center justify-center pt-1">
+                  <div className="w-full border-t border-slate-700/50 absolute" />
+                  <button
+                    onClick={onFindSimilar}
+                    className="relative text-sm text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ScanSearch className="size-4" />
+                    Find similar movies →
+                  </button>
                 </div>
               )}
             </div>
