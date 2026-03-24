@@ -604,7 +604,7 @@ export function MovieDetailModal({
                         {actor}
                       </span>
                       {index < movie.actors.length - 1 && (
-                        <span className="text-slate-600 text-sm select-none">·</span>
+                        <span className="text-slate-400 text-sm select-none">·</span>
                       )}
                     </span>
                   ))}
