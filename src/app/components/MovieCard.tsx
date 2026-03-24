@@ -362,7 +362,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
               <Film className="size-4 text-slate-400" />
               <span className="text-slate-400">Director:</span>
               <span
-                className="text-sky-300/60 cursor-pointer hover:text-sky-300 transition-colors"
+                className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDirectorClick?.(movie.director!);
@@ -385,7 +385,7 @@ export function MovieCard({ movie, isLiked, isMatch, isWatched, onLike, onUnlike
               {(isExpanded ? movie.actors : movie.actors.slice(0, 2)).map((actor, index) => (
                 <span key={index}>
                   <span
-                    className="text-sky-300/60 cursor-pointer hover:text-sky-300 transition-colors"
+                    className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors"
                     onClick={(e) => {
                       e.stopPropagation();
                       onActorClick?.(actor);

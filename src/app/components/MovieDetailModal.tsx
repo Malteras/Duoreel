@@ -578,7 +578,7 @@ export function MovieDetailModal({
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Director</h3>
                 <span
-                  className="text-sky-300/60 cursor-pointer hover:text-sky-300 transition-colors text-sm"
+                  className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
                   onClick={() => {
                     onDirectorClick?.(movie.director);
                   }}
@@ -596,7 +596,7 @@ export function MovieDetailModal({
                   {movie.actors.map((actor: string, index: number) => (
                     <span
                       key={index}
-                      className="text-sky-300/60 cursor-pointer hover:text-sky-300 transition-colors text-sm"
+                      className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
                       onClick={() => {
                         onActorClick?.(actor);
                       }}
