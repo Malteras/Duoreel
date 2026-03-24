@@ -151,7 +151,7 @@ export function CompactMovieCard({
           </div>
         ) : null}
         {movie.director ? (
-          <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>
+          <div className="text-[10px] text-slate-400">Dir: <span className="text-sky-300/60">{movie.director}</span></div>
         ) : movie.vote_average > 0 ? (
           <div className="h-[12px] w-24 rounded bg-slate-700/60 animate-pulse mt-0.5" />
         ) : null}
