@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play } from 'lucide-react';
+import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play, ScanSearch } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
@@ -28,6 +28,7 @@ interface MovieDetailModalProps {
   onLanguageClick?: (language: string) => void;
   onNotInterested?: () => void;
   showNotInterested?: boolean;
+  onFindSimilar?: () => void;
   projectId?: string;
   publicAnonKey?: string;
   globalImdbCache?: Map<string, string>;
@@ -58,6 +59,7 @@ export function MovieDetailModal({
   onLanguageClick,
   onNotInterested,
   showNotInterested = false,
+  onFindSimilar,
   projectId,
   publicAnonKey,
   globalImdbCache,
@@ -489,65 +491,75 @@ export function MovieDetailModal({
               )}
             </div>
 
-            {/* Actions */}
-            {/* Mobile: flex-col (Save full-width top, secondary pair below) */}
-            {/* Desktop sm+: flex-row (all three side by side, equal flex-1) */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              {/* Primary action — full width on mobile, flex-1 on desktop */}
-              <Button
-                onClick={isLiked ? onUnlike : onLike}
-                className={`flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
-                disabled={isLikeLoading}
-              >
-                {isLikeLoading ? (
-                  <Loader2 className="size-5 mr-2 animate-spin" />
-                ) : (
-                  <Bookmark className={`size-5 mr-2 ${isLiked ? 'fill-white' : 'fill-slate-900'}`} />
-                )}
-                {isLiked ? 'Remove' : 'Save'}
-              </Button>
-
-              {/* Secondary actions — equal halves on mobile, flex-1 each on desktop */}
-              <div className="flex gap-2 sm:gap-3 sm:contents">
-                {showNotInterested && (
+            {/* Actions — 2 rows of 2 */}
+            <div className="flex flex-col gap-2">
+              {/* Row 1: Save + Not Interested */}
+              <div className="flex gap-2">
                 <Button
-                  onClick={onNotInterested || onDislike}
-                  variant="outline"
-                  className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                  disabled={isDislikeLoading}
+                  onClick={isLiked ? onUnlike : onLike}
+                  className={`flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
+                  disabled={isLikeLoading}
                 >
-                  {isDislikeLoading ? (
+                  {isLikeLoading ? (
                     <Loader2 className="size-5 mr-2 animate-spin" />
                   ) : (
-                    <Ban className="size-5 mr-2" />
+                    <Bookmark className={`size-5 mr-2 ${isLiked ? 'fill-white' : 'fill-slate-900'}`} />
                   )}
-                  Not Interested
+                  {isLiked ? 'Remove' : 'Save'}
                 </Button>
-                )}
-
-                {onWatched && onUnwatched && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={isWatched ? onUnwatched : onWatched}
-                        variant="outline"
-                        className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                        disabled={isWatchedLoading}
-                      >
-                        {isWatchedLoading ? (
-                          <Loader2 className="size-5 mr-2 animate-spin" />
-                        ) : (
-                          <Eye className="size-5 mr-2" />
-                        )}
-                        {isWatched ? 'Unwatched' : 'Watched'}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" sideOffset={5} className="bg-slate-800 text-white border-slate-700">
-                      <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                {showNotInterested && (
+                  <Button
+                    onClick={onNotInterested || onDislike}
+                    variant="outline"
+                    className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                    disabled={isDislikeLoading}
+                  >
+                    {isDislikeLoading ? (
+                      <Loader2 className="size-5 mr-2 animate-spin" />
+                    ) : (
+                      <Ban className="size-5 mr-2" />
+                    )}
+                    Not Interested
+                  </Button>
                 )}
               </div>
+              {/* Row 2: Watched + Find Similar */}
+              {(onWatched && onUnwatched || onFindSimilar) && (
+                <div className="flex gap-2">
+                  {onWatched && onUnwatched && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={isWatched ? onUnwatched : onWatched}
+                          variant="outline"
+                          className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                          disabled={isWatchedLoading}
+                        >
+                          {isWatchedLoading ? (
+                            <Loader2 className="size-5 mr-2 animate-spin" />
+                          ) : (
+                            <Eye className="size-5 mr-2" />
+                          )}
+                          {isWatched ? 'Unwatched' : 'Watched'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={5} className="bg-slate-800 text-white border-slate-700">
+                        <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  {onFindSimilar && (
+                    <Button
+                      onClick={onFindSimilar}
+                      variant="outline"
+                      className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                    >
+                      <ScanSearch className="size-5 mr-2" />
+                      Find Similar
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Tagline */}

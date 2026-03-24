@@ -2492,6 +2492,13 @@ export function MoviesTab({
           closeMovie();
         }}
         onLanguageClick={() => {}}
+        onFindSimilar={() => {
+          if (selectedMovie) {
+            setRecSeedMovie(selectedMovie);
+            closeMovie();
+            enterSection('recs');
+          }
+        }}
         projectId={projectId}
         publicAnonKey={publicAnonKey}
         globalImdbCache={globalImdbCache}
