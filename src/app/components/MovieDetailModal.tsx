@@ -494,8 +494,8 @@ export function MovieDetailModal({
             {/* Actions */}
             {/* Mobile: flex-col (Save full-width top, secondary pair below) */}
             {/* Desktop sm+: flex-row (all three side by side, equal flex-1) */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              {/* Primary action — full width on mobile, flex-1 on desktop */}
+            <div className="flex flex-col gap-2">
+              {/* Primary action — always full width */}
               <Button
                 onClick={isLiked ? onUnlike : onLike}
                 className={`flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
@@ -509,8 +509,8 @@ export function MovieDetailModal({
                 {isLiked ? 'Remove' : 'Save'}
               </Button>
 
-              {/* Secondary actions — equal halves on mobile, flex-1 each on desktop */}
-              <div className="flex gap-2 sm:gap-3 sm:contents">
+              {/* Secondary actions — flex row, wraps if needed */}
+              <div className="flex gap-2 flex-wrap">
                 {showNotInterested && (
                 <Button
                   onClick={onNotInterested || onDislike}
