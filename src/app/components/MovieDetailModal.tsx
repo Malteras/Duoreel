@@ -577,15 +577,14 @@ export function MovieDetailModal({
             {movie.director && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Director</h3>
-                <Badge 
-                  variant="secondary" 
-                  className="bg-slate-700 text-slate-200 border-slate-600 cursor-pointer hover:bg-slate-600 hover:border-slate-500 transition-colors text-base px-3 py-1"
+                <span
+                  className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
                   onClick={() => {
                     onDirectorClick?.(movie.director);
                   }}
                 >
                   {movie.director}
-                </Badge>
+                </span>
               </div>
             )}
 
@@ -593,18 +592,21 @@ export function MovieDetailModal({
             {movie.actors && movie.actors.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-3">Cast</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-x-1 gap-y-1 items-center">
                   {movie.actors.map((actor: string, index: number) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary" 
-                      className="bg-blue-600/80 text-white border-blue-500 cursor-pointer hover:bg-blue-700 hover:border-blue-400 transition-colors"
-                      onClick={() => {
-                        onActorClick?.(actor);
-                      }}
-                    >
-                      {actor}
-                    </Badge>
+                    <span key={index} className="flex items-center gap-x-1">
+                      <span
+                        className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
+                        onClick={() => {
+                          onActorClick?.(actor);
+                        }}
+                      >
+                        {actor}
+                      </span>
+                      {index < movie.actors.length - 1 && (
+                        <span className="text-slate-400 text-sm select-none">·</span>
+                      )}
+                    </span>
                   ))}
                 </div>
               </div>
