@@ -592,16 +592,20 @@ export function MovieDetailModal({
             {movie.actors && movie.actors.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-3">Cast</h3>
-                <div className="flex flex-wrap gap-x-3 gap-y-1">
+                <div className="flex flex-wrap gap-x-1 gap-y-1 items-center">
                   {movie.actors.map((actor: string, index: number) => (
-                    <span
-                      key={index}
-                      className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
-                      onClick={() => {
-                        onActorClick?.(actor);
-                      }}
-                    >
-                      {actor}
+                    <span key={index} className="flex items-center gap-x-1">
+                      <span
+                        className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
+                        onClick={() => {
+                          onActorClick?.(actor);
+                        }}
+                      >
+                        {actor}
+                      </span>
+                      {index < movie.actors.length - 1 && (
+                        <span className="text-slate-600 text-sm select-none">·</span>
+                      )}
                     </span>
                   ))}
                 </div>
