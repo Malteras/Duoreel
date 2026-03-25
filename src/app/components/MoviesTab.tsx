@@ -1590,7 +1590,9 @@ export function MoviesTab({
                 }}
               >
                 <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[150px]">
-                  <SelectValue placeholder={filters.genres.length > 0 ? `${filters.genres.length} genre${filters.genres.length > 1 ? 's' : ''}` : "All Genres"} />
+                  <span className="text-white">
+                    {filters.genres.length > 0 ? `${filters.genres.length} genre${filters.genres.length > 1 ? 's' : ''}` : "All Genres"}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {genres
