@@ -473,12 +473,14 @@ export function MoviesTab({
   // Sections are visible when no filters active; collapsed (but expandable) when filters are active
   const showSections = !filtersActive;
 
-  // When filters become active, sections collapse. User can manually expand them.
-  const [sectionsExpandedByUser, setSectionsExpandedByUser] = useState(true);
+  // Tracks whether user has manually expanded sections while filters are active.
+  // Starts false — sections collapse when filters first become active.
+  const [sectionsExpandedByUser, setSectionsExpandedByUser] = useState(false);
 
-  // Reset the manual-expand flag whenever filters are cleared
+  // When filters become active → collapse sections (reset to false).
+  // When filters are cleared → also reset so next filter activation starts collapsed.
   useEffect(() => {
-    if (!filtersActive) setSectionsExpandedByUser(false);
+    setSectionsExpandedByUser(false);
   }, [filtersActive]);
 
   // Final gate: show sections content when no filters OR user explicitly expanded
