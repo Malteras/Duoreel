@@ -466,7 +466,7 @@ export function MoviesTab({
       !!filters.keyword ||
       filters.genres.length > 0 ||
       filters.streamingServices.length > 0 ||
-      (filters.decade !== undefined && filters.decade !== null && filters.decade !== ''),
+      (filters.decade !== undefined && filters.decade !== null && filters.decade !== 'all'),
     [isSearchMode, filters.director, filters.actor, filters.keyword, filters.genres, filters.streamingServices, filters.decade],
   );
 
