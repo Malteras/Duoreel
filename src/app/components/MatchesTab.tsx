@@ -540,30 +540,35 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         ) : !loading ? (
           /* ── Full connection card (no partner) ── */
           <div className="max-w-lg mx-auto mb-8">
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <Users className="size-6" />Partner Connection
-                </CardTitle>
-                <CardDescription className="text-slate-400">
-                  Connect with your partner to find movie matches
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <PartnerConnectCard
-                  inviteCode={inviteCode}
-                  onCopyLink={handleCopyInviteLink}
-                  onRegenerate={handleRegenerateCode}
-                  regenerating={regeneratingCode}
-                  partnerEmail={partnerEmail}
-                  onPartnerEmailChange={setPartnerEmail}
-                  onSendRequest={handleSendRequest}
-                  sending={saving}
-                  outgoingRequests={outgoingRequests}
-                  inputId="partnerEmailMatches"
-                />
-              </CardContent>
-            </Card>
+            <div className="text-center mb-10">
+              <Users className="size-16 mx-auto mb-4 text-slate-600" />
+              <h3 className="text-xl font-bold text-white mb-2">No Partner Connected</h3>
+              <p className="text-slate-400 text-center">Connect with your partner below to start finding movies you both love!</p>
+            </div>
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
+              {/* Card header — matches SavedMoviesTab partner connection style */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="size-10 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
+                  <Users className="size-5 text-pink-400" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-lg">Partner Connection</h3>
+                  <p className="text-slate-400 text-sm">Connect with your partner to find movie matches</p>
+                </div>
+              </div>
+              <PartnerConnectCard
+                inviteCode={inviteCode}
+                onCopyLink={handleCopyInviteLink}
+                onRegenerate={handleRegenerateCode}
+                regenerating={regeneratingCode}
+                partnerEmail={partnerEmail}
+                onPartnerEmailChange={setPartnerEmail}
+                onSendRequest={handleSendRequest}
+                sending={saving}
+                outgoingRequests={outgoingRequests}
+                inputId="partnerEmailMatches"
+              />
+            </div>
           </div>
         ) : null}
 
@@ -683,15 +688,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         {/* ── Grid / empty states ── */}
         {loading ? (
           <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
-        ) : !partner ? (
-          <div className="text-center py-20">
-            <Users className="size-20 mx-auto mb-6 text-slate-700" />
-            <h3 className="text-2xl font-semibold text-white mb-3">No Partner Connected</h3>
-            <p className="text-slate-400 text-lg max-w-md mx-auto">
-              Connect with your partner above to start finding movies you both love!
-            </p>
-          </div>
-        ) : matchedMovies.length === 0 ? (
+        ) : !partner ? null : matchedMovies.length === 0 ? (
           <div className="text-center py-20">
             <Heart className="size-20 mx-auto mb-6 text-slate-700" />
             <h3 className="text-2xl font-semibold text-white mb-3">No Matches Yet</h3>

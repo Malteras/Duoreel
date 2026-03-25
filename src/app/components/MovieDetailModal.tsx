@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../../utils/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play } from 'lucide-react';
+import { Bookmark, Ban, X, Star, Calendar, Clock, Users, Eye, Loader2, ExternalLink, Film, Play, ScanSearch } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 
 interface MovieDetailModalProps {
@@ -28,6 +28,7 @@ interface MovieDetailModalProps {
   onLanguageClick?: (language: string) => void;
   onNotInterested?: () => void;
   showNotInterested?: boolean;
+  onFindSimilar?: () => void;
   projectId?: string;
   publicAnonKey?: string;
   globalImdbCache?: Map<string, string>;
@@ -58,6 +59,7 @@ export function MovieDetailModal({
   onLanguageClick,
   onNotInterested,
   showNotInterested = false,
+  onFindSimilar,
   projectId,
   publicAnonKey,
   globalImdbCache,
@@ -489,14 +491,12 @@ export function MovieDetailModal({
               )}
             </div>
 
-            {/* Actions */}
-            {/* Mobile: flex-col (Save full-width top, secondary pair below) */}
-            {/* Desktop sm+: flex-row (all three side by side, equal flex-1) */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              {/* Primary action — full width on mobile, flex-1 on desktop */}
+            {/* Actions — Option A: Save full-width, NI+Watched row, Find Similar as link */}
+            <div className="flex flex-col gap-2">
+              {/* Row 1: Save — full width, dominant */}
               <Button
                 onClick={isLiked ? onUnlike : onLike}
-                className={`flex-1 ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
+                className={`w-full ${isLiked ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-white hover:bg-slate-100 text-slate-900'}`}
                 disabled={isLikeLoading}
               >
                 {isLikeLoading ? (
@@ -507,47 +507,62 @@ export function MovieDetailModal({
                 {isLiked ? 'Remove' : 'Save'}
               </Button>
 
-              {/* Secondary actions — equal halves on mobile, flex-1 each on desktop */}
-              <div className="flex gap-2 sm:gap-3 sm:contents">
-                {showNotInterested && (
-                <Button
-                  onClick={onNotInterested || onDislike}
-                  variant="outline"
-                  className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                  disabled={isDislikeLoading}
-                >
-                  {isDislikeLoading ? (
-                    <Loader2 className="size-5 mr-2 animate-spin" />
-                  ) : (
-                    <Ban className="size-5 mr-2" />
+              {/* Row 2: Not Interested + Watched — secondary pair */}
+              {(showNotInterested || (onWatched && onUnwatched)) && (
+                <div className="flex gap-2">
+                  {showNotInterested && (
+                    <Button
+                      onClick={onNotInterested || onDislike}
+                      variant="outline"
+                      className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                      disabled={isDislikeLoading}
+                    >
+                      {isDislikeLoading ? (
+                        <Loader2 className="size-5 mr-2 animate-spin" />
+                      ) : (
+                        <Ban className="size-5 mr-2" />
+                      )}
+                      Not Interested
+                    </Button>
                   )}
-                  Not Interested
-                </Button>
-                )}
+                  {onWatched && onUnwatched && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          onClick={isWatched ? onUnwatched : onWatched}
+                          variant="outline"
+                          className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
+                          disabled={isWatchedLoading}
+                        >
+                          {isWatchedLoading ? (
+                            <Loader2 className="size-5 mr-2 animate-spin" />
+                          ) : (
+                            <Eye className="size-5 mr-2" />
+                          )}
+                          {isWatched ? 'Unwatched' : 'Watched'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={5} className="bg-slate-800 text-white border-slate-700">
+                        <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                </div>
+              )}
 
-                {onWatched && onUnwatched && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={isWatched ? onUnwatched : onWatched}
-                        variant="outline"
-                        className="flex-1 bg-slate-600 border-slate-500 text-white hover:bg-slate-700 hover:border-slate-600 hover:text-white"
-                        disabled={isWatchedLoading}
-                      >
-                        {isWatchedLoading ? (
-                          <Loader2 className="size-5 mr-2 animate-spin" />
-                        ) : (
-                          <Eye className="size-5 mr-2" />
-                        )}
-                        {isWatched ? 'Unwatched' : 'Watched'}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" sideOffset={5} className="bg-slate-800 text-white border-slate-700">
-                      <p>{isWatched ? 'Mark as not watched yet' : 'Mark as already watched'}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                )}
-              </div>
+              {/* Find Similar — navigation link, not an action */}
+              {onFindSimilar && (
+                <div className="flex items-center justify-center pt-1">
+                  <div className="w-full border-t border-slate-700/50 absolute" />
+                  <button
+                    onClick={onFindSimilar}
+                    className="relative text-sm text-violet-400 hover:text-violet-300 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <ScanSearch className="size-4" />
+                    Find similar movies →
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Tagline */}
@@ -565,15 +580,14 @@ export function MovieDetailModal({
             {movie.director && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">Director</h3>
-                <Badge 
-                  variant="secondary" 
-                  className="bg-slate-700 text-slate-200 border-slate-600 cursor-pointer hover:bg-slate-600 hover:border-slate-500 transition-colors text-base px-3 py-1"
+                <span
+                  className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
                   onClick={() => {
                     onDirectorClick?.(movie.director);
                   }}
                 >
                   {movie.director}
-                </Badge>
+                </span>
               </div>
             )}
 
@@ -581,18 +595,21 @@ export function MovieDetailModal({
             {movie.actors && movie.actors.length > 0 && (
               <div>
                 <h3 className="text-xl font-bold text-white mb-3">Cast</h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-x-1 gap-y-1 items-center">
                   {movie.actors.map((actor: string, index: number) => (
-                    <Badge 
-                      key={index} 
-                      variant="secondary" 
-                      className="bg-blue-600/80 text-white border-blue-500 cursor-pointer hover:bg-blue-700 hover:border-blue-400 transition-colors"
-                      onClick={() => {
-                        onActorClick?.(actor);
-                      }}
-                    >
-                      {actor}
-                    </Badge>
+                    <span key={index} className="flex items-center gap-x-1">
+                      <span
+                        className="text-sky-300/80 cursor-pointer hover:text-sky-300 transition-colors text-sm"
+                        onClick={() => {
+                          onActorClick?.(actor);
+                        }}
+                      >
+                        {actor}
+                      </span>
+                      {index < movie.actors.length - 1 && (
+                        <span className="text-slate-400 text-sm select-none">·</span>
+                      )}
+                    </span>
                   ))}
                 </div>
               </div>
