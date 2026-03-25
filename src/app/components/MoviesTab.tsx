@@ -457,11 +457,32 @@ export function MoviesTab({
     return count;
   }, [filters]);
 
-  // Sections are hidden when user has intent-based filters active
-  const showSections = useMemo(
-    () => !isSearchMode && !filters.director && !filters.actor && !filters.keyword,
-    [isSearchMode, filters.director, filters.actor, filters.keyword],
+  // True whenever any filter or search mode is active
+  const filtersActive = useMemo(
+    () =>
+      isSearchMode ||
+      !!filters.director ||
+      !!filters.actor ||
+      !!filters.keyword ||
+      filters.genres.length > 0 ||
+      filters.streamingServices.length > 0 ||
+      (filters.decade !== undefined && filters.decade !== null && filters.decade !== ''),
+    [isSearchMode, filters.director, filters.actor, filters.keyword, filters.genres, filters.streamingServices, filters.decade],
   );
+
+  // Sections are visible when no filters active; collapsed (but expandable) when filters are active
+  const showSections = !filtersActive;
+
+  // When filters become active, sections collapse. User can manually expand them.
+  const [sectionsExpandedByUser, setSectionsExpandedByUser] = useState(false);
+
+  // Reset the manual-expand flag whenever filters are cleared
+  useEffect(() => {
+    if (!filtersActive) setSectionsExpandedByUser(false);
+  }, [filtersActive]);
+
+  // Final gate: show sections content when no filters OR user explicitly expanded
+  const showSectionsContent = showSections || sectionsExpandedByUser;
 
   // ──────────────── Fetch section previews ────────────────
   // likedMovies is read via a ref so fetchSectionPreviews stays stable
@@ -1949,10 +1970,26 @@ export function MoviesTab({
           {/* Home view (sections + flat scroll) */}
           <div style={{ display: activeSectionView ? 'none' : 'block' }}>
 
-            {/* ── Curated sections (hidden when intent filters active) ── */}
-            {showSections && !contextLoading && (
+            {/* ── Curated sections (collapsed when filters active) ── */}
+            {(showSections || filtersActive) && !contextLoading && (
               <div className="mb-8 space-y-6">
 
+                {/* Collapsed header — shown only when filters are active */}
+                {filtersActive && (
+                  <button
+                    onClick={() => setSectionsExpandedByUser(prev => !prev)}
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50 hover:bg-slate-800 hover:border-slate-600 transition-all cursor-pointer"
+                  >
+                    <span className="text-xs text-slate-400 font-medium">Curated sections</span>
+                    <div className="flex items-center gap-1 text-xs text-blue-400">
+                      <span>{sectionsExpandedByUser ? 'Hide' : 'Show'}</span>
+                      <ChevronDown className={`size-3.5 transition-transform duration-200 ${sectionsExpandedByUser ? 'rotate-180' : ''}`} />
+                    </div>
+                  </button>
+                )}
+
+                {showSectionsContent && (
+                  <>
                 {/* Because you saved X — only rendered when user has liked movies */}
                 {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="flex items-center justify-between mb-3">
@@ -2103,6 +2140,8 @@ export function MoviesTab({
                   <span className="text-xs text-slate-600 font-medium">Browse all</span>
                   <div className="flex-1 h-px bg-slate-800" />
                 </div>
+                  </>
+                )}
               </div>
             )}
 
