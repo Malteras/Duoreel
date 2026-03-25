@@ -11,6 +11,7 @@ export interface DiscoverCache {
   filters: Filters;
   sortBy: string;
   showWatchedMovies: boolean;
+  hidePartnerWatched: boolean;
   imdbRatings: Map<number, string>;
   enrichedIds: Set<number>;
   sectionPreviews?: { recs: Movie[]; trending: Movie[]; gems: Movie[] };

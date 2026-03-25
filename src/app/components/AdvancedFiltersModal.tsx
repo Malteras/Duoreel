@@ -21,6 +21,9 @@ interface AdvancedFiltersModalProps {
   showWatchedMovies: boolean;
   onShowWatchedMoviesChange: (value: boolean) => void;
   watchedMoviesCount: number;
+  hidePartnerWatched: boolean;
+  onHidePartnerWatchedChange: (value: boolean) => void;
+  partnerWatchedCount: number;
 }
 
 const DECADE_OPTIONS = [
@@ -164,7 +167,10 @@ export function AdvancedFiltersModal({
   publicAnonKey,
   showWatchedMovies,
   onShowWatchedMoviesChange,
-  watchedMoviesCount
+  watchedMoviesCount,
+  hidePartnerWatched,
+  onHidePartnerWatchedChange,
+  partnerWatchedCount
 }: AdvancedFiltersModalProps) {
   const [filters, setFilters] = useState(currentFilters);
   const [directorSearch, setDirectorSearch] = useState('');
@@ -177,6 +183,7 @@ export function AdvancedFiltersModal({
   const [keywordResults, setKeywordResults] = useState<any[]>([]);
   const [searchingKeyword, setSearchingKeyword] = useState(false);
   const [localShowWatched, setLocalShowWatched] = useState(showWatchedMovies);
+  const [localHidePartnerWatched, setLocalHidePartnerWatched] = useState(hidePartnerWatched);
 
   const baseUrl = API_BASE_URL;
 
@@ -185,6 +192,7 @@ export function AdvancedFiltersModal({
     if (isOpen) {
       setFilters(currentFilters);
       setLocalShowWatched(showWatchedMovies);
+      setLocalHidePartnerWatched(hidePartnerWatched);
       setDirectorSearch('');
       setActorSearch('');
       setKeywordSearch('');
@@ -192,7 +200,7 @@ export function AdvancedFiltersModal({
       setActorResults([]);
       setKeywordResults([]);
     }
-  }, [isOpen, currentFilters, showWatchedMovies]);
+  }, [isOpen, currentFilters, showWatchedMovies, hidePartnerWatched]);
 
   const searchDirectors = async (query: string) => {
     if (!query.trim()) {
@@ -257,14 +265,17 @@ export function AdvancedFiltersModal({
   const handleSearch = () => {
     onApplyFilters(filters);
     onShowWatchedMoviesChange(localShowWatched);
+    onHidePartnerWatchedChange(localHidePartnerWatched);
     onClose();
   };
 
   const handleClear = () => {
     setFilters(DEFAULT_FILTERS);
     setLocalShowWatched(false);
+    setLocalHidePartnerWatched(false);
     onApplyFilters(DEFAULT_FILTERS);
     onShowWatchedMoviesChange(false);
+    onHidePartnerWatchedChange(false);
     onClose();
   };
 
@@ -552,6 +563,28 @@ export function AdvancedFiltersModal({
                 id="show-watched-advanced"
                 checked={localShowWatched}
                 onCheckedChange={setLocalShowWatched}
+              />
+            </div>
+          )}
+
+          {/* Hide Partner's Watched Toggle */}
+          {partnerWatchedCount > 0 && (
+            <div className="flex items-center justify-between py-3 px-4 bg-slate-700/30 rounded-lg border border-slate-600/50">
+              <div className="flex items-center gap-2">
+                {localHidePartnerWatched ? <EyeOff className="size-4 text-pink-400" /> : <Eye className="size-4 text-slate-400" />}
+                <div>
+                  <Label htmlFor="hide-partner-watched-advanced" className="text-sm font-medium text-white cursor-pointer">
+                    Hide partner's watched movies
+                  </Label>
+                  <p className="text-xs text-slate-400">
+                    {partnerWatchedCount} movie{partnerWatchedCount !== 1 ? 's' : ''} watched by partner
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="hide-partner-watched-advanced"
+                checked={localHidePartnerWatched}
+                onCheckedChange={setLocalHidePartnerWatched}
               />
             </div>
           )}

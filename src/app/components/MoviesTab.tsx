@@ -161,6 +161,8 @@ export function MoviesTab({
   const [sortBy, setSortBy] = useState(discoverCache?.sortBy ?? "popularity");
   const [showWatchedMovies, setShowWatchedMovies] =
     useState(discoverCache?.showWatchedMovies ?? false);
+  const [hidePartnerWatched, setHidePartnerWatched] =
+    useState(discoverCache?.hidePartnerWatched ?? false);
   const [showFiltersModal, setShowFiltersModal] =
     useState(false);
 
@@ -771,6 +773,7 @@ export function MoviesTab({
                 filters,
                 sortBy,
                 showWatchedMovies,
+                hidePartnerWatched,
                 imdbRatings,
                 enrichedIds: c?.enrichedIds ?? new Set(),
               }));
@@ -787,6 +790,7 @@ export function MoviesTab({
               filters,
               sortBy,
               showWatchedMovies,
+              hidePartnerWatched,
               imdbRatings,
               enrichedIds: new Set(),
             }));
@@ -1510,6 +1514,8 @@ export function MoviesTab({
         // reactively whenever toggleWatched() is called (optimistic update).
         if (!showWatchedMovies && watchedMovieIds.has(m.id))
           return false;
+        if (hidePartnerWatched && partnerWatchedIds?.has(m.id))
+          return false;
         return true;
       }),
     [
@@ -1517,6 +1523,8 @@ export function MoviesTab({
       pendingRemovals,
       showWatchedMovies,
       watchedMovieIds,
+      hidePartnerWatched,
+      partnerWatchedIds,
     ],
   );
 
@@ -2469,6 +2477,9 @@ export function MoviesTab({
         showWatchedMovies={showWatchedMovies}
         onShowWatchedMoviesChange={setShowWatchedMovies}
         watchedMoviesCount={watchedMovieIds.size}
+        hidePartnerWatched={hidePartnerWatched}
+        onHidePartnerWatchedChange={setHidePartnerWatched}
+        partnerWatchedCount={partnerWatchedIds?.size ?? 0}
       />
 
       {/* Movie Detail Modal */}
