@@ -23,8 +23,7 @@ import {
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
 import { useEnrichMovies } from "../hooks/useEnrichMovies";
-import { SectionPreviewCard } from './SectionPreviewCard';
-import { SectionPreviewCardSkeleton } from './SectionPreviewCardSkeleton';
+import { CompactMovieCardSkeleton } from './MovieCardSkeleton';
 import { CompactMovieCard } from './CompactMovieCard';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -2063,26 +2062,48 @@ export function MoviesTab({
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
-                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
-                          <SectionPreviewCard
-                            key={movie.id}
-                            movie={movie}
-                            badge="Recommended"
-                            badgeClassName="bg-sky-900/60 text-sky-300"
-                            isLiked={likedMovieIds.has(movie.id)}
-                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            onLike={() => handleSectionLike(movie)}
-                            onUnlike={() => handleSectionUnlike(movie.id)}
-                            onNotInterested={() => handleNotInterested(movie.id)}
-                            onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                          />
-                        ))
+                      ? [0, 1, 2, 3].map((i) => <CompactMovieCardSkeleton key={i} />)
+                      : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={watchedMovieIds.has(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                              partnerWatchedIds={partnerWatchedIds}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                  aria-label={isLiked ? 'Remove from saved' : 'Save movie'}
+                                >
+                                  {isLikeLoading
+                                    ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} />
+                                    : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                  }
+                                </button>
+                              }
+                              topRightOverlay={
+                                !(notInterestedMovieIds?.has(movie.id)) ? (
+                                  <button
+                                    className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}
+                                    aria-label="Not interested"
+                                  >
+                                    <Ban className="size-4 text-slate-300" />
+                                  </button>
+                                ) : undefined
+                              }
+                            />
+                          );
+                        })
                     }
                   </div>
                 </div>}
@@ -2098,26 +2119,48 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {sectionPreviewsLoading || sectionPreviews.trending.length === 0
-                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
-                          <SectionPreviewCard
-                            key={movie.id}
-                            movie={movie}
-                            badge="Trending"
-                            badgeClassName="bg-orange-900/60 text-orange-300"
-                            isLiked={likedMovieIds.has(movie.id)}
-                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            onLike={() => handleSectionLike(movie)}
-                            onUnlike={() => handleSectionUnlike(movie.id)}
-                            onNotInterested={() => handleNotInterested(movie.id)}
-                            onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                          />
-                        ))
+                      ? [0, 1, 2, 3].map((i) => <CompactMovieCardSkeleton key={i} />)
+                      : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={watchedMovieIds.has(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                              partnerWatchedIds={partnerWatchedIds}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                  aria-label={isLiked ? 'Remove from saved' : 'Save movie'}
+                                >
+                                  {isLikeLoading
+                                    ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} />
+                                    : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                  }
+                                </button>
+                              }
+                              topRightOverlay={
+                                !(notInterestedMovieIds?.has(movie.id)) ? (
+                                  <button
+                                    className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}
+                                    aria-label="Not interested"
+                                  >
+                                    <Ban className="size-4 text-slate-300" />
+                                  </button>
+                                ) : undefined
+                              }
+                            />
+                          );
+                        })
                     }
                   </div>
                 </div>
@@ -2133,26 +2176,48 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {sectionPreviewsLoading || sectionPreviews.gems.length === 0
-                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
-                          <SectionPreviewCard
-                            key={movie.id}
-                            movie={movie}
-                            badge="Hidden gem"
-                            badgeClassName="bg-purple-900/60 text-purple-300"
-                            isLiked={likedMovieIds.has(movie.id)}
-                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            onLike={() => handleSectionLike(movie)}
-                            onUnlike={() => handleSectionUnlike(movie.id)}
-                            onNotInterested={() => handleNotInterested(movie.id)}
-                            onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                          />
-                        ))
+                      ? [0, 1, 2, 3].map((i) => <CompactMovieCardSkeleton key={i} />)
+                      : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={watchedMovieIds.has(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                              partnerWatchedIds={partnerWatchedIds}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                  aria-label={isLiked ? 'Remove from saved' : 'Save movie'}
+                                >
+                                  {isLikeLoading
+                                    ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} />
+                                    : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                                  }
+                                </button>
+                              }
+                              topRightOverlay={
+                                !(notInterestedMovieIds?.has(movie.id)) ? (
+                                  <button
+                                    className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                                    onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}
+                                    aria-label="Not interested"
+                                  >
+                                    <Ban className="size-4 text-slate-300" />
+                                  </button>
+                                ) : undefined
+                              }
+                            />
+                          );
+                        })
                     }
                   </div>
                 </div>

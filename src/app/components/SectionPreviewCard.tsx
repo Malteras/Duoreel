@@ -1,3 +1,8 @@
+// NOTE: SectionPreviewCard is no longer used in the UI.
+// The three curated sections in Discover were updated in QUI-221 to use
+// CompactMovieCard in a 4-column grid instead, for visual consistency.
+// Kept for reference — safe to delete in a future cleanup.
+
 import { Ban, Bookmark, Loader2 } from "lucide-react";
 import type { Movie } from "../../types/movie";
 
