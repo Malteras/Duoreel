@@ -30,6 +30,7 @@ import { useImportContext } from './ImportContext';
 import { ImportDialog } from './ImportDialog';
 import { MovieDetailModal } from './MovieDetailModal';
 import { useMovieModal } from '../hooks/useMovieModal';
+import { STREAMING_SERVICES } from '../../constants/streaming';
 
 export function ProfilePage() {
   const { accessToken, userEmail, projectId, onSignOut } = useAppLayoutContext();
@@ -68,6 +69,16 @@ export function ProfilePage() {
 
   // IMDb update state
   const [updatingImdb, setUpdatingImdb] = useState(false);
+
+  // Preferred streaming services
+  const [preferredStreaming, setPreferredStreaming] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('duoreel-preferred-streaming');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Letterboxd sync state
   const [letterboxdUsername, setLetterboxdUsername] = useState('');
@@ -200,6 +211,19 @@ export function ProfilePage() {
 
     fetchData();
   }, [accessToken]);
+
+  // ─── Preferred streaming toggle ─────────────────────────────────
+  const handleTogglePreferredStreaming = (serviceValue: string) => {
+    setPreferredStreaming(prev => {
+      const updated = prev.includes(serviceValue)
+        ? prev.filter(s => s !== serviceValue)
+        : [...prev, serviceValue];
+      try {
+        localStorage.setItem('duoreel-preferred-streaming', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   // ─── Profile save ───────────────────────────────────────────────
   const handleSaveProfile = async () => {
@@ -1033,6 +1057,43 @@ export function ProfilePage() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* Preferred Streaming Services */}
+          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+            <h3 className="text-white font-semibold text-lg mb-1">Preferred Streaming Services</h3>
+            <p className="text-slate-400 text-sm mb-4">
+              These services will be pre-selected in Discover filters each session.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {STREAMING_SERVICES.map((service) => {
+                const isSelected = preferredStreaming.includes(service.value);
+                return (
+                  <button
+                    key={service.value}
+                    type="button"
+                    onClick={() => handleTogglePreferredStreaming(service.value)}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/20'
+                        : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:border-slate-600'
+                    }`}
+                  >
+                    <img
+                      src={service.logo}
+                      alt={service.label}
+                      className="w-8 h-8 rounded object-cover flex-shrink-0"
+                    />
+                    <span className="text-sm font-medium">{service.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {preferredStreaming.length > 0 && (
+              <p className="mt-3 text-xs text-slate-400">
+                {preferredStreaming.length} service{preferredStreaming.length !== 1 ? 's' : ''} selected — will auto-apply on next Discover session
+              </p>
+            )}
+          </div>
 
           {/* ══════════════════════════════════════════════════════════
               CARD 3: INTEGRATIONS & IMPORTS — Merged card
