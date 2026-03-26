@@ -23,8 +23,7 @@ import {
 import { useMovieModal } from "../hooks/useMovieModal";
 import { useWatchedActions } from "../hooks/useWatchedActions";
 import { useEnrichMovies } from "../hooks/useEnrichMovies";
-import { SectionPreviewCard } from './SectionPreviewCard';
-import { SectionPreviewCardSkeleton } from './SectionPreviewCardSkeleton';
+// SectionPreviewCard imports removed in QUI-221 — replaced by CompactMovieCard grid
 import { CompactMovieCard } from './CompactMovieCard';
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -540,13 +539,13 @@ export function MoviesTab({
       const likedIds = new Set(currentLiked.map((m) => m.id));
       const trendingPreview = (trendingData.results || [])
         .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-        .slice(0, 4);
+        .slice(0, 5);
       const gemsPreview = (gemsData.results || [])
         .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-        .slice(0, 4);
+        .slice(0, 5);
       const recsPreview = (recsData.results || [])
         .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-        .slice(0, 4);
+        .slice(0, 5);
 
       setSectionPreviews((prev) => {
         const mergeSlice = (newMovies: Movie[], prevMovies: Movie[]) => {
@@ -602,7 +601,7 @@ export function MoviesTab({
             !notInterestedMovieIds?.has(m.id) &&
             !watchedMovieIds.has(m.id),
         )
-        .slice(0, 4);
+        .slice(0, 5);
 
       setSectionPreviews((prev) => ({ ...prev, recs: recsPreview }));
       setDiscoverCache((c) =>
@@ -2063,28 +2062,44 @@ export function MoviesTab({
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
-                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
-                          <SectionPreviewCard
-                            key={movie.id}
-                            movie={movie}
-                            badge="Recommended"
-                            badgeClassName="bg-sky-900/60 text-sky-300"
-                            isLiked={likedMovieIds.has(movie.id)}
-                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            onLike={() => handleSectionLike(movie)}
-                            onUnlike={() => handleSectionUnlike(movie.id)}
-                            onNotInterested={() => handleNotInterested(movie.id)}
-                            onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                          />
-                        ))
-                    }
-                  </div>
+                  {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
+                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
+                    : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={watchedMovieIds.has(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                              partnerWatchedIds={partnerWatchedIds}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                >
+                                  {isLikeLoading ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} /> : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>}
+                                </button>
+                              }
+                              topRightOverlay={
+                                !notInterestedMovieIds?.has(movie.id) ? (
+                                  <button className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}>
+                                    <Ban className="size-4 text-slate-300" />
+                                  </button>
+                                ) : undefined
+                              }
+                            />
+                          );
+                        })}
+                      </div>
+                    )
+                  }
                 </div>}
 
                 {/* Trending this week — always rendered in position */}
@@ -2098,28 +2113,44 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.trending.length === 0
-                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
-                          <SectionPreviewCard
-                            key={movie.id}
-                            movie={movie}
-                            badge="Trending"
-                            badgeClassName="bg-orange-900/60 text-orange-300"
-                            isLiked={likedMovieIds.has(movie.id)}
-                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            onLike={() => handleSectionLike(movie)}
-                            onUnlike={() => handleSectionUnlike(movie.id)}
-                            onNotInterested={() => handleNotInterested(movie.id)}
-                            onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                          />
-                        ))
-                    }
-                  </div>
+                  {sectionPreviewsLoading || sectionPreviews.trending.length === 0
+                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
+                    : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={watchedMovieIds.has(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                              partnerWatchedIds={partnerWatchedIds}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                >
+                                  {isLikeLoading ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} /> : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>}
+                                </button>
+                              }
+                              topRightOverlay={
+                                !notInterestedMovieIds?.has(movie.id) ? (
+                                  <button className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}>
+                                    <Ban className="size-4 text-slate-300" />
+                                  </button>
+                                ) : undefined
+                              }
+                            />
+                          );
+                        })}
+                      </div>
+                    )
+                  }
                 </div>
 
                 {/* Hidden gems — always rendered in position */}
@@ -2133,28 +2164,44 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="space-y-2">
-                    {sectionPreviewsLoading || sectionPreviews.gems.length === 0
-                      ? [0, 1, 2, 3].map((i) => <SectionPreviewCardSkeleton key={i} />)
-                      : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => (
-                          <SectionPreviewCard
-                            key={movie.id}
-                            movie={movie}
-                            badge="Hidden gem"
-                            badgeClassName="bg-purple-900/60 text-purple-300"
-                            isLiked={likedMovieIds.has(movie.id)}
-                            isLikeLoading={sectionLikeLoadingIds.has(movie.id)}
-                            isNotInterested={notInterestedMovieIds ? notInterestedMovieIds.has(movie.id) : false}
-                            imdbRating={imdbRatings.get(movie.id)}
-                            onLike={() => handleSectionLike(movie)}
-                            onUnlike={() => handleSectionUnlike(movie.id)}
-                            onNotInterested={() => handleNotInterested(movie.id)}
-                            onClick={() => openMovie(movie)}
-                            onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                          />
-                        ))
-                    }
-                  </div>
+                  {sectionPreviewsLoading || sectionPreviews.gems.length === 0
+                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
+                    : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                          const isLiked = likedMovieIds.has(movie.id);
+                          const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          return (
+                            <CompactMovieCard
+                              key={movie.id}
+                              movie={movie}
+                              onClick={() => openMovie(movie)}
+                              isWatched={watchedMovieIds.has(movie.id)}
+                              imdbRating={imdbRatings.get(movie.id)}
+                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                              partnerWatchedIds={partnerWatchedIds}
+                              topLeftOverlay={
+                                <button
+                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                  disabled={isLikeLoading}
+                                >
+                                  {isLikeLoading ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} /> : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>}
+                                </button>
+                              }
+                              topRightOverlay={
+                                !notInterestedMovieIds?.has(movie.id) ? (
+                                  <button className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}>
+                                    <Ban className="size-4 text-slate-300" />
+                                  </button>
+                                ) : undefined
+                              }
+                            />
+                          );
+                        })}
+                      </div>
+                    )
+                  }
                 </div>
 
                 {/* Browse all divider */}
