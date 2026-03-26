@@ -2014,6 +2014,7 @@ export function MoviesTab({
                   <>
                 {/* Because you saved X — only rendered when user has liked movies */}
                 {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
+                  <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-400">
                       {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
@@ -2100,10 +2101,12 @@ export function MoviesTab({
                       </div>
                     )
                   }
+                  </div>
                 </div>}
 
                 {/* Trending this week — always rendered in position */}
                 <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                  <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-400">🔥 Trending this week</p>
                     <button
@@ -2151,10 +2154,12 @@ export function MoviesTab({
                       </div>
                     )
                   }
+                  </div>
                 </div>
 
                 {/* Hidden gems — always rendered in position */}
                 <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+                  <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-400">💎 Hidden gems</p>
                     <button
@@ -2202,6 +2207,7 @@ export function MoviesTab({
                       </div>
                     )
                   }
+                  </div>
                 </div>
 
                 {/* Browse all divider */}
