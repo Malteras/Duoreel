@@ -1,3 +1,4 @@
+// NOTE: No longer used in UI. Replaced by MovieCardSkeletonGrid in QUI-221. Safe to delete in future cleanup.
 export function SectionPreviewCardSkeleton() {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 bg-slate-800/60 rounded-xl border border-slate-700/50">

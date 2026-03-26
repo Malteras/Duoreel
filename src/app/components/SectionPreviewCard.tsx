@@ -1,3 +1,4 @@
+// NOTE: No longer used in UI. Replaced by CompactMovieCard grid in QUI-221. Safe to delete in future cleanup.
 import { Ban, Bookmark, Loader2 } from "lucide-react";
 import type { Movie } from "../../types/movie";
 
