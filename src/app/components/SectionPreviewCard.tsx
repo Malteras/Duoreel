@@ -1,3 +1,8 @@
+// NOTE: SectionPreviewCard is no longer used in the UI.
+// The three curated sections in Discover ("Because you saved X", "Trending this week", "Hidden gems")
+// were updated in QUI-221 to use CompactMovieCard instead, for visual consistency with Saved/Matches tabs.
+// This file is kept for reference only and can be deleted in a future cleanup.
+
 import { Ban, Bookmark, Loader2 } from "lucide-react";
 import type { Movie } from "../../types/movie";
 
