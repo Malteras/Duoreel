@@ -1,3 +1,7 @@
+// NOTE: SectionPreviewCardSkeleton is no longer used in the UI.
+// Replaced by MovieCardSkeletonGrid (viewMode='compact') in QUI-221.
+// Kept for reference — safe to delete in a future cleanup.
+
 export function SectionPreviewCardSkeleton() {
   return (
     <div className="flex items-center gap-3 px-3 py-2.5 bg-slate-800/60 rounded-xl border border-slate-700/50">
