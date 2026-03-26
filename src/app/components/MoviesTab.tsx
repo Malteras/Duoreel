@@ -2067,14 +2067,14 @@ export function MoviesTab({
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                        {[...(recSeedMovie ? [recSeedMovie] : []), ...sectionPreviews.recs.filter((m) => m.id !== recSeedMovie?.id)].filter((m) => !pendingRemovals.has(m.id)).slice(0, 5).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           const isSeed = movie.id === recSeedMovie?.id;
                           return (
                             <div key={movie.id} className={isSeed ? 'relative rounded-2xl border border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.15)]' : ''}>
                               {isSeed && (
-                                <span className="absolute -top-2.5 left-2 z-10 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+                                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
                                   Your pick
                                 </span>
                               )}
