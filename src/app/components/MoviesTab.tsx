@@ -2070,32 +2070,39 @@ export function MoviesTab({
                         {sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
+                          const isSeed = movie.id === recSeedMovie?.id;
                           return (
-                            <CompactMovieCard
-                              key={movie.id}
-                              movie={movie}
-                              onClick={() => openMovie(movie)}
-                              isWatched={watchedMovieIds.has(movie.id)}
-                              imdbRating={imdbRatings.get(movie.id)}
-                              onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
-                              partnerWatchedIds={partnerWatchedIds}
-                              topLeftOverlay={
-                                <button
-                                  className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
-                                  onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
-                                  disabled={isLikeLoading}
-                                >
-                                  {isLikeLoading ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} /> : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>}
-                                </button>
-                              }
-                              topRightOverlay={
-                                !notInterestedMovieIds?.has(movie.id) ? (
-                                  <button className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}>
-                                    <Ban className="size-4 text-slate-300" />
+                            <div key={movie.id} className={isSeed ? 'relative rounded-2xl border border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.15)]' : ''}>
+                              {isSeed && (
+                                <span className="absolute -top-2.5 left-2 z-10 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+                                  Your pick
+                                </span>
+                              )}
+                              <CompactMovieCard
+                                movie={movie}
+                                onClick={() => openMovie(movie)}
+                                isWatched={watchedMovieIds.has(movie.id)}
+                                imdbRating={imdbRatings.get(movie.id)}
+                                onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                partnerWatchedIds={partnerWatchedIds}
+                                topLeftOverlay={
+                                  <button
+                                    className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'}`}
+                                    onClick={(e) => { e.stopPropagation(); if (!isLikeLoading) { isLiked ? handleSectionUnlike(movie.id) : handleSectionLike(movie); } }}
+                                    disabled={isLikeLoading}
+                                  >
+                                    {isLikeLoading ? <Loader2 className={`size-4 animate-spin ${isLiked ? 'text-white' : 'text-slate-900'}`} /> : <svg className={`size-4 ${isLiked ? 'fill-white text-white' : 'text-slate-900'}`} fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>}
                                   </button>
-                                ) : undefined
-                              }
-                            />
+                                }
+                                topRightOverlay={
+                                  !notInterestedMovieIds?.has(movie.id) ? (
+                                    <button className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer" onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}>
+                                      <Ban className="size-4 text-slate-300" />
+                                    </button>
+                                  ) : undefined
+                                }
+                              />
+                            </div>
                           );
                         })}
                       </div>
