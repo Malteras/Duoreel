@@ -2062,7 +2062,7 @@ export function MoviesTab({
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
                       ? [0, 1, 2, 3].map((i) => <CompactMovieCardSkeleton key={i} />)
                       : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
@@ -2119,7 +2119,7 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {sectionPreviewsLoading || sectionPreviews.trending.length === 0
                       ? [0, 1, 2, 3].map((i) => <CompactMovieCardSkeleton key={i} />)
                       : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
@@ -2176,7 +2176,7 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {sectionPreviewsLoading || sectionPreviews.gems.length === 0
                       ? [0, 1, 2, 3].map((i) => <CompactMovieCardSkeleton key={i} />)
                       : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
