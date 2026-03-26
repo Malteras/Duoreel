@@ -1994,7 +1994,7 @@ export function MoviesTab({
 
             {/* ── Curated sections (collapsed when filters active) ── */}
             {(showSections || filtersActive) && !contextLoading && (
-              <div className="mb-8 space-y-6">
+              <div className="mb-8 space-y-7">
 
                 {/* Collapsed header — shown only when filters are active */}
                 {filtersActive && (
