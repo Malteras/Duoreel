@@ -2016,7 +2016,7 @@ export function MoviesTab({
                 {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-slate-400">
+                    <p className="text-sm font-medium text-indigo-300">
                       {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
                         <span>Because you saved <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
                       ) : (
@@ -2043,7 +2043,7 @@ export function MoviesTab({
                             <button
                               onClick={() => refreshRecs()}
                               disabled={recsRefreshLoading}
-                              className="flex items-center gap-1 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                              className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                               aria-label="Refresh suggestions"
                             >
                               <RefreshCw className="size-3.5" />
@@ -2057,7 +2057,7 @@ export function MoviesTab({
                       )}
                       <button
                         onClick={() => !(sectionPreviewsLoading || recsRefreshLoading) && enterSection('recs')}
-                        className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${(sectionPreviewsLoading || recsRefreshLoading) ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                        className={`text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 ${(sectionPreviewsLoading || recsRefreshLoading) ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
                       >
                         See all <ChevronRight className="size-3" />
                       </button>
@@ -2108,10 +2108,10 @@ export function MoviesTab({
                 <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                   <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-slate-400">🔥 Trending this week</p>
+                    <p className="text-sm font-medium text-amber-300">🔥 Trending this week</p>
                     <button
                       onClick={() => !sectionPreviewsLoading && enterSection('trending')}
-                      className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                      className={`text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
                     >
                       See all <ChevronRight className="size-3" />
                     </button>
@@ -2161,10 +2161,10 @@ export function MoviesTab({
                 <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
                   <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-slate-400">💎 Hidden gems</p>
+                    <p className="text-sm font-medium text-emerald-300">💎 Hidden gems</p>
                     <button
                       onClick={() => !sectionPreviewsLoading && enterSection('gems')}
-                      className={`text-xs text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                      className={`text-xs text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
                     >
                       See all <ChevronRight className="size-3" />
                     </button>
