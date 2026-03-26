@@ -539,13 +539,13 @@ export function MoviesTab({
       const likedIds = new Set(currentLiked.map((m) => m.id));
       const trendingPreview = (trendingData.results || [])
         .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-        .slice(0, 4);
+        .slice(0, 5);
       const gemsPreview = (gemsData.results || [])
         .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-        .slice(0, 4);
+        .slice(0, 5);
       const recsPreview = (recsData.results || [])
         .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
-        .slice(0, 4);
+        .slice(0, 5);
 
       setSectionPreviews((prev) => {
         const mergeSlice = (newMovies: Movie[], prevMovies: Movie[]) => {
@@ -601,7 +601,7 @@ export function MoviesTab({
             !notInterestedMovieIds?.has(m.id) &&
             !watchedMovieIds.has(m.id),
         )
-        .slice(0, 4);
+        .slice(0, 5);
 
       setSectionPreviews((prev) => ({ ...prev, recs: recsPreview }));
       setDiscoverCache((c) =>
@@ -2063,7 +2063,7 @@ export function MoviesTab({
                     </div>
                   </div>
                   {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
-                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
+                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
@@ -2114,7 +2114,7 @@ export function MoviesTab({
                     </button>
                   </div>
                   {sectionPreviewsLoading || sectionPreviews.trending.length === 0
-                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
+                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
@@ -2165,7 +2165,7 @@ export function MoviesTab({
                     </button>
                   </div>
                   {sectionPreviewsLoading || sectionPreviews.gems.length === 0
-                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
+                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                         {sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
