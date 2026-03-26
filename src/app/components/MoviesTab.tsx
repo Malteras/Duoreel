@@ -157,7 +157,21 @@ export function MoviesTab({
 
   // Filter state — restored from cache if available.
   // When arriving via cross-tab navigation, use the pre-built crossTabFilters.
-  const [filters, setFilters] = useState(crossTabFilters ?? (discoverCache?.filters ?? DEFAULT_FILTERS));
+  const [filters, setFilters] = useState(() => {
+    if (crossTabFilters) return crossTabFilters;
+    if (discoverCache?.filters) return discoverCache.filters;
+    // Apply preferred streaming services from localStorage on fresh session
+    try {
+      const preferred = localStorage.getItem('duoreel-preferred-streaming');
+      if (preferred) {
+        const services = JSON.parse(preferred) as string[];
+        if (Array.isArray(services) && services.length > 0) {
+          return { ...DEFAULT_FILTERS, streamingServices: services };
+        }
+      }
+    } catch {}
+    return DEFAULT_FILTERS;
+  });
   const [sortBy, setSortBy] = useState(discoverCache?.sortBy ?? "popularity");
   const [showWatchedMovies, setShowWatchedMovies] =
     useState(discoverCache?.showWatchedMovies ?? false);
