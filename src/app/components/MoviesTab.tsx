@@ -2062,10 +2062,11 @@ export function MoviesTab({
                       </button>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
-                      ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
-                      : sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                  {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
+                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
+                    : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           return (
@@ -2095,9 +2096,10 @@ export function MoviesTab({
                               }
                             />
                           );
-                        })
-                    }
-                  </div>
+                        })}
+                      </div>
+                    )
+                  }
                 </div>}
 
                 {/* Trending this week — always rendered in position */}
@@ -2111,10 +2113,11 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {sectionPreviewsLoading || sectionPreviews.trending.length === 0
-                      ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
-                      : sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                  {sectionPreviewsLoading || sectionPreviews.trending.length === 0
+                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
+                    : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           return (
@@ -2144,9 +2147,10 @@ export function MoviesTab({
                               }
                             />
                           );
-                        })
-                    }
-                  </div>
+                        })}
+                      </div>
+                    )
+                  }
                 </div>
 
                 {/* Hidden gems — always rendered in position */}
@@ -2160,10 +2164,11 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {sectionPreviewsLoading || sectionPreviews.gems.length === 0
-                      ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
-                      : sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
+                  {sectionPreviewsLoading || sectionPreviews.gems.length === 0
+                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
+                    : (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           return (
@@ -2193,9 +2198,10 @@ export function MoviesTab({
                               }
                             />
                           );
-                        })
-                    }
-                  </div>
+                        })}
+                      </div>
+                    )
+                  }
                 </div>
 
                 {/* Browse all divider */}
