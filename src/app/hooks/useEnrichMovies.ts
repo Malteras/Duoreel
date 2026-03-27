@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import type { Movie } from '../../types/movie';
 
 interface UseEnrichMoviesOptions {
@@ -34,6 +34,13 @@ export function useEnrichMovies({
 }: UseEnrichMoviesOptions) {
   const [enrichedIds, setEnrichedIds] = useState<Set<number>>(new Set());
   const enrichingRef = useRef<Set<number>>(new Set());
+
+  // Stable fingerprint of the movie set — changes when movies are replaced (search,
+  // filter, pagination) but NOT when enrichment mutates existing movie objects.
+  const movieIdFingerprint = useMemo(
+    () => movies.map((m) => m.id).join(','),
+    [movies],
+  );
 
   /** Reset enrichment tracking — call on filter change, search, or refresh */
   const resetEnrichment = useCallback(() => {
@@ -130,7 +137,7 @@ export function useEnrichMovies({
 
     enrich();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [movies.length, publicAnonKey, dep]);
+  }, [movieIdFingerprint, publicAnonKey, dep]);
 
   return { enrichedIds, setEnrichedIds, enrichingRef, resetEnrichment };
 }
