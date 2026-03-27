@@ -2784,7 +2784,8 @@ app.get("/make-server-5623fde1/movies/search", async (c) => {
       return c.json({ error: "Query parameter required" }, 400);
     }
 
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`;
+    const page = c.req.query("page") || "1";
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}&page=${page}`;
     const response = await fetch(url);
     const data = await response.json();
 
