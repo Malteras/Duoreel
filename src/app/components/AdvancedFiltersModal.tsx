@@ -186,6 +186,9 @@ export function AdvancedFiltersModal({
   const [localHidePartnerWatched, setLocalHidePartnerWatched] = useState(hidePartnerWatched);
 
   const baseUrl = API_BASE_URL;
+  const directorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const actorTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const keywordTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Reset filters when modal opens
   useEffect(() => {
@@ -399,7 +402,9 @@ export function AdvancedFiltersModal({
               searchValue={keywordSearch}
               onSearchChange={(value) => {
                 setKeywordSearch(value);
-                searchKeywords(value);
+                if (keywordTimeoutRef.current) clearTimeout(keywordTimeoutRef.current);
+                if (!value.trim()) { setKeywordResults([]); return; }
+                keywordTimeoutRef.current = setTimeout(() => searchKeywords(value), 400);
               }}
               onSelect={() => {}}
               onClear={() => {
@@ -435,7 +440,9 @@ export function AdvancedFiltersModal({
               searchValue={directorSearch}
               onSearchChange={(value) => {
                 setDirectorSearch(value);
-                searchDirectors(value);
+                if (directorTimeoutRef.current) clearTimeout(directorTimeoutRef.current);
+                if (!value.trim()) { setDirectorResults([]); return; }
+                directorTimeoutRef.current = setTimeout(() => searchDirectors(value), 400);
               }}
               onSelect={() => {}}
               onClear={() => {
@@ -474,7 +481,9 @@ export function AdvancedFiltersModal({
               searchValue={actorSearch}
               onSearchChange={(value) => {
                 setActorSearch(value);
-                searchActors(value);
+                if (actorTimeoutRef.current) clearTimeout(actorTimeoutRef.current);
+                if (!value.trim()) { setActorResults([]); return; }
+                actorTimeoutRef.current = setTimeout(() => searchActors(value), 400);
               }}
               onSelect={() => {}}
               onClear={() => {
