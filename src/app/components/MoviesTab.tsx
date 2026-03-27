@@ -192,6 +192,7 @@ export function MoviesTab({
   const [searchLoadingMore, setSearchLoadingMore] = useState(false);
   const [searchTotalResults, setSearchTotalResults] = useState(0);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchQueryRef = useRef("");
 
   // Movie detail modal state — synced with ?movie=id URL param
   const {
@@ -1166,6 +1167,7 @@ export function MoviesTab({
     async (query: string, pageNum = 1, append = false) => {
       if (!query.trim()) {
         setIsSearchMode(false);
+        searchQueryRef.current = "";
         setPage(1);
         fetchMovies(1, false);
         return;
@@ -1177,6 +1179,7 @@ export function MoviesTab({
         setSearchLoadingMore(true);
       }
       setIsSearchMode(true);
+      searchQueryRef.current = query;
 
       try {
         const response = await fetch(
@@ -1215,6 +1218,9 @@ export function MoviesTab({
     [baseUrl, publicAnonKey, fetchMovies],
   );
 
+  const handleSearchRef = useRef(handleSearch);
+  useEffect(() => { handleSearchRef.current = handleSearch; }, [handleSearch]);
+
   const handleSearchInputChange = (value: string) => {
     setSearchQuery(value);
 
@@ -1224,6 +1230,7 @@ export function MoviesTab({
 
     if (!value.trim()) {
       setIsSearchMode(false);
+      searchQueryRef.current = "";
       setSearchPage(1);
       setSearchHasMore(false);
       setSearchTotalResults(0);
@@ -1415,9 +1422,9 @@ export function MoviesTab({
       (entries) => {
         if (!entries[0].isIntersecting || loading) return;
 
-        if (isSearchMode) {
+        if (isSearchMode && searchQueryRef.current.trim()) {
           if (searchHasMore && !searchLoadingMore && !isSearching) {
-            handleSearch(searchQuery, searchPage + 1, true);
+            handleSearchRef.current(searchQueryRef.current, searchPage + 1, true);
           }
         } else if (
           hasMore &&
@@ -1445,9 +1452,7 @@ export function MoviesTab({
     searchHasMore,
     searchLoadingMore,
     isSearching,
-    searchQuery,
     searchPage,
-    handleSearch,
   ]);
 
   // ──────────────── Section view infinite scroll ────────────────
@@ -1894,6 +1899,7 @@ export function MoviesTab({
                 onClick={() => {
                   setSearchQuery("");
                   setIsSearchMode(false);
+                  searchQueryRef.current = "";
                   setSearchPage(1);
                   setSearchHasMore(false);
                   setSearchTotalResults(0);
