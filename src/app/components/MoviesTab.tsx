@@ -2526,16 +2526,14 @@ export function MoviesTab({
             ── end of list view dead code ── */}
 
             {/* Infinite scroll sentinel + loading indicator */}
-            {!isSearchMode && (
-              <div
-                ref={sentinelRef}
-                className="flex justify-center mt-8 h-12 items-center"
-              >
-                {loadingMore && (
-                  <Film className="size-8 animate-spin text-slate-400" />
-                )}
-              </div>
-            )}
+            <div
+              ref={sentinelRef}
+              className="flex justify-center mt-8 h-12 items-center"
+            >
+              {loadingMore && (
+                <Film className="size-8 animate-spin text-slate-400" />
+              )}
+            </div>
           </>
         )}
           </div>{/* end home view */}
