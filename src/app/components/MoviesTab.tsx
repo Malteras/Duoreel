@@ -1159,7 +1159,7 @@ export function MoviesTab({
 
   // ──────────────── Search movies ────────────────
   const handleSearch = useCallback(
-    async (query: string) => {
+    async (query: string, pageNum = 1, append = false) => {
       if (!query.trim()) {
         setIsSearchMode(false);
         setPage(1);
@@ -1167,12 +1167,16 @@ export function MoviesTab({
         return;
       }
 
-      setIsSearching(true);
+      if (pageNum === 1) {
+        setIsSearching(true);
+      } else {
+        setLoadingMore(true);
+      }
       setIsSearchMode(true);
 
       try {
         const response = await fetch(
-          `${baseUrl}/movies/search?q=${encodeURIComponent(query)}`,
+          `${baseUrl}/movies/search?q=${encodeURIComponent(query)}&page=${pageNum}`,
           {
             headers: {
               Authorization: `Bearer ${publicAnonKey}`,
@@ -1182,17 +1186,28 @@ export function MoviesTab({
         const data = await response.json();
 
         if (data.results) {
-          setMovies(data.results);
-          resetEnrichment();
+          if (append) {
+            setMovies((prev) => {
+              const existingIds = new Set(prev.map((m) => m.id));
+              const deduped = (data.results as Movie[]).filter((m) => !existingIds.has(m.id));
+              return [...prev, ...deduped];
+            });
+          } else {
+            setMovies(data.results);
+            resetEnrichment();
+          }
+          setPage(pageNum);
+          setHasMore((data.results as Movie[]).length >= 10);
         }
       } catch (error) {
         console.error("Error searching movies:", error);
         toast.error("Search failed");
       } finally {
         setIsSearching(false);
+        setLoadingMore(false);
       }
     },
-    [baseUrl, publicAnonKey, fetchMovies],
+    [baseUrl, publicAnonKey, fetchMovies, resetEnrichment],
   );
 
   const handleSearchInputChange = (value: string) => {
@@ -1395,12 +1410,15 @@ export function MoviesTab({
           hasMore &&
           !loadingMore &&
           !loading &&
-          !isSearchMode &&
           pendingRemovals.size === 0
         ) {
           const nextPage = page + 1;
-          setPage(nextPage);
-          fetchMovies(nextPage, true);
+          if (isSearchMode && searchQuery.trim()) {
+            handleSearch(searchQuery, nextPage, true);
+          } else if (!isSearchMode) {
+            setPage(nextPage);
+            fetchMovies(nextPage, true);
+          }
         }
       },
       { threshold: 0.1 },
@@ -1413,8 +1431,10 @@ export function MoviesTab({
     loadingMore,
     loading,
     isSearchMode,
+    searchQuery,
     page,
     fetchMovies,
+    handleSearch,
     pendingRemovals,
   ]);
 
