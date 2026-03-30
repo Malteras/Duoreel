@@ -54,6 +54,7 @@ import {
   ArrowUpDown,
   Users,
   RefreshCw,
+  Shuffle,
 } from "lucide-react";
 
 interface MoviesTabProps {
@@ -2015,59 +2016,56 @@ export function MoviesTab({
                 {/* Because you saved X — only rendered when user has liked movies */}
                 {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-4 py-4 pb-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-indigo-300">
-                      {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
-                        <span>Because you saved <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
-                      ) : (
-                        <>
-                          Because you saved{' '}
-                          <span
-                            className="text-white cursor-pointer hover:text-slate-300 transition-colors"
-                            onClick={(e) => { e.stopPropagation(); openMovie(recSeedMovie); }}
-                          >
-                            {recSeedMovie.title}
-                            {recSeedMovie.release_date && (
-                              <span className="text-slate-400 font-normal">
-                                {' '}({new Date(recSeedMovie.release_date).getFullYear()})
-                              </span>
-                            )}
-                          </span>
-                        </>
-                      )}
-                    </p>
-                    <div className="flex items-center gap-3">
-                      {recSeedMovie && !sectionPreviewsLoading && !recsRefreshLoading && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              onClick={() => refreshRecs()}
-                              disabled={recsRefreshLoading}
-                              className="flex items-center gap-1 text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
-                              aria-label="Refresh suggestions"
+                  <div className="mb-3">
+                    {/* Row 1: label + shuffle + see all — all on one responsive line */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p className="text-sm font-medium text-indigo-300 flex items-center gap-1.5 min-w-0 flex-1">
+                        {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
+                          <span className="flex items-center gap-1.5">Your pick: <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
+                        ) : (
+                          <>
+                            <span className="shrink-0">Your pick:</span>
+                            <span
+                              className="text-white cursor-pointer hover:text-slate-300 transition-colors truncate"
+                              onClick={(e) => { e.stopPropagation(); openMovie(recSeedMovie); }}
                             >
-                              <RefreshCw className="size-3.5" />
-                              <span className="text-xs">Refresh</span>
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 text-xs">
-                            Refresh suggestions
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
-                      <button
-                        onClick={() => !(sectionPreviewsLoading || recsRefreshLoading) && enterSection('recs')}
-                        className={`text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 ${(sectionPreviewsLoading || recsRefreshLoading) ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
-                      >
-                        See all <ChevronRight className="size-3" />
-                      </button>
+                              {recSeedMovie.title}
+                            </span>
+                          </>
+                        )}
+                      </p>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {recSeedMovie && !sectionPreviewsLoading && !recsRefreshLoading && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => refreshRecs()}
+                                disabled={recsRefreshLoading}
+                                className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                                aria-label="Pick a different movie"
+                              >
+                                <Shuffle className="size-3.5" />
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="left" className="bg-slate-800 text-white border-slate-700 text-xs">
+                              Pick a different movie
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                        <button
+                          onClick={() => !(sectionPreviewsLoading || recsRefreshLoading) && enterSection('recs')}
+                          className={`text-xs text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1 ${(sectionPreviewsLoading || recsRefreshLoading) ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
+                        >
+                          See all <ChevronRight className="size-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                   {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
-                    ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
+                    ? <MovieCardSkeletonGrid count={4} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {[...(recSeedMovie ? [recSeedMovie] : []), ...sectionPreviews.recs.filter((m) => m.id !== recSeedMovie?.id)].filter((m) => !pendingRemovals.has(m.id)).slice(0, 5).map((movie) => {
+                        {[...(recSeedMovie ? [recSeedMovie] : []), ...sectionPreviews.recs.filter((m) => m.id !== recSeedMovie?.id)].filter((m) => !pendingRemovals.has(m.id)).slice(0, 4).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           const isSeed = movie.id === recSeedMovie?.id;
