@@ -2016,15 +2016,16 @@ export function MoviesTab({
                 {/* Because you saved X — only rendered when user has liked movies */}
                 {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-4 py-4 pb-5">
-                  <div className="mb-3">
+                  <div className="mb-7">
                     {/* Row 1: label + shuffle + see all — all on one responsive line */}
                     <div className="flex items-center gap-2 min-w-0">
-                      <p className="text-sm font-medium text-indigo-300 flex items-center gap-1.5 min-w-0 flex-1">
+                      <p className="text-sm font-medium text-indigo-300 flex items-center gap-2.5 min-w-0 flex-1">
                         {(sectionPreviewsLoading || recsRefreshLoading) || !recSeedMovie ? (
-                          <span className="flex items-center gap-1.5">Your pick: <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
+                          <span className="flex items-center gap-1.5"><span className="hidden md:inline">Because you saved</span><span className="md:hidden">Your pick:</span> <span className="inline-block h-3 w-24 rounded bg-slate-700/60 animate-pulse align-middle" /></span>
                         ) : (
                           <>
-                            <span className="shrink-0">Your pick:</span>
+                            <span className="shrink-0 hidden md:inline">Because you saved</span>
+                            <span className="shrink-0 md:hidden">Your pick:</span>
                             <span
                               className="text-white cursor-pointer hover:text-slate-300 transition-colors truncate"
                               onClick={(e) => { e.stopPropagation(); openMovie(recSeedMovie); }}
