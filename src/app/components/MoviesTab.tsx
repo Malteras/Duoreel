@@ -188,7 +188,16 @@ export function MoviesTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchHasMore, setSearchHasMore] = useState(false);
+  const [searchLoadingMore, setSearchLoadingMore] = useState(false);
+  const [searchTotalResults, setSearchTotalResults] = useState(0);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchQueryRef = useRef("");
+  const searchHasMoreRef = useRef(false);
+  const searchLoadingMoreRef = useRef(false);
+  const isSearchingRef = useRef(false);
+  const searchPageRef = useRef(1);
 
   // Movie detail modal state — synced with ?movie=id URL param
   const {
@@ -1160,20 +1169,26 @@ export function MoviesTab({
 
   // ──────────────── Search movies ────────────────
   const handleSearch = useCallback(
-    async (query: string) => {
+    async (query: string, pageNum = 1, append = false) => {
       if (!query.trim()) {
         setIsSearchMode(false);
+        searchQueryRef.current = "";
         setPage(1);
         fetchMovies(1, false);
         return;
       }
 
-      setIsSearching(true);
+      if (pageNum === 1) {
+        setIsSearching(true);
+      } else {
+        setSearchLoadingMore(true);
+      }
       setIsSearchMode(true);
+      searchQueryRef.current = query;
 
       try {
         const response = await fetch(
-          `${baseUrl}/movies/search?q=${encodeURIComponent(query)}`,
+          `${baseUrl}/movies/search?q=${encodeURIComponent(query)}&page=${pageNum}`,
           {
             headers: {
               Authorization: `Bearer ${publicAnonKey}`,
@@ -1183,18 +1198,37 @@ export function MoviesTab({
         const data = await response.json();
 
         if (data.results) {
-          setMovies(data.results);
-          resetEnrichment();
+          if (append) {
+            setMovies((prev) => {
+              const existingIds = new Set(prev.map((m: Movie) => m.id));
+              const deduped = (data.results as Movie[]).filter((m: Movie) => !existingIds.has(m.id));
+              return [...prev, ...deduped];
+            });
+          } else {
+            setMovies(data.results);
+            resetEnrichment();
+          }
+          setSearchPage(pageNum);
+          setSearchTotalResults(data.total_results ?? 0);
+          setSearchHasMore(pageNum < (data.total_pages ?? 1));
         }
       } catch (error) {
         console.error("Error searching movies:", error);
         toast.error("Search failed");
       } finally {
         setIsSearching(false);
+        setSearchLoadingMore(false);
       }
     },
     [baseUrl, publicAnonKey, fetchMovies],
   );
+
+  const handleSearchRef = useRef(handleSearch);
+  useEffect(() => { handleSearchRef.current = handleSearch; }, [handleSearch]);
+  useEffect(() => { searchHasMoreRef.current = searchHasMore; }, [searchHasMore]);
+  useEffect(() => { searchLoadingMoreRef.current = searchLoadingMore; }, [searchLoadingMore]);
+  useEffect(() => { isSearchingRef.current = isSearching; }, [isSearching]);
+  useEffect(() => { searchPageRef.current = searchPage; }, [searchPage]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchQuery(value);
@@ -1205,13 +1239,17 @@ export function MoviesTab({
 
     if (!value.trim()) {
       setIsSearchMode(false);
+      searchQueryRef.current = "";
+      setSearchPage(1);
+      setSearchHasMore(false);
+      setSearchTotalResults(0);
       setPage(1);
       fetchMovies(1, false);
       return;
     }
 
     searchTimeoutRef.current = setTimeout(() => {
-      handleSearch(value);
+      handleSearch(value, 1, false);
     }, 500);
   };
 
@@ -1391,12 +1429,16 @@ export function MoviesTab({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (
-          entries[0].isIntersecting &&
+        if (!entries[0].isIntersecting) return;
+        if (isSearchMode ? isSearching : loading) return;
+
+        if (isSearchMode && searchQueryRef.current.trim()) {
+          if (searchHasMoreRef.current && !searchLoadingMoreRef.current && !isSearchingRef.current) {
+            handleSearchRef.current(searchQueryRef.current, searchPageRef.current + 1, true);
+          }
+        } else if (
           hasMore &&
           !loadingMore &&
-          !loading &&
-          !isSearchMode &&
           pendingRemovals.size === 0
         ) {
           const nextPage = page + 1;
@@ -1414,6 +1456,7 @@ export function MoviesTab({
     loadingMore,
     loading,
     isSearchMode,
+    isSearching,
     page,
     fetchMovies,
     pendingRemovals,
@@ -1852,8 +1895,9 @@ export function MoviesTab({
               <Search className="size-4" />
               <span>
                 Search results for "{searchQuery}" —{" "}
-                {visibleMovies.length} movie
-                {visibleMovies.length !== 1 ? "s" : ""} found
+                {searchTotalResults > 0
+                  ? `${searchTotalResults} movie${searchTotalResults !== 1 ? "s" : ""} found`
+                  : `${visibleMovies.length} movie${visibleMovies.length !== 1 ? "s" : ""} found`}
               </span>
               <Button
                 variant="ghost"
@@ -1862,6 +1906,10 @@ export function MoviesTab({
                 onClick={() => {
                   setSearchQuery("");
                   setIsSearchMode(false);
+                  searchQueryRef.current = "";
+                  setSearchPage(1);
+                  setSearchHasMore(false);
+                  setSearchTotalResults(0);
                   fetchMovies(1, false);
                 }}
               >
@@ -2229,7 +2277,7 @@ export function MoviesTab({
             )}
 
             {/* Movie Grid */}
-            {loading || contextLoading ? (
+            {(isSearchMode ? isSearching : (loading || contextLoading)) ? (
           <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
         ) : visibleMovies.length === 0 ? (
           <div className="text-center py-20">
@@ -2506,16 +2554,14 @@ export function MoviesTab({
             ── end of list view dead code ── */}
 
             {/* Infinite scroll sentinel + loading indicator */}
-            {!isSearchMode && (
-              <div
-                ref={sentinelRef}
-                className="flex justify-center mt-8 h-12 items-center"
-              >
-                {loadingMore && (
-                  <Film className="size-8 animate-spin text-slate-400" />
-                )}
-              </div>
-            )}
+            <div
+              ref={sentinelRef}
+              className="flex justify-center mt-8 h-12 items-center"
+            >
+              {(loadingMore || searchLoadingMore) && (
+                <Film className="size-8 animate-spin text-slate-400" />
+              )}
+            </div>
           </>
         )}
           </div>{/* end home view */}
