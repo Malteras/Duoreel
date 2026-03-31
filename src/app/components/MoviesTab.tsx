@@ -193,6 +193,10 @@ export function MoviesTab({
   const [searchTotalResults, setSearchTotalResults] = useState(0);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const searchQueryRef = useRef("");
+  const searchHasMoreRef = useRef(false);
+  const searchLoadingMoreRef = useRef(false);
+  const isSearchingRef = useRef(false);
+  const searchPageRef = useRef(1);
 
   // Movie detail modal state — synced with ?movie=id URL param
   const {
@@ -1220,6 +1224,10 @@ export function MoviesTab({
 
   const handleSearchRef = useRef(handleSearch);
   useEffect(() => { handleSearchRef.current = handleSearch; }, [handleSearch]);
+  useEffect(() => { searchHasMoreRef.current = searchHasMore; }, [searchHasMore]);
+  useEffect(() => { searchLoadingMoreRef.current = searchLoadingMore; }, [searchLoadingMore]);
+  useEffect(() => { isSearchingRef.current = isSearching; }, [isSearching]);
+  useEffect(() => { searchPageRef.current = searchPage; }, [searchPage]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchQuery(value);
@@ -1423,8 +1431,8 @@ export function MoviesTab({
         if (!entries[0].isIntersecting || loading) return;
 
         if (isSearchMode && searchQueryRef.current.trim()) {
-          if (searchHasMore && !searchLoadingMore && !isSearching) {
-            handleSearchRef.current(searchQueryRef.current, searchPage + 1, true);
+          if (searchHasMoreRef.current && !searchLoadingMoreRef.current && !isSearchingRef.current) {
+            handleSearchRef.current(searchQueryRef.current, searchPageRef.current + 1, true);
           }
         } else if (
           hasMore &&
@@ -1449,10 +1457,6 @@ export function MoviesTab({
     page,
     fetchMovies,
     pendingRemovals,
-    searchHasMore,
-    searchLoadingMore,
-    isSearching,
-    searchPage,
   ]);
 
   // ──────────────── Section view infinite scroll ────────────────
