@@ -13,6 +13,7 @@ interface CompactMovieCardProps {
   partnerWatchedIds?: Set<number>;
   partnerName?: string;
   activeGenreIds?: number[] | null;
+  className?: string;
 }
 
 export function CompactMovieCard({
@@ -27,6 +28,7 @@ export function CompactMovieCard({
   partnerWatchedIds,
   partnerName,
   activeGenreIds,
+  className,
 }: CompactMovieCardProps) {
   const posterUrl = movie.poster_path
     ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
@@ -46,7 +48,7 @@ export function CompactMovieCard({
 
   return (
     <div
-      className={`group relative bg-gradient-to-b from-slate-800/50 to-slate-900/80 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/50 hover:border-slate-600 cursor-pointer ${isWatched ? 'opacity-60 grayscale-[30%]' : ''}`}
+      className={`group relative bg-gradient-to-b from-slate-800/50 to-slate-900/80 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-slate-700/50 hover:border-slate-600 cursor-pointer h-full flex flex-col ${isWatched ? 'opacity-60 grayscale-[30%]' : ''} ${className ?? ''}`}
       onClick={onClick}
     >
       <div className="relative aspect-[2/3] overflow-hidden">
@@ -110,7 +112,7 @@ export function CompactMovieCard({
         )}
       </div>
 
-      <div className="p-3 space-y-1.5">
+      <div className="p-3 space-y-1.5 flex-1">
         {/* Partner watched eyebrow — above title, matching large card layout */}
         {partnerWatchedIds?.has(movie.id) && partnerName && (
           <div className="flex items-center gap-1 mb-1">
