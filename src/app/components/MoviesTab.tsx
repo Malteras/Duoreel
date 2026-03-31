@@ -2229,7 +2229,7 @@ export function MoviesTab({
             )}
 
             {/* Movie Grid */}
-            {loading || contextLoading ? (
+            {(isSearchMode ? isSearching : (loading || contextLoading)) ? (
           <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
         ) : visibleMovies.length === 0 ? (
           <div className="text-center py-20">
