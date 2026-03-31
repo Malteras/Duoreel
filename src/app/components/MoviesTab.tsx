@@ -1428,7 +1428,8 @@ export function MoviesTab({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (!entries[0].isIntersecting || loading) return;
+        if (!entries[0].isIntersecting) return;
+        if (isSearchMode ? isSearchingRef.current : loading) return;
 
         if (isSearchMode && searchQueryRef.current.trim()) {
           if (searchHasMoreRef.current && !searchLoadingMoreRef.current && !isSearchingRef.current) {
