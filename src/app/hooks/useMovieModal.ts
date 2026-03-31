@@ -77,6 +77,26 @@ export function useMovieModal(accessToken?: string | null) {
       },
       { replace: false }
     );
+
+    // If the movie lacks video data (e.g. came from a list/section endpoint),
+    // fetch full details in the background and enrich selectedMovie silently.
+    if (!movie.videos) {
+      const authHeader = accessToken ? `Bearer ${accessToken}` : `Bearer ${publicAnonKey}`;
+      fetch(`${API_BASE_URL}/movies/${movie.id}`, {
+        headers: { Authorization: authHeader },
+      })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (!data?.id) return;
+          const director = data.credits?.crew?.find((c: any) => c.job === 'Director')?.name;
+          const actors = data.credits?.cast?.slice(0, 5).map((a: any) => a.name);
+          setSelectedMovie((prev: any) => {
+            if (prev?.id !== movie.id) return prev;
+            return { ...prev, ...data, director: director || prev.director, actors: actors || prev.actors };
+          });
+        })
+        .catch(() => {/* silently ignore */});
+    }
   };
 
   const closeMovie = () => {

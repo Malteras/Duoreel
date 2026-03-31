@@ -2061,19 +2061,20 @@ export function MoviesTab({
                   {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
                         {[...(recSeedMovie ? [recSeedMovie] : []), ...sectionPreviews.recs.filter((m) => m.id !== recSeedMovie?.id)].filter((m) => !pendingRemovals.has(m.id)).slice(0, 5).map((movie, idx) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           const isSeed = movie.id === recSeedMovie?.id;
                           return (
-                            <div key={movie.id} className={`${isSeed ? 'relative rounded-2xl border border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.15)]' : ''}${idx >= 4 ? ' hidden md:block' : ''}`}>
+                            <div key={movie.id} className={`h-full flex flex-col ${isSeed ? 'relative rounded-2xl border border-indigo-500/50 shadow-[0_0_12px_rgba(99,102,241,0.15)]' : ''}${idx >= 4 ? ' hidden md:block' : ''}`}>
                               {isSeed && (
-                                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded">
+                                <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded whitespace-nowrap">
                                   Your pick
                                 </span>
                               )}
                               <CompactMovieCard
+                                className="h-full"
                                 movie={movie}
                                 onClick={() => openMovie(movie)}
                                 isWatched={watchedMovieIds.has(movie.id)}
@@ -2121,13 +2122,14 @@ export function MoviesTab({
                   {sectionPreviewsLoading || sectionPreviews.trending.length === 0
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
                         {sectionPreviews.trending.filter((m) => !pendingRemovals.has(m.id)).map((movie, idx) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           return (
-                            <div key={movie.id} className={idx >= 4 ? 'hidden md:block' : ''}>
+                            <div key={movie.id} className={`h-full flex flex-col ${idx >= 4 ? 'hidden md:block' : ''}`}>
                               <CompactMovieCard
+                                className="h-full"
                                 movie={movie}
                                 onClick={() => openMovie(movie)}
                                 isWatched={watchedMovieIds.has(movie.id)}
@@ -2175,13 +2177,14 @@ export function MoviesTab({
                   {sectionPreviewsLoading || sectionPreviews.gems.length === 0
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
                         {sectionPreviews.gems.filter((m) => !pendingRemovals.has(m.id)).map((movie, idx) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           return (
-                            <div key={movie.id} className={idx >= 4 ? 'hidden md:block' : ''}>
+                            <div key={movie.id} className={`h-full flex flex-col ${idx >= 4 ? 'hidden md:block' : ''}`}>
                               <CompactMovieCard
+                                className="h-full"
                                 movie={movie}
                                 onClick={() => openMovie(movie)}
                                 isWatched={watchedMovieIds.has(movie.id)}
