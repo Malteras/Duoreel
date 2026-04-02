@@ -57,6 +57,26 @@ import {
   Shuffle,
 } from "lucide-react";
 
+function getGemsGenreId(likedMovies: any[], genres: { id: number; name: string }[]): number | null {
+  const genreCounts = new Map<number, number>();
+  for (const movie of likedMovies) {
+    const ids: number[] = movie.genres?.map((g: any) => g.id) ?? movie.genre_ids ?? [];
+    for (const id of ids) {
+      genreCounts.set(id, (genreCounts.get(id) ?? 0) + 1);
+    }
+  }
+  if (genreCounts.size > 0) {
+    const sorted = [...genreCounts.entries()].sort((a, b) => b[1] - a[1]);
+    const top3 = sorted.slice(0, 3);
+    const [pickedId] = top3[Math.floor(Math.random() * top3.length)];
+    return pickedId;
+  }
+  if (genres.length > 0) {
+    return genres[Math.floor(Math.random() * genres.length)].id;
+  }
+  return null;
+}
+
 interface MoviesTabProps {
   accessToken: string | null;
   projectId: string;
@@ -516,6 +536,8 @@ export function MoviesTab({
   // Prevents re-running fetchSectionPreviews on every save action.
   // Set to true after the first successful fetch.
   const sectionFetchedRef = useRef(false);
+  const gemsGenreIdRef = useRef<number | null>(null);
+  const gemsPageRef = useRef<number>(1);
 
   const fetchSectionPreviews = useCallback(async () => {
     if (!accessToken) return;
@@ -533,7 +555,12 @@ export function MoviesTab({
           const twoYearsAgo = new Date();
           twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
           const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
-          return fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=1`, { headers: { Authorization: `Bearer ${accessToken}` } });
+          const gemsGenreId = getGemsGenreId(likedMoviesRef.current, genres);
+          const gemsPage = Math.floor(Math.random() * 5) + 1;
+          gemsGenreIdRef.current = gemsGenreId;
+          gemsPageRef.current = gemsPage;
+          const gemsGenreParam = gemsGenreId ? `&genres=${gemsGenreId}` : '';
+          return fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${gemsPage}${gemsGenreParam}`, { headers: { Authorization: `Bearer ${accessToken}` } });
         })(),
         seed
           ? fetch(`${baseUrl}/movies/recommendations/${seed.id}?page=1`, { headers: { Authorization: `Bearer ${accessToken}` } })
@@ -679,7 +706,8 @@ export function MoviesTab({
         const twoYearsAgo = new Date();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
         const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
-        url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${pageNum}`;
+        const gemsGenreParam = gemsGenreIdRef.current ? `&genres=${gemsGenreIdRef.current}` : '';
+        url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${pageNum}${gemsGenreParam}`;
       } else if (section === 'recs' && recSeedMovie) {
         url = `${baseUrl}/movies/recommendations/${recSeedMovie.id}?page=${pageNum}`;
       } else {
@@ -2214,7 +2242,19 @@ export function MoviesTab({
                 <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
                   <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-4 pb-5">
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-medium text-emerald-300">💎 Hidden gems</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-emerald-300">💎 Hidden gems</p>
+                      {(() => {
+                        if (!gemsGenreIdRef.current) return null;
+                        const genre = genres.find(g => g.id === gemsGenreIdRef.current);
+                        if (!genre) return null;
+                        return (
+                          <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full px-2 py-0.5">
+                            {genre.name}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     <button
                       onClick={() => !sectionPreviewsLoading && enterSection('gems')}
                       className={`text-xs text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1 ${sectionPreviewsLoading ? 'opacity-0 pointer-events-none' : 'cursor-pointer'}`}
