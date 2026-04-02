@@ -559,7 +559,7 @@ export function MoviesTab({
           const gemsPage = Math.floor(Math.random() * 5) + 1;
           gemsGenreIdRef.current = gemsGenreId;
           gemsPageRef.current = gemsPage;
-          const gemsGenreParam = gemsGenreId ? `&genres=${gemsGenreId}` : '';
+          const gemsGenreParam = gemsGenreId ? `&genre=${gemsGenreId}` : '';
           return fetch(`${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${gemsPage}${gemsGenreParam}`, { headers: { Authorization: `Bearer ${accessToken}` } });
         })(),
         seed
@@ -706,7 +706,7 @@ export function MoviesTab({
         const twoYearsAgo = new Date();
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
         const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
-        const gemsGenreParam = gemsGenreIdRef.current ? `&genres=${gemsGenreIdRef.current}` : '';
+        const gemsGenreParam = gemsGenreIdRef.current ? `&genre=${gemsGenreIdRef.current}` : '';
         url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${pageNum}${gemsGenreParam}`;
       } else if (section === 'recs' && recSeedMovie) {
         url = `${baseUrl}/movies/recommendations/${recSeedMovie.id}?page=${pageNum}`;
