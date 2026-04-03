@@ -10,7 +10,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2, Tv } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -21,6 +21,7 @@ import { ImportDialog } from './ImportDialog';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
 import { ViewToggle } from './ViewToggle';
+import { STREAMING_SERVICES } from '../../constants/streaming';
 
 interface SavedMoviesTabProps {
   accessToken: string | null;
@@ -74,6 +75,8 @@ export function SavedMoviesTab({
   const cardViewMode = cardViewModeProp;
   const handleCardViewMode = setCardViewMode;
   const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
+  const [selectedService, setSelectedService] = useState<string>('all');
+  const [partnerSelectedService, setPartnerSelectedService] = useState<string>('all');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
@@ -341,25 +344,43 @@ export function SavedMoviesTab({
     }
   };
 
-  // Filter movies based on watched status
+  // Filter movies based on watched status + streaming service
   const getFilteredMovies = (movies: Movie[]) => {
+    let result = movies;
     switch (filterBy) {
-      case 'watched':   return movies.filter(movie => watchedMovieIds.has(movie.id));
-      case 'unwatched': return movies.filter(movie => !watchedMovieIds.has(movie.id));
-      default:          return movies;
+      case 'watched':   result = result.filter(movie => watchedMovieIds.has(movie.id)); break;
+      case 'unwatched': result = result.filter(movie => !watchedMovieIds.has(movie.id)); break;
     }
+    if (selectedService !== 'all') {
+      result = result.filter(movie => {
+        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate || [];
+        return flatrate.some((p: any) => String(p.provider_id) === selectedService);
+      });
+    }
+    return result;
   };
 
-  const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
-  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds]);
-  const sortedPartnerMovies   = useMemo(() => getSortedMovies(partnerLikedMovies), [partnerLikedMovies, sortBy]);
-  const filteredPartnerMovies = useMemo(() => {
+  const getFilteredPartnerMovies = (movies: Movie[]) => {
+    let result = movies;
     switch (partnerFilterBy) {
-      case 'watched':   return sortedPartnerMovies.filter(m => watchedMovieIds.has(m.id));
-      case 'unwatched': return sortedPartnerMovies.filter(m => !watchedMovieIds.has(m.id));
-      default:          return sortedPartnerMovies;
+      case 'watched':   result = result.filter(m => watchedMovieIds.has(m.id)); break;
+      case 'unwatched': result = result.filter(m => !watchedMovieIds.has(m.id)); break;
     }
-  }, [sortedPartnerMovies, partnerFilterBy, watchedMovieIds]);
+    if (partnerSelectedService !== 'all') {
+      result = result.filter(movie => {
+        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate || [];
+        return flatrate.some((p: any) => String(p.provider_id) === partnerSelectedService);
+      });
+    }
+    return result;
+  };
+
+  const activeServiceLabel = STREAMING_SERVICES.find(s => s.value === (viewMode === 'mine' ? selectedService : partnerSelectedService))?.label;
+
+  const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
+  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds, selectedService]);
+  const sortedPartnerMovies   = useMemo(() => getSortedMovies(partnerLikedMovies), [partnerLikedMovies, sortBy]);
+  const filteredPartnerMovies = useMemo(() => getFilteredPartnerMovies(sortedPartnerMovies), [sortedPartnerMovies, partnerFilterBy, watchedMovieIds, partnerSelectedService]);
 
   const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount),   [filteredLikedMovies, visibleCount]);
   const visiblePartnerMovies = useMemo(() => filteredPartnerMovies.slice(0, visibleCount),  [filteredPartnerMovies, visibleCount]);
@@ -439,7 +460,7 @@ export function SavedMoviesTab({
     ? visibleCount < filteredLikedMovies.length
     : visibleCount < filteredPartnerMovies.length;
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode]);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode, selectedService, partnerSelectedService]);
 
   useEffect(() => {
     if (!sentinelEl || !hasMoreMovies) return;
@@ -521,6 +542,33 @@ export function SavedMoviesTab({
                     viewMode === 'mine' ? setFilterBy(value) : setPartnerFilterBy(value)
                   }
                 />
+              </div>
+
+              {/* Service filter */}
+              <div className="flex flex-1 min-w-0 md:flex-none items-center gap-2">
+                <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
+                <Select
+                  value={viewMode === 'mine' ? selectedService : partnerSelectedService}
+                  onValueChange={(value) => viewMode === 'mine' ? setSelectedService(value) : setPartnerSelectedService(value)}
+                >
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[110px] md:w-auto h-8 text-sm min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Tv className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <span className="truncate">{activeServiceLabel || 'All Services'}</span>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Services</SelectItem>
+                    {STREAMING_SERVICES.map(s => (
+                      <SelectItem key={s.value} value={s.value}>
+                        <div className="flex items-center gap-2">
+                          <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
+                          <span>{s.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Sort */}
@@ -672,14 +720,20 @@ export function SavedMoviesTab({
               <div className="text-center py-20">
                 <Filter className="size-16 mx-auto mb-6 text-slate-700" />
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  No {filterBy === 'watched' ? 'watched' : 'unwatched'} movies
+                  {selectedService !== 'all'
+                    ? `No movies on ${activeServiceLabel || 'this service'}`
+                    : filterBy === 'watched'
+                    ? 'No watched movies'
+                    : 'No unwatched movies'}
                 </h3>
                 <p className="text-slate-400">
-                  {filterBy === 'watched'
+                  {selectedService !== 'all'
+                    ? `None of your ${likedMovies.length} saved movies are currently streaming there.`
+                    : filterBy === 'watched'
                     ? "You haven't marked any saved movies as watched yet."
                     : 'All your saved movies have been watched! Nice work.'}
                 </p>
-                <Button variant="ghost" onClick={() => setFilterBy('all')} className="mt-4 text-blue-400 hover:text-blue-300">
+                <Button variant="ghost" onClick={() => { setFilterBy('all'); setSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
                   Show all movies
                 </Button>
               </div>
@@ -796,6 +850,27 @@ export function SavedMoviesTab({
               <Users className="size-20 mx-auto mb-6 text-slate-700" />
               <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't saved any movies yet`}</h3>
               <p className="text-slate-400 text-lg">They can start saving movies in the Discover tab</p>
+            </div>
+          ) : filteredPartnerMovies.length === 0 ? (
+            <div className="text-center py-20">
+              <Filter className="size-16 mx-auto mb-6 text-slate-700" />
+              <h3 className="text-xl font-semibold text-white mb-2">
+                {partnerSelectedService !== 'all'
+                  ? `No movies on ${STREAMING_SERVICES.find(s => s.value === partnerSelectedService)?.label || 'this service'}`
+                  : partnerFilterBy === 'watched'
+                  ? 'No watched movies'
+                  : 'No unwatched movies'}
+              </h3>
+              <p className="text-slate-400">
+                {partnerSelectedService !== 'all'
+                  ? `None of ${partnerName}'s ${partnerLikedMovies.length} saved movies are currently streaming there.`
+                  : partnerFilterBy === 'watched'
+                  ? `${partnerName} hasn't watched any of their saved movies yet.`
+                  : `All of ${partnerName}'s saved movies have been watched.`}
+              </p>
+              <Button variant="ghost" onClick={() => { setPartnerFilterBy('all'); setPartnerSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
+                Show all movies
+              </Button>
             </div>
           ) : (
             <>
