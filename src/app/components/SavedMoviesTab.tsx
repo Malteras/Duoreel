@@ -10,7 +10,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2, Tv } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2, Tv, SlidersHorizontal, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -22,6 +22,16 @@ import { PartnerConnectCard } from './PartnerConnectCard';
 import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
 import { ViewToggle } from './ViewToggle';
 import { STREAMING_SERVICES } from '../../constants/streaming';
+
+const DECADE_OPTIONS = [
+  { label: 'All Time',  value: 'all' },
+  { label: '2020s',     value: '2020-2029' },
+  { label: '2010s',     value: '2010-2019' },
+  { label: '2000s',     value: '2000-2009' },
+  { label: '1990s',     value: '1990-1999' },
+  { label: '1980s',     value: '1980-1989' },
+  { label: '1970s',     value: '1970-1979' },
+];
 
 interface SavedMoviesTabProps {
   accessToken: string | null;
@@ -77,6 +87,12 @@ export function SavedMoviesTab({
   const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
   const [selectedService, setSelectedService] = useState<string>('all');
   const [partnerSelectedService, setPartnerSelectedService] = useState<string>('all');
+  const [selectedGenre, setSelectedGenre] = useState<string>('all');
+  const [partnerSelectedGenre, setPartnerSelectedGenre] = useState<string>('all');
+  const [selectedDecade, setSelectedDecade] = useState<string>('all');
+  const [partnerSelectedDecade, setPartnerSelectedDecade] = useState<string>('all');
+  const [genres, setGenres] = useState<{ id: number; name: string }[]>([]);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
@@ -186,6 +202,22 @@ export function SavedMoviesTab({
 
     fetchPartnerData();
   }, [accessToken, viewMode, likedMovies.length]);
+
+  // Fetch genres for filter dropdown
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const response = await fetch(`${baseUrl}/genres`, {
+          headers: { Authorization: `Bearer ${publicAnonKey}` },
+        });
+        const data = await response.json();
+        if (data.genres) setGenres(data.genres);
+      } catch (error) {
+        console.error('Error fetching genres:', error);
+      }
+    };
+    fetchGenres();
+  }, []);
 
   // ── Enrich movies missing detail data ──
   useEnrichMovies({
@@ -344,7 +376,7 @@ export function SavedMoviesTab({
     }
   };
 
-  // Filter movies based on watched status + streaming service
+  // Filter movies based on watched status + streaming service + genre + decade
   const getFilteredMovies = (movies: Movie[]) => {
     let result = movies;
     switch (filterBy) {
@@ -355,6 +387,26 @@ export function SavedMoviesTab({
       result = result.filter(movie => {
         const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate || [];
         return flatrate.some((p: any) => String(p.provider_id) === selectedService);
+      });
+    }
+    if (selectedGenre !== 'all') {
+      const genreId = Number(selectedGenre);
+      result = result.filter(movie => {
+        if (movie.genres && movie.genres.length > 0) {
+          return movie.genres.some((g: any) => g.id === genreId);
+        }
+        if ((movie as any).genre_ids && (movie as any).genre_ids.length > 0) {
+          return (movie as any).genre_ids.includes(genreId);
+        }
+        return false;
+      });
+    }
+    if (selectedDecade !== 'all') {
+      const [start, end] = selectedDecade.split('-').map(Number);
+      result = result.filter(movie => {
+        if (!movie.release_date) return false;
+        const year = new Date(movie.release_date).getFullYear();
+        return year >= start && year <= end;
       });
     }
     return result;
@@ -372,15 +424,40 @@ export function SavedMoviesTab({
         return flatrate.some((p: any) => String(p.provider_id) === partnerSelectedService);
       });
     }
+    if (partnerSelectedGenre !== 'all') {
+      const genreId = Number(partnerSelectedGenre);
+      result = result.filter(movie => {
+        if (movie.genres && movie.genres.length > 0) {
+          return movie.genres.some((g: any) => g.id === genreId);
+        }
+        if ((movie as any).genre_ids && (movie as any).genre_ids.length > 0) {
+          return (movie as any).genre_ids.includes(genreId);
+        }
+        return false;
+      });
+    }
+    if (partnerSelectedDecade !== 'all') {
+      const [start, end] = partnerSelectedDecade.split('-').map(Number);
+      result = result.filter(movie => {
+        if (!movie.release_date) return false;
+        const year = new Date(movie.release_date).getFullYear();
+        return year >= start && year <= end;
+      });
+    }
     return result;
   };
 
   const activeServiceLabel = STREAMING_SERVICES.find(s => s.value === (viewMode === 'mine' ? selectedService : partnerSelectedService))?.label;
 
+  const activeFilterCount = (viewMode === 'mine'
+    ? [selectedService !== 'all', selectedGenre !== 'all', selectedDecade !== 'all']
+    : [partnerSelectedService !== 'all', partnerSelectedGenre !== 'all', partnerSelectedDecade !== 'all']
+  ).filter(Boolean).length;
+
   const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
-  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds, selectedService]);
+  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds, selectedService, selectedGenre, selectedDecade]);
   const sortedPartnerMovies   = useMemo(() => getSortedMovies(partnerLikedMovies), [partnerLikedMovies, sortBy]);
-  const filteredPartnerMovies = useMemo(() => getFilteredPartnerMovies(sortedPartnerMovies), [sortedPartnerMovies, partnerFilterBy, watchedMovieIds, partnerSelectedService]);
+  const filteredPartnerMovies = useMemo(() => getFilteredPartnerMovies(sortedPartnerMovies), [sortedPartnerMovies, partnerFilterBy, watchedMovieIds, partnerSelectedService, partnerSelectedGenre, partnerSelectedDecade]);
 
   const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount),   [filteredLikedMovies, visibleCount]);
   const visiblePartnerMovies = useMemo(() => filteredPartnerMovies.slice(0, visibleCount),  [filteredPartnerMovies, visibleCount]);
@@ -460,7 +537,7 @@ export function SavedMoviesTab({
     ? visibleCount < filteredLikedMovies.length
     : visibleCount < filteredPartnerMovies.length;
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode, selectedService, partnerSelectedService]);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode, selectedService, partnerSelectedService, selectedGenre, partnerSelectedGenre, selectedDecade, partnerSelectedDecade]);
 
   useEffect(() => {
     if (!sentinelEl || !hasMoreMovies) return;
@@ -544,8 +621,8 @@ export function SavedMoviesTab({
                 />
               </div>
 
-              {/* Service filter */}
-              <div className="flex flex-1 min-w-0 md:flex-none items-center gap-2">
+              {/* Service filter — desktop only, mobile uses FAB */}
+              <div className="hidden md:flex flex-1 min-w-0 md:flex-none items-center gap-2">
                 <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
                 <Select
                   value={viewMode === 'mine' ? selectedService : partnerSelectedService}
@@ -566,6 +643,49 @@ export function SavedMoviesTab({
                           <span>{s.label}</span>
                         </div>
                       </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Genre filter — desktop only, mobile uses FAB */}
+              <div className="hidden md:flex flex-1 min-w-0 md:flex-none items-center gap-2">
+                <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Genre:</label>
+                <Select
+                  value={viewMode === 'mine' ? selectedGenre : partnerSelectedGenre}
+                  onValueChange={(value) => viewMode === 'mine' ? setSelectedGenre(value) : setPartnerSelectedGenre(value)}
+                >
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[120px] md:w-auto h-8 text-sm min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Tag className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <span className="truncate"><SelectValue placeholder="All Genres" /></span>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Genres</SelectItem>
+                    {genres.map(g => (
+                      <SelectItem key={g.id} value={String(g.id)}>{g.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Decade filter — desktop only, mobile uses FAB */}
+              <div className="hidden md:flex flex-1 min-w-0 md:flex-none items-center gap-2">
+                <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Decade:</label>
+                <Select
+                  value={viewMode === 'mine' ? selectedDecade : partnerSelectedDecade}
+                  onValueChange={(value) => viewMode === 'mine' ? setSelectedDecade(value) : setPartnerSelectedDecade(value)}
+                >
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[110px] md:w-auto h-8 text-sm min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <span className="truncate"><SelectValue /></span>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DECADE_OPTIONS.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -733,7 +853,7 @@ export function SavedMoviesTab({
                     ? "You haven't marked any saved movies as watched yet."
                     : 'All your saved movies have been watched! Nice work.'}
                 </p>
-                <Button variant="ghost" onClick={() => { setFilterBy('all'); setSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
+                <Button variant="ghost" onClick={() => { setFilterBy('all'); setSelectedService('all'); setSelectedGenre('all'); setSelectedDecade('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
                   Show all movies
                 </Button>
               </div>
@@ -868,7 +988,7 @@ export function SavedMoviesTab({
                   ? `${partnerName} hasn't watched any of their saved movies yet.`
                   : `All of ${partnerName}'s saved movies have been watched.`}
               </p>
-              <Button variant="ghost" onClick={() => { setPartnerFilterBy('all'); setPartnerSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
+              <Button variant="ghost" onClick={() => { setPartnerFilterBy('all'); setPartnerSelectedService('all'); setPartnerSelectedGenre('all'); setPartnerSelectedDecade('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
                 Show all movies
               </Button>
             </div>
@@ -990,6 +1110,123 @@ export function SavedMoviesTab({
         buttonLabel="Import to Saved Movies"
         progressBarColor="bg-blue-600"
       />
+
+      {/* Mobile Filters FAB */}
+      {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
+        <button
+          type="button"
+          className="md:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 bg-slate-800 border border-slate-600 text-white text-sm font-semibold px-4 py-3 rounded-full shadow-lg active:scale-95 transition-transform cursor-pointer"
+          onClick={() => setShowMobileFilters(true)}
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}
+        >
+          <SlidersHorizontal className="size-4" />
+          Filters
+          {activeFilterCount > 0 && (
+            <span className="bg-blue-500 text-white text-xs font-bold rounded-full size-5 flex items-center justify-center">
+              {activeFilterCount}
+            </span>
+          )}
+        </button>
+      )}
+
+      {/* Mobile Filters Dialog */}
+      <Dialog open={showMobileFilters} onOpenChange={setShowMobileFilters}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90dvh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white">Filters</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            {/* Service */}
+            <div>
+              <label className="text-sm font-medium text-slate-300 block mb-2">Streaming Service</label>
+              <Select
+                value={viewMode === 'mine' ? selectedService : partnerSelectedService}
+                onValueChange={(value) => viewMode === 'mine' ? setSelectedService(value) : setPartnerSelectedService(value)}
+              >
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full h-9 text-sm">
+                  <SelectValue placeholder="All Services" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Services</SelectItem>
+                  {STREAMING_SERVICES.map(s => (
+                    <SelectItem key={s.value} value={s.value}>
+                      <div className="flex items-center gap-2">
+                        <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
+                        <span>{s.label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Genre */}
+            <div>
+              <label className="text-sm font-medium text-slate-300 block mb-2">Genre</label>
+              <Select
+                value={viewMode === 'mine' ? selectedGenre : partnerSelectedGenre}
+                onValueChange={(value) => viewMode === 'mine' ? setSelectedGenre(value) : setPartnerSelectedGenre(value)}
+              >
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full h-9 text-sm">
+                  <SelectValue placeholder="All Genres" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Genres</SelectItem>
+                  {genres.map(g => (
+                    <SelectItem key={g.id} value={String(g.id)}>{g.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Decade */}
+            <div>
+              <label className="text-sm font-medium text-slate-300 block mb-2">Decade</label>
+              <Select
+                value={viewMode === 'mine' ? selectedDecade : partnerSelectedDecade}
+                onValueChange={(value) => viewMode === 'mine' ? setSelectedDecade(value) : setPartnerSelectedDecade(value)}
+              >
+                <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full h-9 text-sm">
+                  <SelectValue placeholder="All Time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DECADE_OPTIONS.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  if (viewMode === 'mine') {
+                    setSelectedService('all');
+                    setSelectedGenre('all');
+                    setSelectedDecade('all');
+                  } else {
+                    setPartnerSelectedService('all');
+                    setPartnerSelectedGenre('all');
+                    setPartnerSelectedDecade('all');
+                  }
+                }}
+                className="flex-1 px-4 py-2 rounded-lg bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600 text-sm transition-colors cursor-pointer"
+              >
+                Clear all
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMobileFilters(false)}
+                className="flex-1 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors cursor-pointer"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <MovieDetailModal
         movie={selectedMovie}
