@@ -720,14 +720,20 @@ export function SavedMoviesTab({
               <div className="text-center py-20">
                 <Filter className="size-16 mx-auto mb-6 text-slate-700" />
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  No {filterBy === 'watched' ? 'watched' : 'unwatched'} movies
+                  {selectedService !== 'all'
+                    ? `No movies on ${activeServiceLabel || 'this service'}`
+                    : filterBy === 'watched'
+                    ? 'No watched movies'
+                    : 'No unwatched movies'}
                 </h3>
                 <p className="text-slate-400">
-                  {filterBy === 'watched'
+                  {selectedService !== 'all'
+                    ? `None of your ${likedMovies.length} saved movies are currently streaming there.`
+                    : filterBy === 'watched'
                     ? "You haven't marked any saved movies as watched yet."
                     : 'All your saved movies have been watched! Nice work.'}
                 </p>
-                <Button variant="ghost" onClick={() => setFilterBy('all')} className="mt-4 text-blue-400 hover:text-blue-300">
+                <Button variant="ghost" onClick={() => { setFilterBy('all'); setSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300">
                   Show all movies
                 </Button>
               </div>
@@ -844,6 +850,27 @@ export function SavedMoviesTab({
               <Users className="size-20 mx-auto mb-6 text-slate-700" />
               <h3 className="text-2xl font-semibold text-white mb-3">{`${partnerName} hasn't saved any movies yet`}</h3>
               <p className="text-slate-400 text-lg">They can start saving movies in the Discover tab</p>
+            </div>
+          ) : filteredPartnerMovies.length === 0 ? (
+            <div className="text-center py-20">
+              <Filter className="size-16 mx-auto mb-6 text-slate-700" />
+              <h3 className="text-xl font-semibold text-white mb-2">
+                {partnerSelectedService !== 'all'
+                  ? `No movies on ${STREAMING_SERVICES.find(s => s.value === partnerSelectedService)?.label || 'this service'}`
+                  : partnerFilterBy === 'watched'
+                  ? 'No watched movies'
+                  : 'No unwatched movies'}
+              </h3>
+              <p className="text-slate-400">
+                {partnerSelectedService !== 'all'
+                  ? `None of ${partnerName}'s ${partnerLikedMovies.length} saved movies are currently streaming there.`
+                  : partnerFilterBy === 'watched'
+                  ? `${partnerName} hasn't watched any of their saved movies yet.`
+                  : `All of ${partnerName}'s saved movies have been watched.`}
+              </p>
+              <Button variant="ghost" onClick={() => { setPartnerFilterBy('all'); setPartnerSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300">
+                Show all movies
+              </Button>
             </div>
           ) : (
             <>
