@@ -21,6 +21,7 @@ import { ImportDialog } from './ImportDialog';
 import { PartnerConnectCard } from './PartnerConnectCard';
 import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
 import { ViewToggle } from './ViewToggle';
+import { STREAMING_SERVICES } from '../../constants/streaming';
 
 interface SavedMoviesTabProps {
   accessToken: string | null;
@@ -74,6 +75,8 @@ export function SavedMoviesTab({
   const cardViewMode = cardViewModeProp;
   const handleCardViewMode = setCardViewMode;
   const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [partnerSelectedServices, setPartnerSelectedServices] = useState<string[]>([]);
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
@@ -341,25 +344,43 @@ export function SavedMoviesTab({
     }
   };
 
-  // Filter movies based on watched status
+  // Filter movies based on watched status + streaming services
   const getFilteredMovies = (movies: Movie[]) => {
+    let result = movies;
     switch (filterBy) {
-      case 'watched':   return movies.filter(movie => watchedMovieIds.has(movie.id));
-      case 'unwatched': return movies.filter(movie => !watchedMovieIds.has(movie.id));
-      default:          return movies;
+      case 'watched':   result = result.filter(movie => watchedMovieIds.has(movie.id)); break;
+      case 'unwatched': result = result.filter(movie => !watchedMovieIds.has(movie.id)); break;
     }
+    if (selectedServices.length > 0) {
+      result = result.filter(movie => {
+        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate;
+        if (!flatrate || flatrate.length === 0) return false;
+        return flatrate.some((p: any) => selectedServices.includes(String(p.provider_id)));
+      });
+    }
+    return result;
+  };
+
+  const getFilteredPartnerMovies = (movies: Movie[]) => {
+    let result = movies;
+    switch (partnerFilterBy) {
+      case 'watched':   result = result.filter(m => watchedMovieIds.has(m.id)); break;
+      case 'unwatched': result = result.filter(m => !watchedMovieIds.has(m.id)); break;
+    }
+    if (partnerSelectedServices.length > 0) {
+      result = result.filter(movie => {
+        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate;
+        if (!flatrate || flatrate.length === 0) return false;
+        return flatrate.some((p: any) => partnerSelectedServices.includes(String(p.provider_id)));
+      });
+    }
+    return result;
   };
 
   const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
-  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds]);
+  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds, selectedServices]);
   const sortedPartnerMovies   = useMemo(() => getSortedMovies(partnerLikedMovies), [partnerLikedMovies, sortBy]);
-  const filteredPartnerMovies = useMemo(() => {
-    switch (partnerFilterBy) {
-      case 'watched':   return sortedPartnerMovies.filter(m => watchedMovieIds.has(m.id));
-      case 'unwatched': return sortedPartnerMovies.filter(m => !watchedMovieIds.has(m.id));
-      default:          return sortedPartnerMovies;
-    }
-  }, [sortedPartnerMovies, partnerFilterBy, watchedMovieIds]);
+  const filteredPartnerMovies = useMemo(() => getFilteredPartnerMovies(sortedPartnerMovies), [sortedPartnerMovies, partnerFilterBy, watchedMovieIds, partnerSelectedServices]);
 
   const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount),   [filteredLikedMovies, visibleCount]);
   const visiblePartnerMovies = useMemo(() => filteredPartnerMovies.slice(0, visibleCount),  [filteredPartnerMovies, visibleCount]);
@@ -439,7 +460,7 @@ export function SavedMoviesTab({
     ? visibleCount < filteredLikedMovies.length
     : visibleCount < filteredPartnerMovies.length;
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode]);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode, selectedServices, partnerSelectedServices]);
 
   useEffect(() => {
     if (!sentinelEl || !hasMoreMovies) return;
@@ -508,6 +529,46 @@ export function SavedMoviesTab({
               </div>
             )}
           </div>
+
+          {/* Streaming service filter */}
+          {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Services:</span>
+              {STREAMING_SERVICES.map((service) => {
+                const activeServices = viewMode === 'mine' ? selectedServices : partnerSelectedServices;
+                const setActiveServices = viewMode === 'mine' ? setSelectedServices : setPartnerSelectedServices;
+                const isSelected = activeServices.includes(service.value);
+                return (
+                  <button
+                    key={service.value}
+                    type="button"
+                    onClick={() => {
+                      setActiveServices(prev =>
+                        isSelected ? prev.filter(s => s !== service.value) : [...prev, service.value]
+                      );
+                    }}
+                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-sm shadow-blue-500/20'
+                        : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:bg-slate-700 hover:border-slate-600 hover:text-slate-200'
+                    }`}
+                  >
+                    <img src={service.logo} alt={service.label} className="w-5 h-5 rounded object-cover flex-shrink-0" />
+                    <span className="text-xs font-medium">{service.label}</span>
+                  </button>
+                );
+              })}
+              {(viewMode === 'mine' ? selectedServices : partnerSelectedServices).length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => viewMode === 'mine' ? setSelectedServices([]) : setPartnerSelectedServices([])}
+                  className="text-xs text-slate-400 hover:text-blue-400 transition-colors underline cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
