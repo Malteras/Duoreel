@@ -733,7 +733,7 @@ export function SavedMoviesTab({
                     ? "You haven't marked any saved movies as watched yet."
                     : 'All your saved movies have been watched! Nice work.'}
                 </p>
-                <Button variant="ghost" onClick={() => { setFilterBy('all'); setSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300">
+                <Button variant="ghost" onClick={() => { setFilterBy('all'); setSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
                   Show all movies
                 </Button>
               </div>
@@ -868,7 +868,7 @@ export function SavedMoviesTab({
                   ? `${partnerName} hasn't watched any of their saved movies yet.`
                   : `All of ${partnerName}'s saved movies have been watched.`}
               </p>
-              <Button variant="ghost" onClick={() => { setPartnerFilterBy('all'); setPartnerSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300">
+              <Button variant="ghost" onClick={() => { setPartnerFilterBy('all'); setPartnerSelectedService('all'); }} className="mt-4 text-blue-400 hover:text-blue-300 hover:bg-blue-950/30">
                 Show all movies
               </Button>
             </div>
