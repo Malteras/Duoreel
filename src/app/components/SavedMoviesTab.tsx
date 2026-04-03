@@ -10,7 +10,7 @@ import { useMovieModal } from '../hooks/useMovieModal';
 import { useWatchedActions } from '../hooks/useWatchedActions';
 import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { useUserInteractions } from './UserInteractionsContext';
-import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2 } from 'lucide-react';
+import { Bookmark, Users, Filter, ArrowUpDown, Upload, HelpCircle, Film, Loader2, Tv } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
@@ -75,8 +75,8 @@ export function SavedMoviesTab({
   const cardViewMode = cardViewModeProp;
   const handleCardViewMode = setCardViewMode;
   const [partnerFilterBy, setPartnerFilterBy] = useState<WatchedFilter>('all');
-  const [selectedServices, setSelectedServices] = useState<string[]>([]);
-  const [partnerSelectedServices, setPartnerSelectedServices] = useState<string[]>([]);
+  const [selectedService, setSelectedService] = useState<string>('all');
+  const [partnerSelectedService, setPartnerSelectedService] = useState<string>('all');
   const { watchlist } = useImportContext();
   const [helpModalOpen, setHelpModalOpen] = useState(false);
 
@@ -344,18 +344,17 @@ export function SavedMoviesTab({
     }
   };
 
-  // Filter movies based on watched status + streaming services
+  // Filter movies based on watched status + streaming service
   const getFilteredMovies = (movies: Movie[]) => {
     let result = movies;
     switch (filterBy) {
       case 'watched':   result = result.filter(movie => watchedMovieIds.has(movie.id)); break;
       case 'unwatched': result = result.filter(movie => !watchedMovieIds.has(movie.id)); break;
     }
-    if (selectedServices.length > 0) {
+    if (selectedService !== 'all') {
       result = result.filter(movie => {
-        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate;
-        if (!flatrate || flatrate.length === 0) return false;
-        return flatrate.some((p: any) => selectedServices.includes(String(p.provider_id)));
+        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate || [];
+        return flatrate.some((p: any) => String(p.provider_id) === selectedService);
       });
     }
     return result;
@@ -367,20 +366,21 @@ export function SavedMoviesTab({
       case 'watched':   result = result.filter(m => watchedMovieIds.has(m.id)); break;
       case 'unwatched': result = result.filter(m => !watchedMovieIds.has(m.id)); break;
     }
-    if (partnerSelectedServices.length > 0) {
+    if (partnerSelectedService !== 'all') {
       result = result.filter(movie => {
-        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate;
-        if (!flatrate || flatrate.length === 0) return false;
-        return flatrate.some((p: any) => partnerSelectedServices.includes(String(p.provider_id)));
+        const flatrate = (movie as any)['watch/providers']?.results?.US?.flatrate || [];
+        return flatrate.some((p: any) => String(p.provider_id) === partnerSelectedService);
       });
     }
     return result;
   };
 
+  const activeServiceLabel = STREAMING_SERVICES.find(s => s.value === (viewMode === 'mine' ? selectedService : partnerSelectedService))?.label;
+
   const sortedLikedMovies   = useMemo(() => getSortedMovies(likedMovies),        [likedMovies, sortBy]);
-  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds, selectedServices]);
+  const filteredLikedMovies = useMemo(() => getFilteredMovies(sortedLikedMovies), [sortedLikedMovies, filterBy, watchedMovieIds, selectedService]);
   const sortedPartnerMovies   = useMemo(() => getSortedMovies(partnerLikedMovies), [partnerLikedMovies, sortBy]);
-  const filteredPartnerMovies = useMemo(() => getFilteredPartnerMovies(sortedPartnerMovies), [sortedPartnerMovies, partnerFilterBy, watchedMovieIds, partnerSelectedServices]);
+  const filteredPartnerMovies = useMemo(() => getFilteredPartnerMovies(sortedPartnerMovies), [sortedPartnerMovies, partnerFilterBy, watchedMovieIds, partnerSelectedService]);
 
   const visibleLikedMovies   = useMemo(() => filteredLikedMovies.slice(0, visibleCount),   [filteredLikedMovies, visibleCount]);
   const visiblePartnerMovies = useMemo(() => filteredPartnerMovies.slice(0, visibleCount),  [filteredPartnerMovies, visibleCount]);
@@ -460,7 +460,7 @@ export function SavedMoviesTab({
     ? visibleCount < filteredLikedMovies.length
     : visibleCount < filteredPartnerMovies.length;
 
-  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode, selectedServices, partnerSelectedServices]);
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [filterBy, partnerFilterBy, sortBy, viewMode, selectedService, partnerSelectedService]);
 
   useEffect(() => {
     if (!sentinelEl || !hasMoreMovies) return;
@@ -530,46 +530,6 @@ export function SavedMoviesTab({
             )}
           </div>
 
-          {/* Streaming service filter */}
-          {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-sm font-medium text-slate-300 whitespace-nowrap">Services:</span>
-              {STREAMING_SERVICES.map((service) => {
-                const activeServices = viewMode === 'mine' ? selectedServices : partnerSelectedServices;
-                const setActiveServices = viewMode === 'mine' ? setSelectedServices : setPartnerSelectedServices;
-                const isSelected = activeServices.includes(service.value);
-                return (
-                  <button
-                    key={service.value}
-                    type="button"
-                    onClick={() => {
-                      setActiveServices(prev =>
-                        isSelected ? prev.filter(s => s !== service.value) : [...prev, service.value]
-                      );
-                    }}
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-blue-600/20 border-blue-500 text-white shadow-sm shadow-blue-500/20'
-                        : 'bg-slate-800/60 border-slate-700 text-slate-400 hover:bg-slate-700 hover:border-slate-600 hover:text-slate-200'
-                    }`}
-                  >
-                    <img src={service.logo} alt={service.label} className="w-5 h-5 rounded object-cover flex-shrink-0" />
-                    <span className="text-xs font-medium">{service.label}</span>
-                  </button>
-                );
-              })}
-              {(viewMode === 'mine' ? selectedServices : partnerSelectedServices).length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => viewMode === 'mine' ? setSelectedServices([]) : setPartnerSelectedServices([])}
-                  className="text-xs text-slate-400 hover:text-blue-400 transition-colors underline cursor-pointer"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-          )}
-
           {/* Sort / Filter — shown for both My List and Partner's List when there are movies */}
           {((viewMode === 'mine' && likedMovies.length > 0) || (viewMode === 'partner' && sortedPartnerMovies.length > 0)) && (
             <div className="flex items-center gap-2 overflow-hidden">
@@ -582,6 +542,33 @@ export function SavedMoviesTab({
                     viewMode === 'mine' ? setFilterBy(value) : setPartnerFilterBy(value)
                   }
                 />
+              </div>
+
+              {/* Service filter */}
+              <div className="flex flex-1 min-w-0 md:flex-none items-center gap-2">
+                <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Service:</label>
+                <Select
+                  value={viewMode === 'mine' ? selectedService : partnerSelectedService}
+                  onValueChange={(value) => viewMode === 'mine' ? setSelectedService(value) : setPartnerSelectedService(value)}
+                >
+                  <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:min-w-[110px] md:w-auto h-8 text-sm min-w-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <Tv className="size-3.5 flex-shrink-0 text-slate-400" />
+                      <span className="truncate">{activeServiceLabel || 'All Services'}</span>
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Services</SelectItem>
+                    {STREAMING_SERVICES.map(s => (
+                      <SelectItem key={s.value} value={s.value}>
+                        <div className="flex items-center gap-2">
+                          <img src={s.logo} alt={s.label} className="size-4 rounded object-cover flex-shrink-0" />
+                          <span>{s.label}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Sort */}
