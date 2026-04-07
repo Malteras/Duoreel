@@ -1,3 +1,9 @@
 node_modules
 dist
 supabase/.temp
+
+# graphify — only commit GRAPH_REPORT.md and graph.json
+graphify-out/cache/
+graphify-out/graph.html
+graphify-out/cost.json
+graphify-out/manifest.json
