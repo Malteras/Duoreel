@@ -7,3 +7,9 @@ graphify-out/cache/
 graphify-out/graph.html
 graphify-out/cost.json
 graphify-out/manifest.json
+graphify-out/obsidian-vault/
+graphify-out/to-obsidian.mjs
+graphify-out/.obsidian/
+
+# Claude Code local settings
+.claude/settings.local.json

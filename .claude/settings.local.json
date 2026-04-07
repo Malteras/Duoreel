@@ -20,7 +20,9 @@
       "Bash(find src:*)",
       "Bash(npx -p typescript tsc --noEmit --pretty)",
       "mcp__claude_ai_Linear__list_teams",
-      "mcp__claude_ai_Linear__save_issue"
+      "mcp__claude_ai_Linear__save_issue",
+      "Bash(node -e ':*)",
+      "Bash(node to-obsidian.mjs)"
     ]
   }
 }
