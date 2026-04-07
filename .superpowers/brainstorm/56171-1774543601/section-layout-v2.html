@@ -1,0 +1,160 @@
+<style>
+  .mockup-section { background: #0f172a; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .section-title { color: #94a3b8; font-size: 13px; font-weight: 600; }
+  .section-title .seed { color: #fff; }
+  .section-actions { display: flex; gap: 12px; align-items: center; }
+  .section-actions span { color: #60a5fa; font-size: 11px; cursor: pointer; }
+  .poster { background: linear-gradient(145deg, #334155, #1e293b); border-radius: 8px; position: relative; overflow: hidden; }
+  .poster::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50%; background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
+  .poster-label { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 1; }
+  .poster-label .title { color: #fff; font-size: 10px; font-weight: 600; line-height: 1.2; }
+  .poster-label .meta { color: #94a3b8; font-size: 9px; margin-top: 2px; }
+  .poster-rating { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,0.7); color: #fbbf24; font-size: 9px; font-weight: 700; padding: 2px 5px; border-radius: 4px; z-index: 1; }
+  .fade-edge { position: absolute; right: 0; top: 0; bottom: 0; width: 40px; background: linear-gradient(to right, transparent, #0f172a); z-index: 2; pointer-events: none; }
+</style>
+
+<h2>Curated Sections: Layout Format</h2>
+<p class="subtitle">How should the three sections present movies on the Discover home?</p>
+
+<div class="cards">
+
+  <!-- Option A: Horizontal Scroll -->
+  <div class="card" data-choice="horizontal-scroll" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow: hidden;">
+      <div class="mockup-section" style="margin: 0; border-radius: 12px 12px 0 0;">
+        <div class="section-header">
+          <span class="section-title">🔥 Trending this week</span>
+          <div class="section-actions"><span>See all →</span></div>
+        </div>
+        <div style="display: flex; gap: 10px; overflow: hidden; position: relative;">
+          <div class="poster" style="min-width: 105px; width: 105px; height: 158px;">
+            <div class="poster-rating">⭐ 8.1</div>
+            <div class="poster-label"><div class="title">Dune: Part Two</div><div class="meta">2024 · Sci-Fi</div></div>
+          </div>
+          <div class="poster" style="min-width: 105px; width: 105px; height: 158px;">
+            <div class="poster-rating">⭐ 7.4</div>
+            <div class="poster-label"><div class="title">Civil War</div><div class="meta">2024 · Drama</div></div>
+          </div>
+          <div class="poster" style="min-width: 105px; width: 105px; height: 158px;">
+            <div class="poster-rating">⭐ 7.8</div>
+            <div class="poster-label"><div class="title">The Brutalist</div><div class="meta">2024 · Drama</div></div>
+          </div>
+          <div class="poster" style="min-width: 105px; width: 105px; height: 158px;">
+            <div class="poster-rating">⭐ 8.3</div>
+            <div class="poster-label"><div class="title">Anora</div><div class="meta">2024 · Comedy</div></div>
+          </div>
+          <div class="poster" style="min-width: 105px; width: 105px; height: 158px; opacity: 0.35;">
+            <div class="poster-rating">⭐ 7.6</div>
+            <div class="poster-label"><div class="title">Conclave</div><div class="meta">2024 · Thriller</div></div>
+          </div>
+          <div class="fade-edge"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Horizontal Scroll</h3>
+      <p>Each section is a single scrollable row of poster cards. The last card fades out to hint there's more. Swipe/scroll to reveal 10+ movies. Compact vertically — all 3 sections fit without much scrolling.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Static 5-Column Grid (Current) -->
+  <div class="card" data-choice="static-grid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow: hidden;">
+      <div class="mockup-section" style="margin: 0; border-radius: 12px 12px 0 0;">
+        <div class="section-header">
+          <span class="section-title">🔥 Trending this week</span>
+          <div class="section-actions"><span>See all →</span></div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+          <div class="poster" style="width: 100%; aspect-ratio: 2/3;">
+            <div class="poster-rating">⭐ 8.1</div>
+            <div class="poster-label"><div class="title">Dune: Part Two</div><div class="meta">2024 · Sci-Fi</div></div>
+          </div>
+          <div class="poster" style="width: 100%; aspect-ratio: 2/3;">
+            <div class="poster-rating">⭐ 7.4</div>
+            <div class="poster-label"><div class="title">Civil War</div><div class="meta">2024 · Drama</div></div>
+          </div>
+          <div class="poster" style="width: 100%; aspect-ratio: 2/3;">
+            <div class="poster-rating">⭐ 7.8</div>
+            <div class="poster-label"><div class="title">The Brutalist</div><div class="meta">2024 · Drama</div></div>
+          </div>
+          <div class="poster" style="width: 100%; aspect-ratio: 2/3;">
+            <div class="poster-rating">⭐ 8.3</div>
+            <div class="poster-label"><div class="title">Anora</div><div class="meta">2024 · Comedy</div></div>
+          </div>
+          <div class="poster" style="width: 100%; aspect-ratio: 2/3;">
+            <div class="poster-rating">⭐ 7.6</div>
+            <div class="poster-label"><div class="title">Conclave</div><div class="meta">2024 · Thriller</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Static 5-Column Grid (Current)</h3>
+      <p>Exactly what you have today. 5 posters in a row, no scrolling within the section. Clean and predictable but takes more vertical space with 3 sections stacked. "See all" goes to full view.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Featured Recs + Scroll Others -->
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 0; overflow: hidden;">
+      <div class="mockup-section" style="margin: 0; border-radius: 12px 12px 0 0;">
+        <!-- Recs section with seed movie -->
+        <div class="section-header">
+          <span class="section-title">Because you saved <span class="seed">Interstellar</span></span>
+          <div class="section-actions"><span>↻ Refresh</span> <span>See all →</span></div>
+        </div>
+        <div style="display: flex; gap: 10px; overflow: hidden; position: relative;">
+          <!-- Seed movie: slightly larger -->
+          <div class="poster" style="min-width: 120px; width: 120px; height: 180px; border: 2px solid #6366f1;">
+            <div class="poster-rating">⭐ 8.7</div>
+            <div class="poster-label"><div class="title" style="color: #a5b4fc;">Interstellar</div><div class="meta">Your pick</div></div>
+          </div>
+          <div style="display: flex; align-items: center; color: #475569; font-size: 16px; padding: 0 2px;">→</div>
+          <div class="poster" style="min-width: 100px; width: 100px; height: 150px; align-self: center;">
+            <div class="poster-label"><div class="title">Arrival</div><div class="meta">2016</div></div>
+          </div>
+          <div class="poster" style="min-width: 100px; width: 100px; height: 150px; align-self: center;">
+            <div class="poster-label"><div class="title">Gravity</div><div class="meta">2013</div></div>
+          </div>
+          <div class="poster" style="min-width: 100px; width: 100px; height: 150px; align-self: center;">
+            <div class="poster-label"><div class="title">The Martian</div><div class="meta">2015</div></div>
+          </div>
+          <div class="poster" style="min-width: 100px; width: 100px; height: 150px; align-self: center; opacity: 0.35;"></div>
+          <div class="fade-edge"></div>
+        </div>
+        <!-- Trending: compact row below -->
+        <div style="margin-top: 16px;">
+          <div class="section-header">
+            <span class="section-title">🔥 Trending this week</span>
+            <div class="section-actions"><span>See all →</span></div>
+          </div>
+          <div style="display: flex; gap: 8px; overflow: hidden; position: relative;">
+            <div class="poster" style="min-width: 90px; width: 90px; height: 135px;">
+              <div class="poster-label"><div class="title">Dune: Part Two</div></div>
+            </div>
+            <div class="poster" style="min-width: 90px; width: 90px; height: 135px;">
+              <div class="poster-label"><div class="title">Civil War</div></div>
+            </div>
+            <div class="poster" style="min-width: 90px; width: 90px; height: 135px;">
+              <div class="poster-label"><div class="title">The Brutalist</div></div>
+            </div>
+            <div class="poster" style="min-width: 90px; width: 90px; height: 135px;">
+              <div class="poster-label"><div class="title">Anora</div></div>
+            </div>
+            <div class="poster" style="min-width: 90px; width: 90px; height: 135px; opacity: 0.35;"></div>
+            <div class="fade-edge"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Hybrid: Featured Seed + Scroll</h3>
+      <p>"Because you saved" gets special treatment: the seed movie is shown larger with a border, and recommendations flow to the right. Trending and Hidden gems use slightly smaller horizontal scroll rows below. Each section feels distinct based on its purpose.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top: 20px;">Click to select your preference — or tell me in the terminal if none of these work.</p>

@@ -2,7 +2,25 @@
   "permissions": {
     "allow": [
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pip install:*)",
+      "Bash(graphify claude:*)",
+      "Bash(python -m graphify --help)",
+      "Bash(PYTHONIOENCODING=utf-8 graphify .)",
+      "Bash(python -c \"import graphifyy; help\\(graphifyy\\)\")",
+      "Bash(pip show:*)",
+      "Bash(python -c \"import graphify; print\\(dir\\(graphify\\)\\)\")",
+      "Bash(PYTHONIOENCODING=utf-8 graphify install --platform claude)",
+      "Bash(python3 -c \"import graphify; print\\('ok'\\)\")",
+      "Bash(python -c \"import graphify; print\\('ok'\\)\")",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(xargs grep:*)",
+      "Bash(find src:*)",
+      "Bash(npx -p typescript tsc --noEmit --pretty)",
+      "mcp__claude_ai_Linear__list_teams",
+      "mcp__claude_ai_Linear__save_issue"
     ]
   }
 }

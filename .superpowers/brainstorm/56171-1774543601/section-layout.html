@@ -1,0 +1,88 @@
+<h2>Curated Sections: Layout Format</h2>
+<p class="subtitle">What's the best way to present "Because you saved X", "Trending this week", and "Hidden gems"?</p>
+
+<div class="cards">
+  <!-- Option A: Horizontal Scroll -->
+  <div class="card" data-choice="horizontal-scroll" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1e293b;">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #94a3b8; font-size: 13px; font-weight: 500;">🔥 Trending this week</span>
+        <span style="color: #60a5fa; font-size: 11px;">See all →</span>
+      </div>
+      <div style="display: flex; gap: 12px; overflow: hidden; position: relative;">
+        <div style="min-width: 110px; height: 165px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+        <div style="min-width: 110px; height: 165px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+        <div style="min-width: 110px; height: 165px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+        <div style="min-width: 110px; height: 165px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+        <div style="min-width: 110px; height: 165px; background: #334155; border-radius: 8px; flex-shrink: 0; opacity: 0.4;"></div>
+      </div>
+      <div style="text-align: center; margin-top: 8px; color: #475569; font-size: 11px;">← swipe →</div>
+    </div>
+    <div class="card-body">
+      <h3>A — Horizontal Scroll / Carousel</h3>
+      <p>Cards in a single scrollable row per section. Feels editorial (like Netflix/Spotify). Shows 4-5 cards with peek, more via scroll. Saves vertical space, lets each section show 10+ movies.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Current Grid -->
+  <div class="card" data-choice="static-grid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1e293b;">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #94a3b8; font-size: 13px; font-weight: 500;">🔥 Trending this week</span>
+        <span style="color: #60a5fa; font-size: 11px;">See all →</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+        <div style="height: 140px; background: #334155; border-radius: 8px;"></div>
+        <div style="height: 140px; background: #334155; border-radius: 8px;"></div>
+        <div style="height: 140px; background: #334155; border-radius: 8px;"></div>
+        <div style="height: 140px; background: #334155; border-radius: 8px;"></div>
+        <div style="height: 140px; background: #334155; border-radius: 8px;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Static Grid (Current)</h3>
+      <p>5-column grid, exactly 5 cards shown per section. Clean and predictable. Takes more vertical space with 3 sections stacked. "See all" navigates to full section view.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Hybrid -->
+  <div class="card" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px; background: #1e293b;">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="color: #94a3b8; font-size: 13px; font-weight: 500;">Because you saved <span style="color: white;">Interstellar (2014)</span></span>
+        <span style="color: #60a5fa; font-size: 11px;">See all →</span>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <!-- Seed movie featured -->
+        <div style="min-width: 130px; height: 195px; background: linear-gradient(135deg, #7c3aed, #4f46e5); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <span style="color: white; font-size: 11px; text-align: center; padding: 8px;">🎬 Seed<br>Movie</span>
+        </div>
+        <div style="display: flex; gap: 10px; overflow: hidden;">
+          <div style="min-width: 100px; height: 195px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+          <div style="min-width: 100px; height: 195px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+          <div style="min-width: 100px; height: 195px; background: #334155; border-radius: 8px; flex-shrink: 0;"></div>
+          <div style="min-width: 100px; height: 195px; background: #334155; border-radius: 8px; flex-shrink: 0; opacity: 0.4;"></div>
+        </div>
+      </div>
+      <div style="margin-top: 12px; display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex: 1;">
+          <div style="height: 60px; flex: 1; background: #334155; border-radius: 8px;"></div>
+          <div style="height: 60px; flex: 1; background: #334155; border-radius: 8px;"></div>
+          <div style="height: 60px; flex: 1; background: #334155; border-radius: 8px;"></div>
+          <div style="height: 60px; flex: 1; background: #334155; border-radius: 8px;"></div>
+          <div style="height: 60px; flex: 1; background: #334155; border-radius: 8px;"></div>
+        </div>
+      </div>
+      <div style="margin-top: 4px; display: flex; justify-content: space-between;">
+        <span style="color: #94a3b8; font-size: 11px;">🔥 Trending</span>
+        <span style="color: #94a3b8; font-size: 11px;">💎 Hidden gems</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Hybrid: Featured Recs + Compact Others</h3>
+      <p>Give "Because you saved" a hero treatment with featured seed movie + horizontal scroll for recs. Trending and Hidden gems become compact single-row strips below. Each section gets distinct visual treatment based on its purpose.</p>
+    </div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top: 24px;">Click to select your preference. This will determine the overall structure for all three sections.</p>

@@ -344,7 +344,7 @@ export function MoviesTab({
 
     const toEnrich = allPreviews.filter(
       (m) =>
-        (!m.genres || m.genres.length === 0) &&
+        ((!m.genres || m.genres.length === 0) || !m.external_ids) &&
         !previewEnrichingRef.current.has(m.id)
     );
     if (toEnrich.length === 0) return;
@@ -552,9 +552,15 @@ export function MoviesTab({
       const gemsPreview = (gemsData.results || [])
         .filter((m: Movie) => !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
         .slice(0, 5);
-      const recsPreview = (recsData.results || [])
+      const recsResults = (recsData.results || [])
         .filter((m: Movie) => !likedIds.has(m.id) && !notInterestedMovieIds?.has(m.id) && !watchedMovieIds.has(m.id))
         .slice(0, 5);
+      // Prepend the seed movie into the recs array so it participates in the
+      // same enrichment pipeline as every other preview card.  The seed comes
+      // from likedMovies (may lack genres/external_ids), so it needs enrichment.
+      const recsPreview = seed
+        ? [seed, ...recsResults.filter((m: Movie) => m.id !== seed.id)].slice(0, 5)
+        : recsResults;
 
       setSectionPreviews((prev) => {
         const mergeSlice = (newMovies: Movie[], prevMovies: Movie[]) => {
@@ -571,6 +577,11 @@ export function MoviesTab({
         };
       });
       setSectionPreviewsLoading(false);
+      // Seed movie from likedMovies may carry an imdbRating prop (server-attached).
+      // Write it into the imdbRatings Map so the card picks it up immediately.
+      if (seed && (seed as any).imdbRating && !imdbRatingsRef.current.has(seed.id)) {
+        setImdbRatings(prev => new Map(prev).set(seed.id, (seed as any).imdbRating));
+      }
       setDiscoverCache(c => c ? {
         ...c,
         sectionPreviews: { trending: trendingPreview, gems: gemsPreview, recs: recsPreview },
@@ -603,7 +614,7 @@ export function MoviesTab({
       );
       const data = await res.json();
       const currentLikedIds = new Set(likedMoviesRef.current.map((m) => m.id));
-      const recsPreview = (data.results || [])
+      const recsResults = (data.results || [])
         .filter(
           (m: Movie) =>
             !currentLikedIds.has(m.id) &&
@@ -611,8 +622,13 @@ export function MoviesTab({
             !watchedMovieIds.has(m.id),
         )
         .slice(0, 5);
+      // Include seed in the recs array so it gets enriched with the rest
+      const recsPreview = [newSeed, ...recsResults.filter((m: Movie) => m.id !== newSeed.id)].slice(0, 5);
 
       setSectionPreviews((prev) => ({ ...prev, recs: recsPreview }));
+      if ((newSeed as any).imdbRating && !imdbRatingsRef.current.has(newSeed.id)) {
+        setImdbRatings(prev => new Map(prev).set(newSeed.id, (newSeed as any).imdbRating));
+      }
       setDiscoverCache((c) =>
         c
           ? {
@@ -2115,7 +2131,7 @@ export function MoviesTab({
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {[...(recSeedMovie ? [recSeedMovie] : []), ...sectionPreviews.recs.filter((m) => m.id !== recSeedMovie?.id)].filter((m) => !pendingRemovals.has(m.id)).slice(0, 5).map((movie) => {
+                        {sectionPreviews.recs.filter((m) => !pendingRemovals.has(m.id)).slice(0, 5).map((movie) => {
                           const isLiked = likedMovieIds.has(movie.id);
                           const isLikeLoading = sectionLikeLoadingIds.has(movie.id);
                           const isSeed = movie.id === recSeedMovie?.id;
@@ -2130,7 +2146,7 @@ export function MoviesTab({
                                 movie={movie}
                                 onClick={() => openMovie(movie)}
                                 isWatched={watchedMovieIds.has(movie.id)}
-                                imdbRating={imdbRatings.get(movie.id)}
+                                imdbRating={imdbRatings.get(movie.id) || (movie as any).imdbRating || undefined}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
