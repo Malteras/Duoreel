@@ -127,9 +127,21 @@ export function SlotMachineReel({ movies, spinning, onLanded }: SlotMachineReelP
       className="relative mx-auto overflow-hidden flex-1 min-h-0"
       style={{ width: `${dims.pw}px` }}
     >
-      {/* Top/bottom fade overlays */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-950 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 to-transparent z-10 pointer-events-none" />
+      {/* Top/bottom darkening overlays — heavy fade so only center poster is clear */}
+      <div
+        className="absolute inset-x-0 top-0 z-10 pointer-events-none"
+        style={{
+          height: `${centerSlotTop + 6}px`,
+          background: 'linear-gradient(to bottom, rgba(2,6,23,0.8) 0%, rgba(2,6,23,0.6) 60%, rgba(2,6,23,0.2) 100%)',
+        }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
+        style={{
+          height: `calc(100% - ${centerSlotTop + dims.ph + 6}px)`,
+          background: 'linear-gradient(to top, rgba(2,6,23,0.85) 0%, rgba(2,6,23,0.7) 60%, rgba(2,6,23,0.25) 100%)',
+        }}
+      />
 
       {/* Center highlight — glowing selection frame */}
       <div
