@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(curl *)",
+      "mcp__claude_ai_Linear__get_issue",
+      "mcp__claude_ai_Linear__save_issue",
+      "Bash(npm run *)"
     ]
   }
 }
