@@ -7,19 +7,25 @@ interface SlotMachineReelProps {
   onLanded: (movie: Movie) => void;
 }
 
-const POSTER_HEIGHT = 288; // h-72 = 18rem = 288px
-const POSTER_GAP = 16;    // gap-4
-const ITEM_HEIGHT = POSTER_HEIGHT + POSTER_GAP;
-const VISIBLE_COUNT = 3;
-const SPIN_DURATION = 5000; // 5 seconds
+// Mobile dimensions
+const SM_POSTER_HEIGHT = 160;
+const SM_POSTER_WIDTH = 107;
+// Desktop dimensions
+const LG_POSTER_HEIGHT = 240;
+const LG_POSTER_WIDTH = 160;
 
-/**
- * Build an extended reel array that repeats movies enough times
- * to fill the spin animation, plus determines the winning index.
- */
+const POSTER_GAP = 12;
+const VISIBLE_COUNT = 3;
+const SPIN_DURATION = 5000;
+
+function getDimensions() {
+  const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+  const pw = isDesktop ? LG_POSTER_WIDTH : SM_POSTER_WIDTH;
+  const ph = isDesktop ? LG_POSTER_HEIGHT : SM_POSTER_HEIGHT;
+  return { pw, ph, itemH: ph + POSTER_GAP };
+}
+
 function buildReel(movies: Movie[], winnerIndex: number) {
-  // We want enough items to scroll through for ~5s at high speed.
-  // Minimum ~30 items gives a convincing spin feel.
   const minItems = Math.max(30, movies.length * 3);
   const repeatCount = Math.ceil(minItems / movies.length);
   const reel: Movie[] = [];
@@ -28,29 +34,56 @@ function buildReel(movies: Movie[], winnerIndex: number) {
     reel.push(...movies);
   }
 
-  // Place the winner near the end so the reel scrolls a long distance.
-  // We want the winner to land in the center of the visible window.
   const centerOffset = Math.floor(VISIBLE_COUNT / 2);
   const targetIndex = reel.length - 1 - centerOffset;
-
-  // Replace the item at targetIndex with the winner
   reel[targetIndex] = movies[winnerIndex];
 
   return { reel, targetIndex };
 }
 
+function Poster({ movie, width, height }: { movie: Movie; width: number; height: number }) {
+  return (
+    <div
+      className="shrink-0 rounded-lg overflow-hidden bg-slate-800/50"
+      style={{ width: `${width}px`, height: `${height}px` }}
+    >
+      {movie.poster_path ? (
+        <img
+          src={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+          alt={movie.title}
+          className="w-full h-full object-cover"
+          draggable={false}
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs text-center px-1">
+          {movie.title}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function SlotMachineReel({ movies, spinning, onLanded }: SlotMachineReelProps) {
   const stripRef = useRef<HTMLDivElement>(null);
   const hasLandedRef = useRef(false);
-  const [reel, setReel] = useState<Movie[]>(movies);
-  const [targetIdx, setTargetIdx] = useState(Math.floor(VISIBLE_COUNT / 2));
+  const [reel, setReel] = useState<Movie[]>([]);
+  const [targetIdx, setTargetIdx] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [dims, setDims] = useState(getDimensions);
 
-  // When spinning starts, build a new reel with a random winner
+  // Re-measure on resize
+  useEffect(() => {
+    const onResize = () => setDims(getDimensions());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   useEffect(() => {
     if (!spinning || movies.length === 0) return;
 
     hasLandedRef.current = false;
+    const currentDims = getDimensions();
+    setDims(currentDims);
 
     const winnerIndex = Math.floor(Math.random() * movies.length);
     const { reel: newReel, targetIndex } = buildReel(movies, winnerIndex);
@@ -58,29 +91,22 @@ export function SlotMachineReel({ movies, spinning, onLanded }: SlotMachineReelP
     setReel(newReel);
     setTargetIdx(targetIndex);
 
-    // Reset position to top instantly, then animate
     const strip = stripRef.current;
     if (!strip) return;
 
-    // Reset to top (no transition)
     strip.style.transition = 'none';
     strip.style.transform = 'translateY(0px)';
-
-    // Force reflow so the reset takes effect before we animate
     strip.getBoundingClientRect();
 
-    // Calculate final position: center the target item in the visible window
     const centerOffset = Math.floor(VISIBLE_COUNT / 2);
-    const finalY = -(targetIndex - centerOffset) * ITEM_HEIGHT;
+    const finalY = -(targetIndex - centerOffset) * currentDims.itemH;
 
-    // Animate with cubic-bezier for a satisfying deceleration
     strip.style.transition = `transform ${SPIN_DURATION}ms cubic-bezier(0.15, 0.6, 0.25, 1)`;
     strip.style.transform = `translateY(${finalY}px)`;
 
     setIsAnimating(true);
   }, [spinning, movies]);
 
-  // Handle transition end — fire onLanded
   const handleTransitionEnd = useCallback(() => {
     if (hasLandedRef.current) return;
     hasLandedRef.current = true;
@@ -88,33 +114,31 @@ export function SlotMachineReel({ movies, spinning, onLanded }: SlotMachineReelP
 
     const winner = reel[targetIdx];
     if (winner) {
-      // Small delay so the user sees it land before modal opens
       setTimeout(() => onLanded(winner), 400);
     }
   }, [reel, targetIdx, onLanded]);
 
-  // Static display: show first few movies centered
-  const displayReel = isAnimating || spinning ? reel : movies;
-  const staticCenterOffset = Math.floor(VISIBLE_COUNT / 2);
+  const showReel = isAnimating || spinning;
+  const centerSlotTop = Math.floor(VISIBLE_COUNT / 2) * dims.itemH;
+  const staticMovies = movies.slice(0, VISIBLE_COUNT);
 
   return (
     <div
-      className="relative mx-auto overflow-hidden"
-      style={{
-        width: '12rem', // w-48
-        height: `${VISIBLE_COUNT * ITEM_HEIGHT - POSTER_GAP}px`,
-      }}
+      className="relative mx-auto overflow-hidden flex-1 min-h-0"
+      style={{ width: `${dims.pw}px` }}
     >
-      {/* Top/bottom fade overlays for depth effect */}
-      <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-slate-950 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950 to-transparent z-10 pointer-events-none" />
+      {/* Top/bottom fade overlays */}
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-slate-950 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-950 to-transparent z-10 pointer-events-none" />
 
-      {/* Center highlight bracket */}
+      {/* Center highlight — glowing selection frame */}
       <div
-        className="absolute inset-x-0 z-10 pointer-events-none border-y-2 border-pink-500/60 rounded"
+        className="absolute z-10 pointer-events-none rounded-xl border-[3px] border-pink-400 shadow-[0_0_30px_rgba(236,72,153,0.6),0_0_60px_rgba(236,72,153,0.3),inset_0_0_30px_rgba(236,72,153,0.15)]"
         style={{
-          top: `${staticCenterOffset * ITEM_HEIGHT}px`,
-          height: `${POSTER_HEIGHT}px`,
+          top: `${centerSlotTop - 6}px`,
+          height: `${dims.ph + 12}px`,
+          left: '-8px',
+          right: '-8px',
         }}
       />
 
@@ -125,25 +149,8 @@ export function SlotMachineReel({ movies, spinning, onLanded }: SlotMachineReelP
         style={{ gap: `${POSTER_GAP}px` }}
         onTransitionEnd={handleTransitionEnd}
       >
-        {displayReel.map((movie, i) => (
-          <div
-            key={`${movie.id}-${i}`}
-            className="shrink-0 rounded-xl overflow-hidden bg-slate-800/50"
-            style={{ width: '12rem', height: `${POSTER_HEIGHT}px` }}
-          >
-            {movie.poster_path ? (
-              <img
-                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                alt={movie.title}
-                className="w-full h-full object-cover"
-                draggable={false}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-slate-500 text-sm text-center px-2">
-                {movie.title}
-              </div>
-            )}
-          </div>
+        {(showReel ? reel : staticMovies).map((movie, i) => (
+          <Poster key={`${movie.id}-${i}`} movie={movie} width={dims.pw} height={dims.ph} />
         ))}
       </div>
     </div>

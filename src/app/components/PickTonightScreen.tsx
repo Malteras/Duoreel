@@ -31,10 +31,10 @@ export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightSc
   }, [onOpenMovie]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-4 py-6">
+    <div className="fixed inset-0 bottom-16 md:bottom-0 z-50 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex flex-col">
+      <div className="max-w-2xl mx-auto px-4 py-4 flex flex-col flex-1 min-h-0 w-full overflow-hidden">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-4 shrink-0">
           <button
             type="button"
             onClick={onBack}
@@ -48,23 +48,25 @@ export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightSc
           </div>
         </div>
 
-        {/* Keyword Cloud */}
-        <div className="mb-6">
-          <h2 className="text-sm font-medium text-slate-400 text-center mb-3">Filter by theme</h2>
-          <KeywordCloud
-            movies={movies}
-            selectedKeywordId={selectedKeywordId}
-            onKeywordToggle={setSelectedKeywordId}
-          />
-        </div>
+        {/* Keyword Cloud — hidden while spinning to free space */}
+        {!spinning && (
+          <div className="mb-3 shrink-0">
+            <h2 className="text-sm font-medium text-slate-400 text-center mb-2">Filter by theme</h2>
+            <KeywordCloud
+              movies={movies}
+              selectedKeywordId={selectedKeywordId}
+              onKeywordToggle={setSelectedKeywordId}
+            />
+          </div>
+        )}
 
         {/* Pool count */}
-        <p className="text-center text-slate-500 text-sm mb-8">
+        <p className="text-center text-slate-500 text-sm mb-3 shrink-0">
           {filteredMovies.length} movie{filteredMovies.length !== 1 ? 's' : ''} in pool
         </p>
 
-        {/* Slot Machine Reel */}
-        <div className="flex flex-col items-center gap-6">
+        {/* Slot Machine Reel — fills remaining space */}
+        <div className="flex flex-col items-center justify-center flex-1 min-h-0 gap-4">
           <SlotMachineReel
             movies={filteredMovies}
             spinning={spinning}
@@ -76,7 +78,7 @@ export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightSc
             type="button"
             onClick={handleSpin}
             disabled={spinning || filteredMovies.length === 0}
-            className="flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold shadow-lg hover:from-pink-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+            className="shrink-0 flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold shadow-lg hover:from-pink-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
           >
             <Sparkles className="size-5" />
             {spinning ? 'Spinning…' : 'Spin'}
