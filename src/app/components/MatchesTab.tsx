@@ -837,6 +837,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
       {showPickTonight && (
         <PickTonightScreen
           movies={matchedMovies}
+          watchedIds={watchedMovieIds}
+          partnerWatchedIds={partnerWatchedIds}
           onBack={() => setShowPickTonight(false)}
           onOpenMovie={openMovie}
         />

@@ -3,18 +3,22 @@ import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import type { Movie } from '../../types/movie';
 import { KeywordCloud } from './KeywordCloud';
 import { SlotMachineReel } from './SlotMachineReel';
+import { Switch } from './ui/switch';
 import { filterMoviesByKeyword } from '../../utils/keywordAggregation';
 
 interface PickTonightScreenProps {
   movies: Movie[];
+  watchedIds: Set<number>;
+  partnerWatchedIds: Set<number>;
   onBack: () => void;
   onOpenMovie: (movie: Movie) => void;
 }
 
-export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightScreenProps) {
+export function PickTonightScreen({ movies, watchedIds, partnerWatchedIds, onBack, onOpenMovie }: PickTonightScreenProps) {
   const [selectedKeywordId, setSelectedKeywordId] = useState<number | null>(null);
   const [spinning, setSpinning] = useState(false);
   const [excludedIds, setExcludedIds] = useState<Set<number>>(new Set());
+  const [includeWatched, setIncludeWatched] = useState(false);
   const prevKeywordRef = useRef<number | null>(null);
 
   // Reset exclusions when keyword filter changes
@@ -26,9 +30,12 @@ export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightSc
   }, [selectedKeywordId]);
 
   const filteredMovies = useMemo(() => {
-    if (!selectedKeywordId) return movies;
-    return filterMoviesByKeyword(movies, selectedKeywordId);
-  }, [movies, selectedKeywordId]);
+    let pool = selectedKeywordId ? filterMoviesByKeyword(movies, selectedKeywordId) : movies;
+    if (!includeWatched) {
+      pool = pool.filter(m => !watchedIds.has(m.id) && !partnerWatchedIds.has(m.id));
+    }
+    return pool;
+  }, [movies, selectedKeywordId, includeWatched, watchedIds, partnerWatchedIds]);
 
   const availableMovies = useMemo(() => {
     return filteredMovies.filter(m => !excludedIds.has(m.id));
@@ -76,6 +83,21 @@ export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightSc
               selectedKeywordId={selectedKeywordId}
               onKeywordToggle={setSelectedKeywordId}
             />
+          </div>
+        )}
+
+        {/* Include watched toggle */}
+        {!spinning && (
+          <div className="flex items-center justify-center gap-2 mb-3 shrink-0">
+            <Switch
+              id="include-watched"
+              checked={includeWatched}
+              onCheckedChange={setIncludeWatched}
+              className="data-[state=checked]:bg-pink-600"
+            />
+            <label htmlFor="include-watched" className="text-sm text-slate-400 cursor-pointer select-none">
+              Include watched
+            </label>
           </div>
         )}
 
