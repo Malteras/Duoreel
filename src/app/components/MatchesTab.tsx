@@ -33,6 +33,7 @@ import {
   Filter,
   Loader2,
   Film,
+  Sparkles,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useMovieModal } from '../hooks/useMovieModal';
@@ -44,6 +45,7 @@ import { useWatchedActions } from '../hooks/useWatchedActions';
 import { MatchesCache } from '../hooks/useTabCache';
 import { WatchedFilterSelect, WatchedFilter } from './WatchedFilterSelect';
 import { ViewToggle } from './ViewToggle';
+import { PickTonightScreen } from './PickTonightScreen';
 
 interface MatchesTabProps {
   accessToken: string | null;
@@ -73,6 +75,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [selectedService, setSelectedService] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'default' | 'rating' | 'year-new' | 'year-old'>('default');
   const [filterBy, setFilterBy] = useState<WatchedFilter>('unwatched');
+  const [showPickTonight, setShowPickTonight] = useState(false);
   // View mode — shared across all tabs via AppLayout
   const viewMode = cardViewModeProp;
   const handleViewMode = setCardViewMode;
@@ -593,6 +596,20 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               )}
             </div>
 
+            {/* Pick Tonight — desktop header button */}
+            {!loading && matchedMovies.length >= 3 && (
+              <div className="hidden md:flex justify-center mb-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPickTonight(true)}
+                  className="flex items-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg transition-all cursor-pointer"
+                >
+                  <Sparkles className="size-4" />
+                  Pick Tonight
+                </button>
+              </div>
+            )}
+
             {/* Row 2: Filters + sort + view toggle */}
             {!loading && matchedMovies.length > 0 && (
               <div className="flex items-center gap-2 overflow-hidden">
@@ -802,6 +819,28 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           </>
         )}
       </div>
+
+      {/* Mobile Pick Tonight FAB */}
+      {partner && !loading && matchedMovies.length >= 3 && (
+        <button
+          type="button"
+          className="md:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 bg-gradient-to-r from-pink-600 to-purple-600 text-white text-sm font-semibold px-4 py-3 rounded-full shadow-lg active:scale-95 transition-transform cursor-pointer"
+          onClick={() => setShowPickTonight(true)}
+          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}
+        >
+          <Sparkles className="size-4" />
+          Pick Tonight
+        </button>
+      )}
+
+      {/* Pick Tonight overlay */}
+      {showPickTonight && (
+        <PickTonightScreen
+          movies={matchedMovies}
+          onBack={() => setShowPickTonight(false)}
+          onOpenMovie={openMovie}
+        />
+      )}
 
       <MovieDetailModal
         movie={selectedMovie}
