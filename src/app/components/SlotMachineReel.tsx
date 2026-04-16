@@ -119,6 +119,15 @@ export function SlotMachineReel({ movies, spinning, onLanded }: SlotMachineReelP
   }, [reel, targetIdx, onLanded]);
 
   const showReel = isAnimating || spinning;
+
+  // Reset transform when returning to static display so posters aren't off-screen
+  useEffect(() => {
+    if (!showReel && stripRef.current) {
+      stripRef.current.style.transition = 'none';
+      stripRef.current.style.transform = 'translateY(0px)';
+    }
+  }, [showReel]);
+
   const centerSlotTop = Math.floor(VISIBLE_COUNT / 2) * dims.itemH;
   const staticMovies = movies.slice(0, VISIBLE_COUNT);
 
