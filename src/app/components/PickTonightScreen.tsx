@@ -103,7 +103,7 @@ export function PickTonightScreen({ movies, onBack, onOpenMovie }: PickTonightSc
                 className="shrink-0 flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-pink-600 to-purple-600 text-white font-semibold shadow-lg hover:from-pink-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
               >
                 <Sparkles className="size-5" />
-                {spinning ? 'Spinning…' : 'Spin'}
+                {spinning ? 'Spinning…' : excludedIds.size > 0 ? 'Spin again' : 'Spin'}
               </button>
             </>
           ) : (
