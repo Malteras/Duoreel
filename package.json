@@ -7,7 +7,9 @@
         "build": "vite build",
         "dev": "vite",
         "deploy:functions": "mkdir -p supabase/functions/make-server-5623fde1 && cp supabase/functions/server/index.tsx supabase/functions/make-server-5623fde1/index.ts && cp supabase/functions/server/kv_paginated.tsx supabase/functions/make-server-5623fde1/kv_paginated.tsx && cp supabase/functions/server/kv_store.tsx supabase/functions/make-server-5623fde1/kv_store.tsx && supabase functions deploy make-server-5623fde1 --use-api && rm -rf supabase/functions/make-server-5623fde1",
-        "deploy:functions:win": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('supabase','functions','make-server-5623fde1');fs.mkdirSync(d,{recursive:true});for(const[s,t]of[['index.tsx','index.ts'],['kv_paginated.tsx','kv_paginated.tsx'],['kv_store.tsx','kv_store.tsx']])fs.copyFileSync(p.join('supabase','functions','server',s),p.join(d,t));\" && supabase functions deploy make-server-5623fde1 --use-api && node -e \"fs.rmSync('supabase/functions/make-server-5623fde1',{recursive:true,force:true})\""
+        "deploy:functions:win": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('supabase','functions','make-server-5623fde1');fs.mkdirSync(d,{recursive:true});for(const[s,t]of[['index.tsx','index.ts'],['kv_paginated.tsx','kv_paginated.tsx'],['kv_store.tsx','kv_store.tsx']])fs.copyFileSync(p.join('supabase','functions','server',s),p.join(d,t));\" && supabase functions deploy make-server-5623fde1 --use-api && node -e \"fs.rmSync('supabase/functions/make-server-5623fde1',{recursive:true,force:true})\"",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
     },
     "dependencies": {
         "@emotion/react": "11.14.0",
@@ -71,7 +73,19 @@
         "@tailwindcss/vite": "4.1.12",
         "@vitejs/plugin-react": "4.7.0",
         "tailwindcss": "4.1.12",
-        "vite": "6.3.5"
+        "vite": "6.3.5",
+        "storybook": "^10.3.5",
+        "@storybook/react-vite": "^10.3.5",
+        "@chromatic-com/storybook": "^5.1.2",
+        "@storybook/addon-vitest": "^10.3.5",
+        "@storybook/addon-a11y": "^10.3.5",
+        "@storybook/addon-docs": "^10.3.5",
+        "@storybook/addon-onboarding": "^10.3.5",
+        "prop-types": "^15.8.1",
+        "vitest": "^4.1.5",
+        "playwright": "^1.59.1",
+        "@vitest/browser-playwright": "^4.1.5",
+        "@vitest/coverage-v8": "^4.1.5"
     },
     "peerDependencies": {
         "react": "18.3.1",
