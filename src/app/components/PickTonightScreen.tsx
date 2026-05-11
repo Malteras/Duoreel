@@ -1,10 +1,8 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { ArrowLeft, Sparkles, RotateCcw } from 'lucide-react';
 import type { Movie } from '../../types/movie';
-import { KeywordCloud } from './KeywordCloud';
 import { SlotMachineReel } from './SlotMachineReel';
-import { Switch } from './ui/switch';
-import { filterMoviesByKeyword } from '../../utils/keywordAggregation';
+import { filterMoviesByKeyword, aggregateKeywords } from '../../utils/keywordAggregation';
 
 interface PickTonightScreenProps {
   movies: Movie[];
@@ -29,13 +27,25 @@ export function PickTonightScreen({ movies, watchedIds, partnerWatchedIds, onBac
     }
   }, [selectedKeywordId]);
 
-  const filteredMovies = useMemo(() => {
-    let pool = selectedKeywordId ? filterMoviesByKeyword(movies, selectedKeywordId) : movies;
-    if (!includeWatched) {
-      pool = pool.filter(m => !watchedIds.has(m.id) && !partnerWatchedIds.has(m.id));
+  // Watched-filtered pool: used for keyword cloud so tags always yield results
+  const watchedFilteredPool = useMemo(() => {
+    if (includeWatched) return movies;
+    return movies.filter(m => !watchedIds.has(m.id) && !partnerWatchedIds.has(m.id));
+  }, [movies, includeWatched, watchedIds, partnerWatchedIds]);
+
+  const keywords = useMemo(() => aggregateKeywords(watchedFilteredPool), [watchedFilteredPool]);
+
+  // Auto-deselect selected keyword if it drops out of the watched-filtered pool
+  useEffect(() => {
+    if (selectedKeywordId !== null && !keywords.some(k => k.id === selectedKeywordId)) {
+      setSelectedKeywordId(null);
     }
+  }, [keywords, selectedKeywordId]);
+
+  const filteredMovies = useMemo(() => {
+    let pool = selectedKeywordId ? filterMoviesByKeyword(watchedFilteredPool, selectedKeywordId) : watchedFilteredPool;
     return pool;
-  }, [movies, selectedKeywordId, includeWatched, watchedIds, partnerWatchedIds]);
+  }, [watchedFilteredPool, selectedKeywordId]);
 
   const availableMovies = useMemo(() => {
     return filteredMovies.filter(m => !excludedIds.has(m.id));
@@ -74,30 +84,43 @@ export function PickTonightScreen({ movies, watchedIds, partnerWatchedIds, onBac
           </div>
         </div>
 
-        {/* Keyword Cloud — hidden while spinning to free space */}
+        {/* Filter rail: Watched chip + keyword chips in a single scrollable row */}
         {!spinning && (
-          <div className="mb-3 shrink-0">
-            <h2 className="text-sm font-medium text-slate-400 text-center mb-2">Filter by theme</h2>
-            <KeywordCloud
-              movies={movies}
-              selectedKeywordId={selectedKeywordId}
-              onKeywordToggle={setSelectedKeywordId}
-            />
-          </div>
-        )}
+          <div className="mb-3 shrink-0 flex items-center gap-2 overflow-x-auto py-1 px-0.5">
+            <button
+              type="button"
+              onClick={() => setIncludeWatched(v => !v)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                includeWatched
+                  ? 'bg-pink-600 text-white border-pink-600'
+                  : 'bg-slate-700/60 text-slate-400 border-slate-600/50 hover:text-white hover:bg-slate-600/70'
+              }`}
+            >
+              Watched
+            </button>
 
-        {/* Include watched toggle */}
-        {!spinning && (
-          <div className="flex items-center justify-center gap-2 mb-3 shrink-0">
-            <Switch
-              id="include-watched"
-              checked={includeWatched}
-              onCheckedChange={setIncludeWatched}
-              className="data-[state=checked]:bg-pink-600"
-            />
-            <label htmlFor="include-watched" className="text-sm text-slate-400 cursor-pointer select-none">
-              Include watched
-            </label>
+            <div className="shrink-0 w-px h-4 bg-slate-700" />
+
+            {keywords.map(kw => {
+              const isSelected = kw.id === selectedKeywordId;
+              return (
+                <button
+                  key={kw.id}
+                  type="button"
+                  onClick={() => setSelectedKeywordId(isSelected ? null : kw.id)}
+                  className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-pink-600 text-white border-pink-600 shadow-lg shadow-pink-600/25'
+                      : 'bg-slate-700/60 text-slate-300 border-slate-600/50 hover:bg-slate-600/70 hover:text-white'
+                  }`}
+                >
+                  {kw.name}
+                  <span className={`ml-1 text-xs ${isSelected ? 'text-pink-200' : 'text-slate-500'}`}>
+                    ×{kw.count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
