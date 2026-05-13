@@ -2684,10 +2684,12 @@ export function MoviesTab({
             : false)
         }
         onGenreClick={(genreId) => {
+          exitSection();
           updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]);
           closeMovie();
         }}
         onKeywordClick={(keywordId, keywordName) => {
+          exitSection();
           setFilters(prev => ({ ...prev, keyword: keywordId.toString(), keywordName }));
           setPage(1);
           setIsSearchMode(false);
@@ -2695,10 +2697,12 @@ export function MoviesTab({
           closeMovie();
         }}
         onDirectorClick={(director) => {
+          exitSection();
           updateFilter("director", director);
           closeMovie();
         }}
         onActorClick={(actor) => {
+          exitSection();
           updateFilter("actor", actor);
           closeMovie();
         }}
