@@ -2027,6 +2027,7 @@ export function MoviesTab({
                               partnerWatchedIds={partnerWatchedIds}
                               partnerName={partnerName}
                               onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]); }}
+                              onDirectorClick={(director) => { exitSection(); updateFilter('director', director); }}
                               topLeftOverlay={
                                 <button
                                   className={`size-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
