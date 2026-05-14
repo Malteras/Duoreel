@@ -2158,6 +2158,7 @@ export function MoviesTab({
                                 isWatched={watchedMovieIds.has(movie.id)}
                                 imdbRating={imdbRatings.get(movie.id)}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                onDirectorClick={(director) => updateFilter('director', director)}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
                                   <button
@@ -2213,6 +2214,7 @@ export function MoviesTab({
                                 isWatched={watchedMovieIds.has(movie.id)}
                                 imdbRating={imdbRatings.get(movie.id)}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                onDirectorClick={(director) => updateFilter('director', director)}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
                                   <button
@@ -2280,6 +2282,7 @@ export function MoviesTab({
                                 isWatched={watchedMovieIds.has(movie.id)}
                                 imdbRating={imdbRatings.get(movie.id)}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                onDirectorClick={(director) => updateFilter('director', director)}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
                                   <button
