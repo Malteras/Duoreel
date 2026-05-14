@@ -2527,7 +2527,7 @@ export function MoviesTab({
                           </div>
                         )}
                         {movie.overview && <p className="text-slate-300 text-[10px] leading-relaxed line-clamp-2">{movie.overview}</p>}
-                        {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>}
+                        {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-sky-300/80 cursor-pointer hover:text-sky-300 hover:underline" onClick={(e) => { e.stopPropagation(); updateFilter('director', movie.director!); }}>{movie.director}</span></div>}
                       </div>
                     </div>
                   );
