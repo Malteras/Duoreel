@@ -2026,6 +2026,8 @@ export function MoviesTab({
                               globalImdbCache={globalImdbCache}
                               partnerWatchedIds={partnerWatchedIds}
                               partnerName={partnerName}
+                              onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]); }}
+                              onDirectorClick={(director) => { exitSection(); updateFilter('director', director); }}
                               topLeftOverlay={
                                 <button
                                   className={`size-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -2156,6 +2158,7 @@ export function MoviesTab({
                                 isWatched={watchedMovieIds.has(movie.id)}
                                 imdbRating={imdbRatings.get(movie.id)}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                onDirectorClick={(director) => updateFilter('director', director)}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
                                   <button
@@ -2211,6 +2214,7 @@ export function MoviesTab({
                                 isWatched={watchedMovieIds.has(movie.id)}
                                 imdbRating={imdbRatings.get(movie.id)}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                onDirectorClick={(director) => updateFilter('director', director)}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
                                   <button
@@ -2278,6 +2282,7 @@ export function MoviesTab({
                                 isWatched={watchedMovieIds.has(movie.id)}
                                 imdbRating={imdbRatings.get(movie.id)}
                                 onGenreClick={(genreId) => updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()])}
+                                onDirectorClick={(director) => updateFilter('director', director)}
                                 partnerWatchedIds={partnerWatchedIds}
                                 topLeftOverlay={
                                   <button
@@ -2522,7 +2527,7 @@ export function MoviesTab({
                           </div>
                         )}
                         {movie.overview && <p className="text-slate-300 text-[10px] leading-relaxed line-clamp-2">{movie.overview}</p>}
-                        {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-slate-300">{movie.director}</span></div>}
+                        {movie.director && <div className="text-[10px] text-slate-400">Dir: <span className="text-sky-300/80 cursor-pointer hover:text-sky-300 hover:underline" onClick={(e) => { e.stopPropagation(); updateFilter('director', movie.director!); }}>{movie.director}</span></div>}
                       </div>
                     </div>
                   );

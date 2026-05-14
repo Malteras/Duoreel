@@ -8,6 +8,7 @@ interface CompactMovieCardProps {
   imdbRating?: string | null;
   globalImdbCache?: Map<string, string>;
   onGenreClick?: (genreId: number) => void;
+  onDirectorClick?: (director: string) => void;
   topLeftOverlay?: React.ReactNode;
   topRightOverlay?: React.ReactNode;
   partnerWatchedIds?: Set<number>;
@@ -23,6 +24,7 @@ export function CompactMovieCard({
   imdbRating,
   globalImdbCache,
   onGenreClick,
+  onDirectorClick,
   topLeftOverlay,
   topRightOverlay,
   partnerWatchedIds,
@@ -153,7 +155,7 @@ export function CompactMovieCard({
           </div>
         ) : null}
         {movie.director ? (
-          <div className="text-[10px] text-slate-400">Dir: <span className="text-sky-300/80">{movie.director}</span></div>
+          <div className="text-[10px] text-slate-400">Dir: <span className={`text-sky-300/80 ${onDirectorClick ? 'cursor-pointer hover:text-sky-300 hover:underline' : ''}`} onClick={onDirectorClick ? (e) => { e.stopPropagation(); onDirectorClick(movie.director!); } : undefined}>{movie.director}</span></div>
         ) : movie.vote_average > 0 ? (
           <div className="h-[12px] w-24 rounded bg-slate-700/60 animate-pulse mt-0.5" />
         ) : null}
