@@ -9,7 +9,8 @@
         "deploy:functions": "mkdir -p supabase/functions/make-server-5623fde1 && cp supabase/functions/server/index.tsx supabase/functions/make-server-5623fde1/index.ts && cp supabase/functions/server/kv_paginated.tsx supabase/functions/make-server-5623fde1/kv_paginated.tsx && cp supabase/functions/server/kv_store.tsx supabase/functions/make-server-5623fde1/kv_store.tsx && supabase functions deploy make-server-5623fde1 --use-api && rm -rf supabase/functions/make-server-5623fde1",
         "deploy:functions:win": "node -e \"const fs=require('fs'),p=require('path');const d=p.join('supabase','functions','make-server-5623fde1');fs.mkdirSync(d,{recursive:true});for(const[s,t]of[['index.tsx','index.ts'],['kv_paginated.tsx','kv_paginated.tsx'],['kv_store.tsx','kv_store.tsx']])fs.copyFileSync(p.join('supabase','functions','server',s),p.join(d,t));\" && supabase functions deploy make-server-5623fde1 --use-api && node -e \"fs.rmSync('supabase/functions/make-server-5623fde1',{recursive:true,force:true})\"",
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "proto:pick-tonight": "node src/app/components/pick-tonight-proto.mjs"
     },
     "dependencies": {
         "@emotion/react": "11.14.0",

@@ -8,5 +8,24 @@
       "mcp__claude_ai_Linear__save_issue",
       "Bash(npm run *)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm run dev",
+            "async": true,
+            "statusMessage": "Starting dev server..."
+          },
+          {
+            "type": "command",
+            "command": "git log --oneline -10",
+            "statusMessage": "Loading git log..."
+          }
+        ]
+      }
+    ]
   }
 }
