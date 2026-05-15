@@ -728,6 +728,24 @@ export function MoviesTab({
         });
       } else {
         setSectionMovies(results);
+        // Keep the homepage preview row in sync so returning from the section
+        // shows the correct seed's recommendations, not stale ones.
+        if (section === 'recs') {
+          const recsPreview = results.slice(0, 5);
+          const effectiveSeed = seedOverride ?? recSeedMovie;
+          setSectionPreviews((prev) => ({ ...prev, recs: recsPreview }));
+          if (effectiveSeed) {
+            setDiscoverCache((c) =>
+              c
+                ? {
+                    ...c,
+                    sectionPreviews: { ...c.sectionPreviews, recs: recsPreview },
+                    recSeedMovie: effectiveSeed,
+                  }
+                : null,
+            );
+          }
+        }
       }
       setSectionHasMore(results.length >= 10);
     } catch (err) {
