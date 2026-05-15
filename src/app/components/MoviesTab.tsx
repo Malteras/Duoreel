@@ -693,7 +693,7 @@ export function MoviesTab({
   }, []);
 
   // ──────────────── Fetch full section view movies ────────────────
-  const fetchSectionMovies = useCallback(async (section: 'recs' | 'trending' | 'gems', pageNum: number, append = false) => {
+  const fetchSectionMovies = useCallback(async (section: 'recs' | 'trending' | 'gems', pageNum: number, append = false, seedOverride?: Movie) => {
     if (!accessToken) return;
     if (pageNum === 1) setSectionLoading(true);
     else setSectionLoadingMore(true);
@@ -708,8 +708,10 @@ export function MoviesTab({
         const maxReleaseDate = twoYearsAgo.toISOString().split('T')[0];
         const gemsGenreParam = gemsGenreIdRef.current ? `&genre=${gemsGenreIdRef.current}` : '';
         url = `${baseUrl}/movies/discover?sortBy=vote_average.desc&minRating=6&minVoteCount=500&maxVoteCount=5000&maxReleaseDate=${maxReleaseDate}&page=${pageNum}${gemsGenreParam}`;
-      } else if (section === 'recs' && recSeedMovie) {
-        url = `${baseUrl}/movies/recommendations/${recSeedMovie.id}?page=${pageNum}`;
+      } else if (section === 'recs') {
+        const seedId = (seedOverride ?? recSeedMovie)?.id;
+        if (!seedId) { setSectionLoading(false); return; }
+        url = `${baseUrl}/movies/recommendations/${seedId}?page=${pageNum}`;
       } else {
         setSectionLoading(false);
         return;
@@ -1534,13 +1536,13 @@ export function MoviesTab({
     setSearchQuery("");
   };
 
-  const enterSection = (section: 'recs' | 'trending' | 'gems') => {
+  const enterSection = (section: 'recs' | 'trending' | 'gems', seedMovie?: Movie) => {
     resetSectionEnrichment(); // clear stale enriched IDs so new section movies enrich immediately
     setActiveSectionView(section);
     setSectionPage(1);
     setSectionMovies([]);
     setSectionHasMore(true);
-    fetchSectionMovies(section, 1, false);
+    fetchSectionMovies(section, 1, false, seedMovie);
   };
 
   const exitSection = () => {
@@ -2716,7 +2718,7 @@ export function MoviesTab({
           if (selectedMovie) {
             setRecSeedMovie(selectedMovie);
             closeMovie();
-            enterSection('recs');
+            enterSection('recs', selectedMovie);
           }
         }}
         projectId={projectId}
