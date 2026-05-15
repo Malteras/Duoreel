@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Running App",
+            "type": "shell",
+            "command": "npm run dev",
+            "isBackground": true,
+            "runOptions": { "runOn": "folderOpen" },
+            "icon": {
+                "id": "play-circle",
+                "color": "terminal.ansiGreen"
+            },
+            "presentation": {
+                "label": "Running App",
+                "reveal": "always",
+                "panel": "new",
+                "close": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Git",
+            "type": "shell",
+            "command": "git log --oneline -20",
+            "runOptions": { "runOn": "folderOpen" },
+            "icon": {
+                "id": "git-branch",
+                "color": "terminal.ansiYellow"
+            },
+            "presentation": {
+                "label": "Git",
+                "reveal": "always",
+                "panel": "dedicated",
+                "close": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Claude",
+            "type": "shell",
+            "command": "claude",
+            "isBackground": true,
+            "runOptions": { "runOn": "folderOpen" },
+            "icon": {
+                "id": "claude",
+                "color": "terminal.ansiYellow"
+            },
+            "presentation": {
+                "label": "Claude",
+                "reveal": "always",
+                "panel": "new",
+                "close": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}
