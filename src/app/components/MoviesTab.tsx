@@ -55,6 +55,7 @@ import {
   Users,
   RefreshCw,
   Shuffle,
+  Eye,
 } from "lucide-react";
 
 function getGemsGenreId(likedMovies: any[], genres: { id: number; name: string }[]): number | null {
@@ -2458,6 +2459,14 @@ export function MoviesTab({
                             <Ban className="size-4 text-white" />
                           </button>
                         </div>
+                        {isWatchedMovie && (
+                          <div className="absolute top-11 right-2 z-10">
+                            <div className="bg-slate-700/80 text-slate-300 rounded-full flex items-center gap-1 px-1.5 py-0.5 shadow-lg backdrop-blur-sm font-medium">
+                              <Eye className="size-2.5" />
+                              <span className="text-[9px]">Watched</span>
+                            </div>
+                          </div>
+                        )}
                         {movie.vote_average > 0 && (
                           <div className="absolute bottom-2 right-2 z-10 flex items-center gap-1">
                             {/* TMDB badge */}
