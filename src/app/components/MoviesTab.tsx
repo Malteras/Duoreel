@@ -1617,7 +1617,9 @@ export function MoviesTab({
         // the manual setMovies() call in handleWatched that caused Scenarios B & D
         // to break. watchedMovieIds comes from UserInteractionsContext and updates
         // reactively whenever toggleWatched() is called (optimistic update).
-        if (!showWatchedMovies && watchedMovieIds.has(m.id))
+        // In search mode the filter is bypassed — a user searching by name should
+        // always find the movie they're looking for regardless of the watch preference.
+        if (!isSearchMode && !showWatchedMovies && watchedMovieIds.has(m.id))
           return false;
         if (hidePartnerWatched && partnerWatchedIds?.has(m.id))
           return false;
@@ -1626,6 +1628,7 @@ export function MoviesTab({
     [
       movies,
       pendingRemovals,
+      isSearchMode,
       showWatchedMovies,
       watchedMovieIds,
       hidePartnerWatched,
