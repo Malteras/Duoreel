@@ -1678,21 +1678,8 @@ export function MoviesTab({
       hidePartnerWatched,
       partnerWatchedIds,
       filters,
-      sortBy,
     ],
   );
-
-  // In search mode, sort client-side — TMDB's search endpoint returns results
-  // in relevance order only; the server cannot reorder them by rating or year.
-  const sortedVisibleMovies = useMemo(() => {
-    if (!isSearchMode || sortBy === "popularity") return visibleMovies;
-    return [...visibleMovies].sort((a, b) => {
-      if (sortBy === "rating") return (b.vote_average ?? 0) - (a.vote_average ?? 0);
-      if (sortBy === "year-new") return (b.release_date ?? "").localeCompare(a.release_date ?? "");
-      if (sortBy === "year-old") return (a.release_date ?? "").localeCompare(b.release_date ?? "");
-      return 0;
-    });
-  }, [visibleMovies, isSearchMode, sortBy]);
 
   // ─────────────── Genre name helper ────────────────
   const getGenreName = (genreId: string) => {
@@ -2006,7 +1993,7 @@ export function MoviesTab({
                 Search results for "{searchQuery}" —{" "}
                 {searchTotalResults > 0
                   ? `${searchTotalResults} movie${searchTotalResults !== 1 ? "s" : ""} found`
-                  : `${sortedVisibleMovies.length} movie${sortedVisibleMovies.length !== 1 ? "s" : ""} found`}
+                  : `${visibleMovies.length} movie${visibleMovies.length !== 1 ? "s" : ""} found`}
               </span>
               <Button
                 variant="ghost"
@@ -2405,7 +2392,7 @@ export function MoviesTab({
             {/* Movie Grid */}
             {(isSearchMode ? isSearching : (loading || contextLoading)) ? (
           <MovieCardSkeletonGrid count={8} viewMode={viewMode === 'compact' ? 'compact' : 'grid'} />
-        ) : sortedVisibleMovies.length === 0 ? (
+        ) : visibleMovies.length === 0 ? (
           <div className="text-center py-20">
             <Film className="size-20 mx-auto mb-6 text-slate-700" />
             <h3 className="text-2xl font-semibold text-white mb-3">
@@ -2432,7 +2419,7 @@ export function MoviesTab({
             {/* ── Full grid (default) ── */}
             {viewMode === 'grid' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {sortedVisibleMovies.map((movie) => (
+                {visibleMovies.map((movie) => (
                   <MovieCard
                     key={movie.id}
                     movie={movie}
@@ -2471,7 +2458,7 @@ export function MoviesTab({
             {/* ── Compact grid ── */}
             {viewMode === 'compact' && (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                {sortedVisibleMovies.map((movie) => {
+                {visibleMovies.map((movie) => {
                   const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '';
                   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
                   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
@@ -2630,7 +2617,7 @@ export function MoviesTab({
                 if you want to re-enable it. ──
             {viewMode === 'list' && (
               <div className="space-y-2">
-                {sortedVisibleMovies.map((movie) => {
+                {visibleMovies.map((movie) => {
                   const posterUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w92${movie.poster_path}` : '';
                   const year = movie.release_date ? new Date(movie.release_date).getFullYear() : '';
                   const runtime = movie.runtime ? `${Math.floor(movie.runtime / 60)}h ${movie.runtime % 60}m` : '';
