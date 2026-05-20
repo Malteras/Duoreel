@@ -220,6 +220,10 @@ export function MoviesTab({
   const isSearchingRef = useRef(false);
   const searchPageRef = useRef(1);
   const isSearchModeRef = useRef(false);
+  // Updated in render body (not via useEffect) so it is always current by the
+  // time any effect in the same commit runs — avoids stale-closure ordering bugs.
+  const sortByRef = useRef(sortBy);
+  sortByRef.current = sortBy;
 
   // Movie detail modal state — synced with ?movie=id URL param
   const {
@@ -1247,7 +1251,7 @@ export function MoviesTab({
         const searchParams = new URLSearchParams({
           q: query,
           page: String(pageNum),
-          sortBy,
+          sortBy: sortByRef.current,
         });
         const response = await fetch(
           `${baseUrl}/movies/search?${searchParams}`,
@@ -1282,7 +1286,7 @@ export function MoviesTab({
         setSearchLoadingMore(false);
       }
     },
-    [baseUrl, publicAnonKey, fetchMovies, sortBy],
+    [baseUrl, publicAnonKey, fetchMovies],
   );
 
   const handleSearchRef = useRef(handleSearch);
@@ -1645,6 +1649,24 @@ export function MoviesTab({
           return false;
         if (hidePartnerWatched && partnerWatchedIds?.has(m.id))
           return false;
+        // In search mode, apply active filters client-side — TMDB's search
+        // endpoint doesn't support genre/rating/year/language params, so we
+        // filter the returned results here instead.
+        if (isSearchMode) {
+          if (filters.genres.length > 0 && !filters.genres.some((g) => m.genre_ids?.includes(parseInt(g))))
+            return false;
+          if (filters.rating !== "all" && m.vote_average < parseFloat(filters.rating))
+            return false;
+          if (filters.year !== "all" && !m.release_date?.startsWith(filters.year))
+            return false;
+          if (filters.decade !== "all") {
+            const [startYear, endYear] = filters.decade.split("-").map(Number);
+            const movieYear = parseInt(m.release_date?.slice(0, 4) ?? "0");
+            if (movieYear < startYear || movieYear > endYear) return false;
+          }
+          if (filters.language && m.original_language !== filters.language)
+            return false;
+        }
         return true;
       }),
     [
@@ -1655,6 +1677,7 @@ export function MoviesTab({
       watchedMovieIds,
       hidePartnerWatched,
       partnerWatchedIds,
+      filters,
     ],
   );
 
