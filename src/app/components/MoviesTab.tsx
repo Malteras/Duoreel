@@ -219,6 +219,11 @@ export function MoviesTab({
   const searchLoadingMoreRef = useRef(false);
   const isSearchingRef = useRef(false);
   const searchPageRef = useRef(1);
+  const isSearchModeRef = useRef(false);
+  // Updated in render body (not via useEffect) so it is always current by the
+  // time any effect in the same commit runs — avoids stale-closure ordering bugs.
+  const sortByRef = useRef(sortBy);
+  sortByRef.current = sortBy;
 
   // Movie detail modal state — synced with ?movie=id URL param
   const {
@@ -936,7 +941,14 @@ export function MoviesTab({
     // Reset the cache-skip flag in case it was never consumed (edge case where
     // the ratings effect hasn't fired yet at the time the user changes filters).
     skipRatingsFetchRef.current = false;
-    fetchMovies(1, false);
+    // When search is active, re-run the search with the current query so the
+    // user's typed text and the API results always agree. When not in search
+    // mode, fall through to the normal discover fetch.
+    if (isSearchModeRef.current && searchQueryRef.current.trim()) {
+      handleSearchRef.current(searchQueryRef.current, 1, false);
+    } else {
+      fetchMovies(1, false);
+    }
     // fetchMovies is included so this effect always runs with the freshest
     // callback (no stale likedMovieIds / pendingRemovals closures).
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1236,8 +1248,13 @@ export function MoviesTab({
       searchQueryRef.current = query;
 
       try {
+        const searchParams = new URLSearchParams({
+          q: query,
+          page: String(pageNum),
+          sortBy: sortByRef.current,
+        });
         const response = await fetch(
-          `${baseUrl}/movies/search?q=${encodeURIComponent(query)}&page=${pageNum}`,
+          `${baseUrl}/movies/search?${searchParams}`,
           {
             headers: {
               Authorization: `Bearer ${publicAnonKey}`,
@@ -1278,6 +1295,7 @@ export function MoviesTab({
   useEffect(() => { searchLoadingMoreRef.current = searchLoadingMore; }, [searchLoadingMore]);
   useEffect(() => { isSearchingRef.current = isSearching; }, [isSearching]);
   useEffect(() => { searchPageRef.current = searchPage; }, [searchPage]);
+  useEffect(() => { isSearchModeRef.current = isSearchMode; }, [isSearchMode]);
 
   const handleSearchInputChange = (value: string) => {
     setSearchQuery(value);
@@ -1535,15 +1553,22 @@ export function MoviesTab({
   const handleApplyFilters = (newFilters: typeof filters) => {
     setFilters(newFilters);
     setPage(1);
-    setIsSearchMode(false);
-    setSearchQuery("");
+    // Keep search active — if a query is typed, re-run it with the new filters.
+    // Only exit search mode when the user explicitly clears the search field.
+    if (!isSearchModeRef.current) {
+      setIsSearchMode(false);
+      setSearchQuery("");
+    }
   };
 
   const updateFilter = (key: keyof typeof filters, value: typeof filters[keyof typeof filters]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
-    setIsSearchMode(false);
-    setSearchQuery("");
+    // Same as handleApplyFilters — preserve search mode when a query is active.
+    if (!isSearchModeRef.current) {
+      setIsSearchMode(false);
+      setSearchQuery("");
+    }
   };
 
   const handleClearFilters = () => {
@@ -1624,6 +1649,24 @@ export function MoviesTab({
           return false;
         if (hidePartnerWatched && partnerWatchedIds?.has(m.id))
           return false;
+        // In search mode, apply active filters client-side — TMDB's search
+        // endpoint doesn't support genre/rating/year/language params, so we
+        // filter the returned results here instead.
+        if (isSearchMode) {
+          if (filters.genres.length > 0 && !filters.genres.some((g) => m.genre_ids?.includes(parseInt(g))))
+            return false;
+          if (filters.rating !== "all" && m.vote_average < parseFloat(filters.rating))
+            return false;
+          if (filters.year !== "all" && !m.release_date?.startsWith(filters.year))
+            return false;
+          if (filters.decade !== "all") {
+            const [startYear, endYear] = filters.decade.split("-").map(Number);
+            const movieYear = parseInt(m.release_date?.slice(0, 4) ?? "0");
+            if (movieYear < startYear || movieYear > endYear) return false;
+          }
+          if (filters.language && m.original_language !== filters.language)
+            return false;
+        }
         return true;
       }),
     [
@@ -1634,6 +1677,7 @@ export function MoviesTab({
       watchedMovieIds,
       hidePartnerWatched,
       partnerWatchedIds,
+      filters,
     ],
   );
 

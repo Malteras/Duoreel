@@ -2785,9 +2785,20 @@ app.get("/make-server-5623fde1/movies/search", async (c) => {
     }
 
     const page = c.req.query("page") || "1";
+    const sortBy = c.req.query("sortBy") || "popularity";
     const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}&page=${page}`;
     const response = await fetch(url);
     const data = await response.json();
+
+    if (data.results && sortBy !== "popularity") {
+      if (sortBy === "rating") {
+        data.results.sort((a: { vote_average: number }, b: { vote_average: number }) => b.vote_average - a.vote_average);
+      } else if (sortBy === "year-new") {
+        data.results.sort((a: { release_date: string }, b: { release_date: string }) => (b.release_date ?? "").localeCompare(a.release_date ?? ""));
+      } else if (sortBy === "year-old") {
+        data.results.sort((a: { release_date: string }, b: { release_date: string }) => (a.release_date ?? "").localeCompare(b.release_date ?? ""));
+      }
+    }
 
     return c.json(data);
   } catch (error) {
