@@ -286,6 +286,7 @@ export function MoviesTab({
   const [sectionPreviewsLoading, setSectionPreviewsLoading] = useState(
     () => !discoverCache?.sectionPreviews  // skip skeleton if restoring from cache
   );
+  const [sectionPreviewsError, setSectionPreviewsError] = useState(false);
   // Separate loading state for recs-only refresh (doesn't affect trending/gems)
   const [recsRefreshLoading, setRecsRefreshLoading] = useState(false);
 
@@ -548,6 +549,7 @@ export function MoviesTab({
   const fetchSectionPreviews = useCallback(async () => {
     if (!accessToken) return;
     setSectionPreviewsLoading(true);
+    setSectionPreviewsError(false);
 
     const currentLiked = likedMoviesRef.current;
     const top10 = currentLiked.slice(0, 10);
@@ -578,6 +580,13 @@ export function MoviesTab({
         gemsRes.json(),
         recsRes ? recsRes.json() : { results: [] },
       ]);
+
+      if (trendingData.error || gemsData.error) {
+        console.error('Section previews fetch error:', trendingData.error || gemsData.error);
+        setSectionPreviewsLoading(false);
+        setSectionPreviewsError(true);
+        return;
+      }
 
       const likedIds = new Set(currentLiked.map((m) => m.id));
       const trendingPreview = (trendingData.results || [])
@@ -613,6 +622,7 @@ export function MoviesTab({
     } catch (err) {
       console.error('Error fetching section previews:', err);
       setSectionPreviewsLoading(false);
+      setSectionPreviewsError(true);
     }
   }, [accessToken, baseUrl, notInterestedMovieIds, watchedMovieIds]);
 
@@ -2159,6 +2169,18 @@ export function MoviesTab({
 
                 {showSectionsContent && (
                   <>
+                {sectionPreviewsError && (
+                  <div className="animate-fade-in-up flex items-center justify-between gap-3 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-sm text-red-400">
+                    <span>Could not load curated sections. Check your connection and try again.</span>
+                    <button
+                      onClick={() => fetchSectionPreviews()}
+                      className="flex shrink-0 items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs text-red-300 transition-colors hover:bg-red-500/20 cursor-pointer"
+                    >
+                      <RefreshCw className="size-3" />
+                      Retry
+                    </button>
+                  </div>
+                )}
                 {/* Because you saved X — only rendered when user has liked movies */}
                 {likedMovies.length > 0 && <div className="animate-fade-in-up" style={{ animationDelay: '0s' }}>
                   <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-xl px-4 py-4 pb-5">
@@ -2204,7 +2226,7 @@ export function MoviesTab({
                       </button>
                     </div>
                   </div>
-                  {(sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0
+                  {!sectionPreviewsError && ((sectionPreviewsLoading || recsRefreshLoading) || sectionPreviews.recs.length === 0)
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
@@ -2266,7 +2288,7 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  {sectionPreviewsLoading || sectionPreviews.trending.length === 0
+                  {!sectionPreviewsError && (sectionPreviewsLoading || sectionPreviews.trending.length === 0)
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
@@ -2334,7 +2356,7 @@ export function MoviesTab({
                       See all <ChevronRight className="size-3" />
                     </button>
                   </div>
-                  {sectionPreviewsLoading || sectionPreviews.gems.length === 0
+                  {!sectionPreviewsError && (sectionPreviewsLoading || sectionPreviews.gems.length === 0)
                     ? <MovieCardSkeletonGrid count={5} viewMode="compact" />
                     : (
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">

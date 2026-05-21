@@ -2617,6 +2617,11 @@ app.get("/make-server-5623fde1/movies/trending", async (c) => {
     const response = await fetch(
       `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}&page=${page}`
     );
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`TMDB trending error ${response.status}:`, text);
+      return c.json({ error: `TMDB error ${response.status}: ${text}` }, 502);
+    }
     const data = await response.json();
 
     return c.json(data);
@@ -2644,6 +2649,11 @@ app.get("/make-server-5623fde1/movies/recommendations/:tmdbId", async (c) => {
     const response = await fetch(
       `https://api.themoviedb.org/3/movie/${tmdbId}/recommendations?api_key=${apiKey}&page=${page}`
     );
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`TMDB recommendations error ${response.status}:`, text);
+      return c.json({ error: `TMDB error ${response.status}: ${text}` }, 502);
+    }
     const data = await response.json();
 
     return c.json(data);
@@ -2744,16 +2754,15 @@ app.get("/make-server-5623fde1/movies/discover", async (c) => {
       }
     }
 
-    // Only show released movies (release date is today or earlier)
+    // Only show released movies; use caller-supplied ceiling when provided
     const today = new Date().toISOString().split("T")[0];
-    url += `&primary_release_date.lte=${today}`;
+    url += `&primary_release_date.lte=${maxReleaseDate || today}`;
 
     // Add minimum vote count to filter out unreleased/obscure movies
     url += `&vote_count.gte=${minVoteCount || '10'}`;
 
     // Optional upper vote count cap — used by hidden gems mode (500–5000 votes)
     if (maxVoteCount) url += `&vote_count.lte=${maxVoteCount}`;
-    if (maxReleaseDate) url += `&primary_release_date.lte=${maxReleaseDate}`;
 
     const response = await fetch(url);
     const data = await response.json();
