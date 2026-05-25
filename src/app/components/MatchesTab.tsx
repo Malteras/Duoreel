@@ -9,22 +9,9 @@ import { useEnrichMovies } from '../hooks/useEnrichMovies';
 import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from './ui/alert-dialog';
 import {
   Users,
   Heart,
-  UserX,
   Check,
   X,
   Bell,
@@ -495,54 +482,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
           </Card>
         )}
 
-        {/* Partner Connection */}
-        {loading && !partner ? null : partner ? (
-          /* ── Compact connected strip ── */
-          <div className="flex items-center gap-3 px-4 py-2.5 mb-6 bg-slate-800/40 border border-slate-700/60 rounded-xl">
-            <Avatar className="size-8 ring-2 ring-pink-500/40 flex-shrink-0">
-              <AvatarImage src={partner.photoUrl} />
-              <AvatarFallback className="bg-gradient-to-br from-pink-600 to-purple-600 text-white text-xs">
-                {partner.name?.[0]?.toUpperCase() || partner.email?.[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <Heart className="size-3.5 text-pink-500 fill-pink-500 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <span className="text-white text-sm font-medium truncate">{partner.name || 'Partner'}</span>
-            </div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex-shrink-0 text-slate-500 hover:text-red-400 hover:bg-red-950/30 text-xs h-7 px-2"
-                >
-                  <UserX className="size-3.5 mr-1" />
-                  <span className="hidden sm:inline">Disconnect</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="bg-slate-900 border-slate-700">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-white">Disconnect partner?</AlertDialogTitle>
-                  <AlertDialogDescription className="text-slate-400">
-                    This will remove your connection with {partner.name || 'your partner'}. You'll lose all your movie matches and will need to reconnect to find matches again.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:border-slate-500 hover:text-white cursor-pointer">
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={handleRemovePartner}
-                    className="bg-red-600 text-white hover:bg-red-700 cursor-pointer"
-                  >
-                    Disconnect
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        ) : !loading ? (
-          /* ── Full connection card (no partner) ── */
+        {/* Partner Connection — shown only when no partner is connected */}
+        {!partner && !loading && (
           <div className="max-w-lg mx-auto mb-8">
             <div className="text-center mb-10">
               <Users className="size-16 mx-auto mb-4 text-slate-600" />
@@ -550,7 +491,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               <p className="text-slate-400 text-center">Connect with your partner below to start finding movies you both love!</p>
             </div>
             <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-              {/* Card header — matches SavedMoviesTab partner connection style */}
               <div className="flex items-center gap-3 mb-6">
                 <div className="size-10 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
                   <Users className="size-5 text-pink-400" />
@@ -574,12 +514,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               />
             </div>
           </div>
-        ) : null}
+        )}
 
         {/* ── Heading + controls ── */}
         {partner && (
           <div className="mb-4">
-            {/* Row 1: Title — centered on desktop, left-aligned with toggle on mobile */}
+            {/* Row 1: Title + (mobile: Sort + View toggle) | (desktop: centered title) */}
             <div className="flex items-center justify-between md:justify-center mb-3">
               <div className="flex items-center gap-2 md:flex-col md:items-center md:gap-1">
                 <div className="flex items-center gap-2">
@@ -589,9 +529,20 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                 <p className="text-slate-400 text-xs md:text-sm hidden md:block">Movies you both want to watch</p>
               </div>
 
-              {/* View toggle — mobile only (on desktop it moves to Row 2) */}
+              {/* Mobile: Sort + View toggle on heading row */}
               {!loading && matchedMovies.length > 0 && (
-                <div className="md:hidden">
+                <div className="md:hidden flex items-center gap-2 flex-shrink-0">
+                  <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[44px] h-8 text-sm px-2">
+                      <ArrowUpDown className="size-3.5 text-slate-400 flex-shrink-0" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">Recently Matched</SelectItem>
+                      <SelectItem value="rating">Highest Rated</SelectItem>
+                      <SelectItem value="year-new">Newest First</SelectItem>
+                      <SelectItem value="year-old">Oldest First</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <ViewToggle value={viewMode} onChange={handleViewMode} />
                 </div>
               )}
@@ -611,7 +562,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               </div>
             )}
 
-            {/* Row 2: Filters + sort + view toggle */}
+            {/* Row 2 (mobile): Show + Service filters full width | (desktop): all controls */}
             {!loading && matchedMovies.length > 0 && (
               <div className="flex items-center gap-2 overflow-hidden">
                 {/* Show filter */}
@@ -644,11 +595,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                   </Select>
                 </div>
 
-                {/* Sort — pushed right on desktop */}
-                <div className="flex flex-1 min-w-0 md:flex-none items-center gap-2 md:ml-auto">
-                  <label className="text-sm font-medium text-slate-300 hidden md:block whitespace-nowrap">Sort by:</label>
+                {/* Sort — desktop only (mobile sort is in heading row) */}
+                <div className="hidden md:flex flex-none items-center gap-2 ml-auto">
+                  <label className="text-sm font-medium text-slate-300 whitespace-nowrap">Sort by:</label>
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-full md:w-[155px] h-8 text-sm min-w-0">
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[155px] h-8 text-sm">
                       <div className="flex items-center gap-1.5 min-w-0">
                         <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
                         <span className="truncate"><SelectValue /></span>
