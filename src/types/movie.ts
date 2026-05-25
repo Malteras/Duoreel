@@ -30,6 +30,8 @@ export interface Movie {
   original_language?: string;
   popularity?: number;
 
+  timestamp?: number;
+
   // Enriched fields (added after TMDB detail fetch)
   director?: string;
   actors?: string[];
