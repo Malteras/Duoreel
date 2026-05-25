@@ -202,3 +202,7 @@ Quick reference:
 - **Letterboxd official API** — access pending. RSS sync is the current live path.
   Do not build against an API that isn't available yet.
 - **`onDislike` removal** — QUI-147. Dead prop on `MovieCard`, to be removed.
+
+# Backend changes reminder
+
+- Whenever you made and commited some backend changes, and made a PR with testing checkboxes, please reming me to run **`npm run deploy:functions:win`**.

@@ -97,6 +97,7 @@ interface MoviesTabProps {
   setLikedMovies: React.Dispatch<React.SetStateAction<Movie[]>>;
   discoverCache: import('../hooks/useTabCache').DiscoverCache | null;
   setDiscoverCache: React.Dispatch<React.SetStateAction<import('../hooks/useTabCache').DiscoverCache | null>>;
+  setMatchesCache?: React.Dispatch<React.SetStateAction<import('../hooks/useTabCache').MatchesCache | null>>;
   cardViewMode: 'grid' | 'compact' | 'list';
   setCardViewMode: (mode: 'grid' | 'compact' | 'list') => void;
 }
@@ -143,6 +144,7 @@ export function MoviesTab({
   setLikedMovies,
   discoverCache,
   setDiscoverCache,
+  setMatchesCache,
   cardViewMode: cardViewModeProp,
   setCardViewMode,
 }: MoviesTabProps) {
@@ -1376,6 +1378,7 @@ export function MoviesTab({
 
       if (response.ok) {
         if (data.isMatch) {
+          setMatchesCache?.(null);
           toast.success(
             `It's a match! You both like "${movie.title}"`,
             { duration: 5000, icon: "💕" },

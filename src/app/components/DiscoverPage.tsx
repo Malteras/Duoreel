@@ -45,6 +45,7 @@ export function DiscoverPage() {
       setLikedMovies={ctx.setLikedMovies}
       discoverCache={ctx.discoverCache}
       setDiscoverCache={ctx.setDiscoverCache}
+      setMatchesCache={ctx.setMatchesCache}
       cardViewMode={ctx.cardViewMode}
       setCardViewMode={ctx.setCardViewMode}
     />

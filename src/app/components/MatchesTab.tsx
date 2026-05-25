@@ -289,6 +289,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         );
         break;
       default:
+        movies.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         break;
     }
 
