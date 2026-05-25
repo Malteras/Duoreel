@@ -791,7 +791,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
       {/* Pick Tonight overlay */}
       {showPickTonight && (
         <PickTonightScreen
-          movies={matchedMovies}
+          movies={filteredAndSortedMovies}
           watchedIds={watchedMovieIds}
           partnerWatchedIds={partnerWatchedIds}
           onBack={() => setShowPickTonight(false)}
