@@ -281,8 +281,8 @@ export function MoviesTab({
   const [sectionPage, setSectionPage] = useState(1);
   const [sectionHasMore, setSectionHasMore] = useState(true);
   const sectionSentinelRef = useRef<HTMLDivElement | null>(null);
-  // Seed movie for "Because you saved X" — random from top 10 liked movies
-  const [recSeedMovie, setRecSeedMovie] = useState<Movie | null>(() => discoverCache?.recSeedMovie ?? null);
+  // Seed movie for "Because you saved X" — random from top 10 liked movies, always fresh per mount
+  const [recSeedMovie, setRecSeedMovie] = useState<Movie | null>(null);
   // Track section preview like loading per movie
   const [sectionLikeLoadingIds, setSectionLikeLoadingIds] = useState<Set<number>>(new Set());
   const [sectionPreviewsLoading, setSectionPreviewsLoading] = useState(
@@ -545,6 +545,8 @@ export function MoviesTab({
   // Prevents re-running fetchSectionPreviews on every save action.
   // Set to true after the first successful fetch.
   const sectionFetchedRef = useRef(false);
+  // Tracks whether we've picked a fresh seed after a cache-restore (reset on remount)
+  const seedPickedRef = useRef(false);
   const gemsGenreIdRef = useRef<number | null>(null);
   const gemsPageRef = useRef<number>(1);
 
@@ -619,7 +621,6 @@ export function MoviesTab({
       setDiscoverCache(c => c ? {
         ...c,
         sectionPreviews: { trending: trendingPreview, gems: gemsPreview, recs: recsPreview },
-        recSeedMovie: seed,
       } : null);
     } catch (err) {
       console.error('Error fetching section previews:', err);
@@ -664,7 +665,6 @@ export function MoviesTab({
           ? {
               ...c,
               sectionPreviews: { ...c.sectionPreviews, recs: recsPreview },
-              recSeedMovie: newSeed,
             }
           : null,
       );
@@ -679,14 +679,16 @@ export function MoviesTab({
   // sectionFetchedRef prevents re-running on every subsequent save action.
   useEffect(() => {
     if (!accessToken) return;
-    if (discoverCache?.sectionPreviews) return; // already restored from cache
+    if (discoverCache?.sectionPreviews) {
+      // Trending/gems are restored from cache — still pick a fresh seed and fetch recs.
+      // Wait until liked movies are loaded so refreshRecs has a pool to draw from.
+      if (!seedPickedRef.current && likedMoviesRef.current.length > 0) {
+        seedPickedRef.current = true;
+        refreshRecs();
+      }
+      return;
+    }
     if (sectionFetchedRef.current) return;
-    // likedMovies.length guard removed — trending and gems have no dependency on
-    // liked movies. fetchSectionPreviews handles seed=null gracefully.
-    // contextLoading guard removed — watchedMovieIds/notInterestedMovieIds are already
-    // available from the interactions localStorage cache seeded on mount.
-    // Worst case: a watched movie briefly shows in a section preview until the
-    // full interactions/all fetch completes and updates the sets. Acceptable.
     sectionFetchedRef.current = true;
     fetchSectionPreviews();
   // eslint-disable-next-line react-hooks/exhaustive-deps
