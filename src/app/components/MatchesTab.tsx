@@ -533,8 +533,11 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               {!loading && matchedMovies.length > 0 && (
                 <div className="md:hidden flex items-center gap-2 flex-shrink-0">
                   <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white w-[44px] h-8 text-sm px-2">
-                      <ArrowUpDown className="size-3.5 text-slate-400 flex-shrink-0" />
+                    <SelectTrigger className="bg-slate-700/50 border-slate-600 text-white max-w-[140px] h-8 text-sm">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <ArrowUpDown className="size-3.5 flex-shrink-0 text-slate-400" />
+                        <span className="truncate"><SelectValue /></span>
+                      </div>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="default">Recently Matched</SelectItem>
