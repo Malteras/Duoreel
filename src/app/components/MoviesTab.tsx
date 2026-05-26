@@ -211,6 +211,9 @@ export function MoviesTab({
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  // Incremented each time a fresh (page-1, non-append) set of search results loads.
+  // Included in the enrichment dep so useEnrichMovies re-fires even when movie count stays the same.
+  const [searchKey, setSearchKey] = useState(0);
   const [searchPage, setSearchPage] = useState(1);
   const [searchHasMore, setSearchHasMore] = useState(false);
   const [searchLoadingMore, setSearchLoadingMore] = useState(false);
@@ -316,6 +319,10 @@ export function MoviesTab({
 
   const baseUrl = API_BASE_URL;
 
+  // Changes when filters change OR when a fresh search result set arrives.
+  // Passed as dep to useEnrichMovies so enrichment re-triggers even if movie count stays the same.
+  const enrichDep = useMemo(() => ({ filters, searchKey }), [filters, searchKey]);
+
   // Movie details enrichment tracking — delegated to shared hook
   const { enrichedIds, setEnrichedIds, enrichingRef, resetEnrichment } = useEnrichMovies({
     movies,
@@ -323,7 +330,7 @@ export function MoviesTab({
     publicAnonKey,
     baseUrl,
     batchSize: 5,
-    dep: filters,
+    dep: enrichDep,
     onEnriched: (updatedMovies) => {
       setDiscoverCache(c => c ? { ...c, movies: updatedMovies } : null);
     },
@@ -1287,6 +1294,7 @@ export function MoviesTab({
           } else {
             setMovies(data.results);
             resetEnrichment();
+            setSearchKey((k) => k + 1);
           }
           setSearchPage(pageNum);
           setSearchTotalResults(data.total_results ?? 0);
