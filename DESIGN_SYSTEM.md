@@ -173,10 +173,30 @@ Cards use a poster-first vertical layout with actions overlaid on the image.
 
 ### Badges / Pills
 
-- Genre tags: `bg-purple-600/70 text-white border-purple-500 text-xs cursor-pointer hover:bg-purple-700`
+- Genre tags (on movie cards / detail modal): `bg-purple-600/70 text-white border-purple-500 text-xs cursor-pointer hover:bg-purple-700`
 - Match pill: `bg-pink-600 text-white px-3 py-1.5 rounded-full`
 - Watched pill: `bg-slate-700/80 text-slate-300 px-3 py-1.5 rounded-full backdrop-blur-sm`
 - Streaming provider chip: `bg-slate-700/50 px-2 py-1 rounded-md hover:bg-slate-600 transition-colors`
+
+### Active Filter Chips (Discover toolbar)
+
+Dismissible chips shown in Row 2 of the Discover toolbar when a filter is active. Every active filter must render one — no exceptions.
+
+```tsx
+<Badge
+  variant="secondary"
+  className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
+  onClick={() => setFilters({ ...filters, someFilter: "all" })}
+>
+  Label: {value} <X className="size-3 ml-1" />
+</Badge>
+```
+
+**When to use:** One chip per active filter in the Discover tab toolbar (Genre, Director, Actor, Year, Decade, Language, Duration, Streaming Services, Keyword, IMDb Rating). All chips use the same style — do not introduce per-filter colors.
+
+**Label format:** `"FilterName: value ×"` — e.g. `"Decade: 2020s"`, `"Rating: 7.0+"`, `"Director: Nolan"`.
+
+**Clearing:** clicking the chip resets that filter to its default (`"all"`, `null`, or `[]`). A "Clear all" ghost button appears alongside chips when `activeFilterCount > 0`.
 
 ### Dropdowns / Popovers
 

@@ -34,6 +34,14 @@ const DECADE_OPTIONS = [
   { label: '1990s', value: '1990-1999' },
   { label: '1980s', value: '1980-1989' },
   { label: '1970s', value: '1970-1979' },
+  { label: '1960s', value: '1960-1969' },
+  { label: '1950s', value: '1950-1959' },
+  { label: '1940s', value: '1940-1949' },
+  { label: '1930s', value: '1930-1939' },
+  { label: '1920s', value: '1920-1929' },
+  { label: '1910s', value: '1910-1919' },
+  { label: '1900s', value: '1900-1909' },
+  { label: '1890s', value: '1890-1899' },
 ];
 
 const RATING_OPTIONS = [
@@ -308,7 +316,18 @@ export function AdvancedFiltersModal({
           {/* Decade */}
           <div>
             <Label className="text-slate-300 mb-2 block">Decade</Label>
-            <Select value={filters.decade} onValueChange={(value) => setFilters({ ...filters, decade: value })}>
+            <Select
+              value={filters.decade}
+              onValueChange={(value) => {
+                if (value === 'all') {
+                  setFilters({ ...filters, decade: 'all' });
+                  return;
+                }
+                const [start, end] = value.split('-').map(Number);
+                const yearInRange = filters.year !== 'all' && Number(filters.year) >= start && Number(filters.year) <= end;
+                setFilters({ ...filters, decade: value, year: yearInRange ? filters.year : 'all' });
+              }}
+            >
               <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
                 <SelectValue placeholder="All Time" />
               </SelectTrigger>
@@ -330,7 +349,11 @@ export function AdvancedFiltersModal({
                 <SelectValue placeholder="Any Year" />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
-                {YEAR_OPTIONS.map((option) => (
+                {(() => {
+                  if (filters.decade === 'all') return YEAR_OPTIONS;
+                  const [start, end] = filters.decade.split('-').map(Number);
+                  return YEAR_OPTIONS.filter((o) => o.value === 'all' || (Number(o.value) >= start && Number(o.value) <= end));
+                })().map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
                   </SelectItem>
