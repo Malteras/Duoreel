@@ -1896,7 +1896,7 @@ export function MoviesTab({
               <Badge
                 key={gId}
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() => updateFilter("genres", filters.genres.filter((id) => id !== gId))}
               >
                 {getGenreName(gId)}
@@ -1908,7 +1908,7 @@ export function MoviesTab({
             {filters.director && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, director: null })
                 }
@@ -1920,7 +1920,7 @@ export function MoviesTab({
             {filters.actor && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, actor: null })
                 }
@@ -1932,7 +1932,7 @@ export function MoviesTab({
             {filters.year !== "all" && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, year: "all" })
                 }
@@ -1944,7 +1944,7 @@ export function MoviesTab({
             {filters.decade !== "all" && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, decade: "all" })
                 }
@@ -1956,7 +1956,7 @@ export function MoviesTab({
             {filters.language && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, language: null })
                 }
@@ -1968,7 +1968,7 @@ export function MoviesTab({
             {filters.duration !== "all" && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, duration: "all" })
                 }
@@ -1980,7 +1980,7 @@ export function MoviesTab({
             {filters.streamingServices.length > 0 && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({
                     ...filters,
@@ -1999,7 +1999,7 @@ export function MoviesTab({
             {filters.keyword && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, keyword: null, keywordName: null })
                 }
@@ -2011,7 +2011,7 @@ export function MoviesTab({
             {filters.rating !== "all" && (
               <Badge
                 variant="secondary"
-                className="bg-blue-600/70 text-white border-blue-500 cursor-pointer hover:bg-blue-700"
+                className="bg-blue-500/20 text-blue-300 border-blue-500/40 cursor-pointer hover:bg-blue-500/30"
                 onClick={() =>
                   setFilters({ ...filters, rating: "all" })
                 }
