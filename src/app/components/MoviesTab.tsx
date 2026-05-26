@@ -1941,6 +1941,18 @@ export function MoviesTab({
                 <X className="size-3 ml-1" />
               </Badge>
             )}
+            {filters.decade !== "all" && (
+              <Badge
+                variant="secondary"
+                className="bg-green-600/70 text-white border-green-500 cursor-pointer hover:bg-green-700"
+                onClick={() =>
+                  setFilters({ ...filters, decade: "all" })
+                }
+              >
+                Decade: {filters.decade.slice(0, 4)}s{" "}
+                <X className="size-3 ml-1" />
+              </Badge>
+            )}
             {filters.language && (
               <Badge
                 variant="secondary"
@@ -1993,6 +2005,18 @@ export function MoviesTab({
                 }
               >
                 Keyword: {filters.keywordName || filters.keyword}{" "}
+                <X className="size-3 ml-1" />
+              </Badge>
+            )}
+            {filters.rating !== "all" && (
+              <Badge
+                variant="secondary"
+                className="bg-yellow-600/70 text-white border-yellow-500 cursor-pointer hover:bg-yellow-700"
+                onClick={() =>
+                  setFilters({ ...filters, rating: "all" })
+                }
+              >
+                Rating: {filters.rating}.0+{" "}
                 <X className="size-3 ml-1" />
               </Badge>
             )}
