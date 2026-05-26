@@ -117,6 +117,14 @@ const DECADE_OPTIONS = [
   { label: "1990s", value: "1990-1999" },
   { label: "1980s", value: "1980-1989" },
   { label: "1970s", value: "1970-1979" },
+  { label: "1960s", value: "1960-1969" },
+  { label: "1950s", value: "1950-1959" },
+  { label: "1940s", value: "1940-1949" },
+  { label: "1930s", value: "1930-1939" },
+  { label: "1920s", value: "1920-1929" },
+  { label: "1910s", value: "1910-1919" },
+  { label: "1900s", value: "1900-1909" },
+  { label: "1890s", value: "1890-1899" },
 ];
 
 const RATING_OPTIONS = [
@@ -1792,7 +1800,14 @@ export function MoviesTab({
               {/* Decade */}
               <Select
                 value={filters.decade}
-                onValueChange={(value) => updateFilter("decade", value)}
+                onValueChange={(value) => {
+                  if (value === 'all') { updateFilter("decade", 'all'); return; }
+                  const [start, end] = value.split('-').map(Number);
+                  const yearInRange = filters.year !== 'all' && Number(filters.year) >= start && Number(filters.year) <= end;
+                  setFilters((prev) => ({ ...prev, decade: value, year: yearInRange ? prev.year : 'all' }));
+                  setPage(1);
+                  if (!isSearchModeRef.current) { setIsSearchMode(false); setSearchQuery(""); }
+                }}
               >
                 <SelectTrigger className="bg-slate-800/80 border-slate-700 text-white h-11 w-[130px]">
                   <SelectValue placeholder="All Time" />
