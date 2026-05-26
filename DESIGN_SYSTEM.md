@@ -150,7 +150,7 @@ Two rules apply to **every** clickable element in the app:
 | Element type | Cursor class | Hover class |
 |---|---|---|
 | Button, toggle, picker | `cursor-pointer` | full background change (e.g. `hover:bg-slate-700`) |
-| Dropdown trigger (`SelectTrigger`) | `cursor-pointer` | `hover:bg-slate-700/50` |
+| Dropdown trigger (`SelectTrigger`) | `cursor-pointer` | `hover:bg-slate-700` |
 | Dropdown item (`SelectItem`) | `cursor-pointer` | handled by `focus:bg-accent` |
 | Text input | `cursor-text` | `hover:bg-slate-700/50` |
 | Disabled element | `cursor-not-allowed` + `opacity-50` | no hover |
