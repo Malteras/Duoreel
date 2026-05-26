@@ -154,7 +154,7 @@ Two rules apply to **every** clickable element in the app:
 | Button, toggle, picker | `cursor-pointer` | full background change (e.g. `hover:bg-slate-700`) |
 | Dropdown trigger (`SelectTrigger`) | `cursor-pointer` | `hover:bg-slate-700/50` |
 | Dropdown item (`SelectItem`) | `cursor-pointer` | handled by `focus:bg-accent` |
-| Text input | `cursor-text` | no background change |
+| Text input | `cursor-text` | `hover:bg-slate-700/50` |
 | Disabled element | `cursor-not-allowed` + `opacity-50` | no hover |
 
 **Implementation rule:** Fix the root cause in the shared base component so correction propagates automatically. Do NOT add per-instance cursor or hover overrides unless the element genuinely needs a different variant.
