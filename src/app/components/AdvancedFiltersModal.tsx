@@ -545,7 +545,7 @@ export function AdvancedFiltersModal({
                           : [...filters.streamingServices, service.value]
                       });
                     }}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 transition-all ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg border-2 transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-blue-600/20 border-blue-500 text-white shadow-lg shadow-blue-500/20'
                         : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:border-slate-600'

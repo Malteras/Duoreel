@@ -143,6 +143,20 @@ Ghost buttons have NO background and NO border at rest. On hover, they get a sub
 - Never mix variants outside these 6 patterns
 - Ghost buttons must never have a solid or opaque hover background
 
+### Interactive States (Cursor & Hover)
+
+Two rules apply to **every** clickable element in the app:
+
+| Element type | Cursor class | Hover class |
+|---|---|---|
+| Button, toggle, picker | `cursor-pointer` | full background change (e.g. `hover:bg-slate-700`) |
+| Dropdown trigger (`SelectTrigger`) | `cursor-pointer` | `hover:bg-slate-700/50` |
+| Dropdown item (`SelectItem`) | `cursor-pointer` | handled by `focus:bg-accent` |
+| Text input | `cursor-text` | no background change |
+| Disabled element | `cursor-not-allowed` + `opacity-50` | no hover |
+
+**Implementation rule:** Fix the root cause in the shared base component so the correction propagates automatically. Do NOT add per-instance cursor or hover overrides unless the element genuinely needs a different variant.
+
 ### Navigation Tabs
 
 The bottom of the header contains a 3-tab grid nav. Max 3 tabs. Never add a 4th tab.
