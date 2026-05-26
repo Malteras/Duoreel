@@ -1861,7 +1861,7 @@ export function MoviesTab({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => handleViewMode('grid')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    className={`p-1.5 rounded transition-colors cursor-pointer ${viewMode === 'grid' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
                     aria-label="Large card view"
                   >
                     <LayoutList className="size-3.5" />
@@ -1873,7 +1873,7 @@ export function MoviesTab({
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => handleViewMode('compact')}
-                    className={`p-1.5 rounded transition-colors ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
+                    className={`p-1.5 rounded transition-colors cursor-pointer ${viewMode === 'compact' ? 'bg-slate-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}
                     aria-label="Compact grid view"
                   >
                     <LayoutGrid className="size-3.5" />
