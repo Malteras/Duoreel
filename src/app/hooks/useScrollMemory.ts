@@ -21,13 +21,52 @@ export function useScrollMemory() {
 
         prevPathname.current = incoming;
 
-        // Restore incoming tab's scroll position after the DOM has painted
-        if (TAB_PATHS.includes(incoming)) {
-            const saved = scrollMap.current.get(incoming) ?? 0;
-            requestAnimationFrame(() => {
-                window.scrollTo({ top: saved, behavior: "instant" });
-            });
+        if (!TAB_PATHS.includes(incoming)) return;
+
+        const saved = scrollMap.current.get(incoming) ?? 0;
+
+        if (saved === 0) {
+            window.scrollTo({ top: 0, behavior: "instant" });
+            return;
         }
+
+        let rafId: number;
+        let observer: ResizeObserver | null = null;
+        let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+        const canScroll = () =>
+            document.documentElement.scrollHeight - window.innerHeight >= saved;
+
+        const doRestore = () => {
+            if (canScroll()) {
+                observer?.disconnect();
+                if (timeoutId) clearTimeout(timeoutId);
+                window.scrollTo({ top: saved, behavior: "instant" });
+            }
+        };
+
+        rafId = requestAnimationFrame(() => {
+            if (canScroll()) {
+                window.scrollTo({ top: saved, behavior: "instant" });
+                return;
+            }
+
+            // Page not tall enough yet (async content still loading) — watch for growth
+            observer = new ResizeObserver(doRestore);
+            observer.observe(document.documentElement);
+
+            // Give up after 3s and scroll to best-effort position
+            timeoutId = setTimeout(() => {
+                observer?.disconnect();
+                window.scrollTo({ top: saved, behavior: "instant" });
+            }, 3000);
+        });
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            observer?.disconnect();
+            if (timeoutId) clearTimeout(timeoutId);
+        };
     }, [location.pathname]);
 
     const clearScrollPosition = (pathname: string) => {
