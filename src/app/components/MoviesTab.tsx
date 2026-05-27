@@ -1737,8 +1737,8 @@ export function MoviesTab({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Search + Filter Bar */}
-        <div className="mb-6 space-y-4">
+        {/* Search + Filter Bar — hidden inside curated sections */}
+        {!activeSectionView && <div className="mb-6 space-y-4">
           {/* Row 1: Search · Genre · Decade · Rating · Filters · Refresh */}
           <div className="flex gap-3 items-center">
             {/* Search */}
@@ -2075,7 +2075,7 @@ export function MoviesTab({
               </Button>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Section slide container ── */}
         <div className="relative overflow-hidden">
