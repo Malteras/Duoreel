@@ -1592,11 +1592,14 @@ export function MoviesTab({
     }
   };
 
-  const updateFilter = (key: keyof typeof filters, value: typeof filters[keyof typeof filters]) => {
+  const updateFilter = (key: keyof typeof filters, value: typeof filters[keyof typeof filters], clearSearch = false) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(1);
-    // Same as handleApplyFilters — preserve search mode when a query is active.
-    if (!isSearchModeRef.current) {
+    // clearSearch=true when navigating via a chip tap that exits a curated section —
+    // search mode must be cleared so the filters effect runs fetchMovies, not the search path.
+    if (!isSearchModeRef.current || clearSearch) {
+      isSearchModeRef.current = false;
+      searchQueryRef.current = "";
       setIsSearchMode(false);
       setSearchQuery("");
     }
@@ -1737,8 +1740,8 @@ export function MoviesTab({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Search + Filter Bar */}
-        <div className="mb-6 space-y-4">
+        {/* Search + Filter Bar — hidden inside curated sections */}
+        {!activeSectionView && <div className="mb-6 space-y-4">
           {/* Row 1: Search · Genre · Decade · Rating · Filters · Refresh */}
           <div className="flex gap-3 items-center">
             {/* Search */}
@@ -2075,7 +2078,7 @@ export function MoviesTab({
               </Button>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* ── Section slide container ── */}
         <div className="relative overflow-hidden">
@@ -2126,10 +2129,10 @@ export function MoviesTab({
                             onNotInterested={() => handleNotInterested(movie.id)}
                             isNotInterestedLoading={notInterestedLoadingIds.has(movie.id)}
                             onClick={() => openMovie(movie)}
-                            onDirectorClick={(director) => { exitSection(); updateFilter('director', director); }}
-                            onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]); }}
-                            onYearClick={(year) => { exitSection(); updateFilter('year', year.toString()); }}
-                            onActorClick={(actor) => { exitSection(); updateFilter('actor', actor); }}
+                            onDirectorClick={(director) => { exitSection(); updateFilter('director', director, true); }}
+                            onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()], true); }}
+                            onYearClick={(year) => { exitSection(); updateFilter('year', year.toString(), true); }}
+                            onActorClick={(actor) => { exitSection(); updateFilter('actor', actor, true); }}
                             imdbRating={imdbRatings.get(movie.id)}
                             projectId={projectId}
                             publicAnonKey={publicAnonKey}
@@ -2156,8 +2159,8 @@ export function MoviesTab({
                               globalImdbCache={globalImdbCache}
                               partnerWatchedIds={partnerWatchedIds}
                               partnerName={partnerName}
-                              onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]); }}
-                              onDirectorClick={(director) => { exitSection(); updateFilter('director', director); }}
+                              onGenreClick={(genreId) => { exitSection(); updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()], true); }}
+                              onDirectorClick={(director) => { exitSection(); updateFilter('director', director, true); }}
                               topLeftOverlay={
                                 <button
                                   className={`size-7 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${isLikeLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
@@ -2840,7 +2843,7 @@ export function MoviesTab({
         }
         onGenreClick={(genreId) => {
           exitSection();
-          updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()]);
+          updateFilter("genres", filters.genres.includes(genreId.toString()) ? filters.genres.filter(id => id !== genreId.toString()) : [...filters.genres, genreId.toString()], !!activeSectionView);
           closeMovie();
         }}
         onKeywordClick={(keywordId, keywordName) => {
@@ -2853,12 +2856,12 @@ export function MoviesTab({
         }}
         onDirectorClick={(director) => {
           exitSection();
-          updateFilter("director", director);
+          updateFilter("director", director, !!activeSectionView);
           closeMovie();
         }}
         onActorClick={(actor) => {
           exitSection();
-          updateFilter("actor", actor);
+          updateFilter("actor", actor, !!activeSectionView);
           closeMovie();
         }}
         onLanguageClick={() => {}}
