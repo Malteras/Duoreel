@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink, useNavigate, useOutletContext } from "react-router";
+import { useScrollMemory } from "../hooks/useScrollMemory";
 import { Film, Bookmark, Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
@@ -96,13 +97,15 @@ function AppLayoutContent({
 }: AppLayoutContentProps) {
     const { refreshInteractions } = useUserInteractions();
     const navigate = useNavigate();
+    const { clearScrollPosition } = useScrollMemory();
 
     const handleLogoClick = () => {
         // Bust the discover cache so MoviesTab re-mounts with DEFAULT_FILTERS and
         // fresh results — equivalent to "Clear all filters + go to Discover".
         context.setDiscoverCache(null);
+        clearScrollPosition("/discover");
         navigate("/discover");
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        window.scrollTo({ top: 0, behavior: "instant" });
     };
 
     const tabCls = ({ isActive }: { isActive: boolean }) =>
