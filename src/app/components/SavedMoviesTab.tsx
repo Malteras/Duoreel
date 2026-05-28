@@ -728,7 +728,7 @@ export function SavedMoviesTab({
                   {' · '}
                   <button
                     onClick={() => setFilterBy('all')}
-                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline cursor-pointer"
                   >
                     {hiddenWatchedCount} watched {hiddenWatchedCount === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
                   </button>
@@ -739,7 +739,7 @@ export function SavedMoviesTab({
                   {' · '}
                   <button
                     onClick={() => setFilterBy('all')}
-                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline cursor-pointer"
                   >
                     {likedMovies.length - hiddenWatchedCount} unwatched {(likedMovies.length - hiddenWatchedCount) === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
                   </button>
@@ -755,7 +755,7 @@ export function SavedMoviesTab({
                   {' · '}
                   <button
                     onClick={() => setPartnerFilterBy('all')}
-                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline cursor-pointer"
                   >
                     {hiddenPartnerWatchedCount} watched {hiddenPartnerWatchedCount === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
                   </button>
@@ -766,7 +766,7 @@ export function SavedMoviesTab({
                   {' · '}
                   <button
                     onClick={() => setPartnerFilterBy('all')}
-                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                    className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline cursor-pointer"
                   >
                     {partnerLikedMovies.length - hiddenPartnerWatchedCount} unwatched {(partnerLikedMovies.length - hiddenPartnerWatchedCount) === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
                   </button>

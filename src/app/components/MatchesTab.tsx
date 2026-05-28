@@ -635,7 +635,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     {' · '}
                     <button
                       onClick={() => setFilterBy('all')}
-                      className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                      className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline cursor-pointer"
                     >
                       {hiddenWatchedCount} watched {hiddenWatchedCount === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
                     </button>
@@ -646,7 +646,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     {' · '}
                     <button
                       onClick={() => setFilterBy('all')}
-                      className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline"
+                      className="text-xs text-slate-500 hover:text-blue-400 transition-colors inline cursor-pointer"
                     >
                       {matchedMovies.length - hiddenWatchedCount} unwatched {(matchedMovies.length - hiddenWatchedCount) === 1 ? 'movie' : 'movies'} hidden · <span className="underline">Show all</span>
                     </button>
