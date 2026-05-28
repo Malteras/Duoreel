@@ -1765,7 +1765,7 @@ export function MoviesTab({
                     setIsSearchMode(false);
                     fetchMovies(1, false);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
                   aria-label="Clear search"
                 >
                   <X className="size-3.5" />
@@ -2093,7 +2093,7 @@ export function MoviesTab({
                 <div className="flex items-center gap-3 mb-4">
                   <button
                     onClick={exitSection}
-                    className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm"
+                    className="flex items-center gap-1.5 text-slate-400 hover:text-white transition-colors text-sm cursor-pointer"
                   >
                     <ChevronLeft className="size-4" />
                     Discover
@@ -2560,7 +2560,7 @@ export function MoviesTab({
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent opacity-90" />
                         <div className="absolute top-2 left-2">
                           <button
-                            className={`size-8 rounded-full flex items-center justify-center transition-colors ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${likeLoadingIds.has(movie.id) ? 'opacity-70 cursor-not-allowed' : ''}`}
+                            className={`size-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-white/90 hover:bg-white'} ${likeLoadingIds.has(movie.id) ? 'opacity-70 !cursor-not-allowed' : ''}`}
                             onClick={(e) => { e.stopPropagation(); if (!likeLoadingIds.has(movie.id)) { isLiked ? handleUnlike(movie.id) : handleLike(movie); } }}
                             disabled={likeLoadingIds.has(movie.id)}
                             aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
@@ -2573,7 +2573,7 @@ export function MoviesTab({
                         </div>
                         <div className="absolute top-2 right-2">
                           <button
-                            className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors"
+                            className="size-8 rounded-full bg-slate-800/90 hover:bg-slate-700 flex items-center justify-center transition-colors cursor-pointer"
                             onClick={(e) => { e.stopPropagation(); handleNotInterested(movie.id); }}
                             aria-label="Not interested"
                           >
@@ -2737,7 +2737,7 @@ export function MoviesTab({
                           </div>
                         )}
                         <button
-                          className={`size-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-700 border border-slate-600 hover:bg-slate-600'}`}
+                          className={`size-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0 cursor-pointer ${isLiked ? 'bg-green-500 hover:bg-green-600' : 'bg-slate-700 border border-slate-600 hover:bg-slate-600'}`}
                           onClick={(e) => { e.stopPropagation(); isLiked ? handleUnlike(movie.id) : handleLike(movie); }}
                           aria-label={isLiked ? 'Remove from watchlist' : 'Save to watchlist'}
                         >
@@ -2769,7 +2769,7 @@ export function MoviesTab({
       {/* ── Mobile Filters FAB — only on mobile, only outside search mode ── */}
       {!isSearchMode && (
         <button
-          className="md:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 bg-slate-800 border border-slate-600 text-white text-sm font-semibold px-4 py-3 rounded-full shadow-lg active:scale-95 transition-transform"
+          className="md:hidden fixed bottom-20 right-4 z-40 flex items-center gap-2 bg-slate-800 border border-slate-600 text-white text-sm font-semibold px-4 py-3 rounded-full shadow-lg active:scale-95 transition-transform cursor-pointer"
           onClick={() => setShowFiltersModal(true)}
           style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.5)' }}
         >

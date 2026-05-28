@@ -132,7 +132,7 @@ function SearchFilterInput({
             onSearchChange(e.target.value);
           }}
           placeholder={placeholder}
-          className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-colors pr-10 placeholder:text-slate-500"
+          className="w-full bg-slate-800 border border-slate-700 rounded-md px-3 py-2 text-white text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] transition-colors pr-10 placeholder:text-slate-500 cursor-text"
         />
 
         {/* Right side: spinner or ✕ clear button */}
@@ -147,7 +147,7 @@ function SearchFilterInput({
               // Focus the input after clearing so user can immediately type
               setTimeout(() => inputRef.current?.focus(), 0);
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-700 transition-colors text-slate-400 hover:text-white"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-slate-700 transition-colors text-slate-400 hover:text-white cursor-pointer"
             aria-label="Clear"
           >
             <X className="size-4" />
