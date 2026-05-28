@@ -9,6 +9,7 @@ import { MatchesPage } from './components/MatchesPage';
 import { ProfilePage } from './components/ProfilePage';
 import { InvitePage } from './components/InvitePage';
 import { LandingPage } from './components/LandingPage';
+import { InviteFlowProto } from './components/InviteFlowProto'; // PROTOTYPE — delete after #91
 
 export const router = createBrowserRouter([
   {
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
       { index: true, Component: LandingPage },
       { path: 'login', Component: AuthPage },
       { path: 'invite/:code', Component: InvitePage }, // Public invite route (handles auth internally)
+      { path: 'proto-invite', Component: InviteFlowProto }, // PROTOTYPE — delete after #91
 
       // Protected routes — unauthed visitors are redirected to /login?redirect=…
       {
