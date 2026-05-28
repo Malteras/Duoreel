@@ -17,7 +17,7 @@ type InviteStatus =
 
 export function InvitePage() {
   const { code } = useParams<{ code: string }>();
-  const { accessToken } = useAuth();
+  const { accessToken, loading } = useAuth();
   const navigate = useNavigate();
 
   const [status, setStatus] = useState<InviteStatus>('loading');
@@ -31,6 +31,10 @@ export function InvitePage() {
   const ogImage           = `${siteUrl}/og.svg`;
 
   useEffect(() => {
+    // Wait for auth to finish initializing before acting — otherwise we'd
+    // redirect to login mid-PKCE-exchange while accessToken is still null.
+    if (loading) return;
+
     // Not logged in — redirect to login, preserve invite in URL
     if (!accessToken) {
       navigate(`/login?redirect=/invite/${code}`, { replace: true });
@@ -86,7 +90,7 @@ export function InvitePage() {
     };
 
     acceptInvite();
-  }, [accessToken, code]);
+  }, [accessToken, code, loading]);
 
   // ─── Loading State ─────────────────────────────────────────
   if (status === 'loading') {
