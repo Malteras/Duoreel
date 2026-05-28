@@ -33,7 +33,7 @@ interface AuthContextType {
   userId: string | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (postLoginRedirect?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -87,6 +87,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               });
             } catch (e) {
               console.error('Failed to call ensure-profile:', e);
+            }
+
+            // Consume any pending post-OAuth redirect (e.g. invite link that
+            // triggered the Google sign-in flow)
+            const pendingRedirect = sessionStorage.getItem('duoreel_post_oauth_redirect');
+            if (pendingRedirect) {
+              sessionStorage.removeItem('duoreel_post_oauth_redirect');
+              setLoading(false);
+              window.location.replace(pendingRedirect);
+              return;
             }
 
             setLoading(false);
@@ -150,7 +160,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUserId(null);
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (postLoginRedirect?: string) => {
+    if (postLoginRedirect) {
+      sessionStorage.setItem('duoreel_post_oauth_redirect', postLoginRedirect);
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -158,6 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
     });
     if (error) {
+      sessionStorage.removeItem('duoreel_post_oauth_redirect');
       console.error('Google sign-in error:', error);
       throw error;
     }

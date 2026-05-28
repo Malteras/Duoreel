@@ -33,7 +33,7 @@ export function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(redirect !== '/discover' ? redirect : undefined);
       // Browser redirects to Google — no navigation needed here
     } catch (error) {
       toast.error('Failed to start Google sign-in. Please try again.');
