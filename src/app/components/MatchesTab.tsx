@@ -456,7 +456,6 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   const handleCopyInviteLink = () => {
     navigator.clipboard.writeText(`${window.location.origin}/invite/${inviteCode}`);
-    toast.success('📋 Invite link copied! Send it to your partner.');
   };
 
   const handleRegenerateCode = async () => {
