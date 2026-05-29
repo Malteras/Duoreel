@@ -1,4 +1,5 @@
-import { Loader2, Link as LinkIcon, Copy, RotateCcw } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, Link as LinkIcon, Copy, RotateCcw, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -39,6 +40,14 @@ export function PartnerConnectCard({
   outgoingRequests,
   inputId = 'partnerEmail',
 }: PartnerConnectCardProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    onCopyLink();
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="space-y-4">
       {/* Pending outgoing request notice */}
@@ -69,11 +78,12 @@ export function PartnerConnectCard({
                 className="bg-slate-800 border-slate-600 text-cyan-400 font-mono text-xs"
               />
               <Button
-                onClick={onCopyLink}
-                className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+                onClick={handleCopy}
+                className={`flex-shrink-0 transition-colors ${copied ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
               >
-                <Copy className="size-4 mr-2" />
-                Copy
+                {copied
+                  ? <><Check className="size-4 mr-2" />Copied</>
+                  : <><Copy className="size-4 mr-2" />Copy</>}
               </Button>
             </div>
             <div className="flex items-center justify-between">
