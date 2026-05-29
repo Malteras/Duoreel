@@ -587,9 +587,11 @@ app.get(
         return c.json({ error: "Unauthorized" }, 401);
       }
 
-      const requests = await kv.getByPrefix(
+      const all = await kv.getByPrefix(
         `partner_request:${user.id}:`,
       );
+      // Invite-link requests are handled separately by GET /partner/pending
+      const requests = all.filter((r: any) => r.source !== "invite_link");
       return c.json({ requests });
     } catch (error) {
       console.error("Error fetching incoming requests:", error);
@@ -623,15 +625,19 @@ app.get(
         `partner_request:${user.id}:`,
       );
 
-      const pending = records
-        .filter((r) => r.value?.source === "invite_link")
-        .map((r) => {
+      const inviteRecords = records.filter((r) => r.value?.source === "invite_link");
+
+      const pending = await Promise.all(
+        inviteRecords.map(async (r) => {
           const inviterId = r.key.split(":")[2];
-          return {
-            inviterId,
-            inviterName: r.value?.inviterName || "Someone",
-          };
-        });
+          let inviterName = r.value?.inviterName;
+          if (!inviterName) {
+            const profile = await kv.get(`user:${inviterId}`);
+            inviterName = profile?.name;
+          }
+          return { inviterId, inviterName: inviterName || "Someone" };
+        }),
+      );
 
       return c.json({ pending });
     } catch (error) {
