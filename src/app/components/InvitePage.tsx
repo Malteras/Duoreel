@@ -9,7 +9,6 @@ import { API_BASE_URL } from '../../utils/api';
 
 type InviteStatus =
   | 'loading'
-  | 'success'
   | 'error'
   | 'self_invite'
   | 'already_connected'
@@ -56,18 +55,14 @@ export function InvitePage() {
         const data = await res.json();
 
         if (res.ok) {
-          setPartnerName(data.inviterName);
-
           if (data.alreadySent) {
-            setStatus('success');
             toast.info(`You've already sent a request to ${data.inviterName}`);
           } else {
-            setStatus('success');
             toast.success(`🎬 Request sent to ${data.inviterName}!`);
           }
 
-          // Redirect to discover after 3 seconds
-          setTimeout(() => navigate('/discover'), 3000);
+          // Redirect to Matches immediately — the banner there lets them act
+          navigate('/matches', { replace: true });
         } else if (data.error === 'self_invite') {
           setStatus('self_invite');
           toast.error("That's your own invite link!");
@@ -113,38 +108,6 @@ export function InvitePage() {
           <div className="text-center">
             <Loader2 className="size-16 text-pink-500 animate-spin mx-auto mb-4" />
             <p className="text-slate-400 text-lg">Processing invite link...</p>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // ─── Success State ─────────────────────────────────────────
-  if (status === 'success') {
-    return (
-      <>
-        <Helmet>
-          <title>{`Join ${partnerName} on DuoReel`}</title>
-          <meta property="og:title"       content={`Join ${partnerName} on DuoReel 🎬`} />
-          <meta property="og:description" content={inviteDescription} />
-          <meta property="og:image"       content={ogImage} />
-        </Helmet>
-        <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center px-4">
-          <div className="max-w-md w-full text-center">
-            <div className="text-6xl mb-6">🎬</div>
-            <h1 className="text-3xl font-bold text-white mb-3">
-              Request sent to <span className="text-pink-500">{partnerName}</span>!
-            </h1>
-            <p className="text-slate-400 mb-8">
-              They'll get a notification and can accept your request. You'll both be notified when connected.
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-6">
-              <Loader2 className="size-4 animate-spin" />
-              <span>Redirecting to Discover...</span>
-            </div>
-            <Button onClick={() => navigate('/discover')} className="bg-pink-600 hover:bg-pink-700">
-              Go to Discover Now →
-            </Button>
           </div>
         </div>
       </>

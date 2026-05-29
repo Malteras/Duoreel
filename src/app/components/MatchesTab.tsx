@@ -54,6 +54,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [matchedMovies, setMatchedMovies] = useState<Movie[]>(matchesCache?.matchedMovies ?? []);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]); // partner request objects, not movies
   const [outgoingRequests, setOutgoingRequests] = useState<any[]>([]); // partner request objects, not movies
+  const [pendingInvites, setPendingInvites] = useState<{ inviterId: string; inviterName: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [partnerEmail, setPartnerEmail] = useState('');
@@ -102,12 +103,13 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     fetchInFlightRef.current = true;
     if (showSpinner) setLoading(true);
     try {
-      const [partnerRes, incomingRes, outgoingRes, matchesRes, inviteCodeRes] = await Promise.all([
+      const [partnerRes, incomingRes, outgoingRes, matchesRes, inviteCodeRes, pendingRes] = await Promise.all([
         fetch(`${baseUrl}/partner`, { headers: { Authorization: `Bearer ${accessToken}` } }),
         fetch(`${baseUrl}/partner/requests/incoming`, { headers: { Authorization: `Bearer ${accessToken}` } }),
         fetch(`${baseUrl}/partner/requests/outgoing`, { headers: { Authorization: `Bearer ${accessToken}` } }),
         fetch(`${baseUrl}/movies/matches`, { headers: { Authorization: `Bearer ${accessToken}` } }),
         fetch(`${baseUrl}/partner/invite-code`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch(`${baseUrl}/partner/pending`, { headers: { Authorization: `Bearer ${accessToken}` } }),
       ]);
 
       const partnerData = await partnerRes.json();
@@ -118,6 +120,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
       const outgoingData = await outgoingRes.json();
       setOutgoingRequests(outgoingData.requests || []);
+
+      const pendingData = await pendingRes.json();
+      setPendingInvites(pendingData.pending || []);
 
       const matchesData = await matchesRes.json();
       if (matchesData.movies) {
@@ -335,6 +340,41 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
     } catch { toast.error('Failed to reject request'); }
   };
 
+  const handleAcceptInvite = async (inviterId: string) => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch(`${baseUrl}/partner/accept`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ fromUserId: inviterId }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || 'Failed to accept invite'); }
+      else {
+        toast.success('🎬 Connected! Start finding movies to watch together.');
+        setPendingInvites(prev => prev.filter(i => i.inviterId !== inviterId));
+        fetchData(false);
+      }
+    } catch { toast.error('Failed to accept invite'); }
+  };
+
+  const handleDeclineInvite = async (inviterId: string) => {
+    if (!accessToken) return;
+    try {
+      const res = await fetch(`${baseUrl}/partner/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ fromUserId: inviterId }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast.error(data.error || 'Failed to decline invite'); }
+      else {
+        toast.success('Invite declined');
+        setPendingInvites(prev => prev.filter(i => i.inviterId !== inviterId));
+      }
+    } catch { toast.error('Failed to decline invite'); }
+  };
+
   const handleRemovePartner = async () => {
     if (!accessToken) return;
     try {
@@ -449,6 +489,35 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" style={{ minHeight: '100dvh' }}>
       <div className="max-w-7xl mx-auto px-4 py-8">
+
+        {/* Pending invite-link requests */}
+        {pendingInvites.map(invite => (
+          <div key={invite.inviterId} className="flex items-center gap-4 bg-slate-800/50 border border-pink-500/30 rounded-2xl px-5 py-4 mb-4 animate-fade-in-up">
+            <div className="size-10 rounded-full bg-pink-500/10 border border-pink-500/20 flex items-center justify-center flex-shrink-0">
+              <Heart className="size-5 text-pink-400 fill-pink-400" />
+            </div>
+            <p className="flex-1 text-white text-sm font-medium">
+              <span className="text-pink-400">{invite.inviterName}</span> invited you to be movie partners
+            </p>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button
+                size="sm"
+                onClick={() => handleAcceptInvite(invite.inviterId)}
+                className="bg-pink-600 hover:bg-pink-700 cursor-pointer"
+              >
+                <Check className="size-4 mr-1" />Accept
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleDeclineInvite(invite.inviterId)}
+                className="bg-slate-800 border-slate-600 text-slate-300 hover:bg-slate-700/50 cursor-pointer"
+              >
+                <X className="size-4 mr-1" />Decline
+              </Button>
+            </div>
+          </div>
+        ))}
 
         {/* Incoming Partner Requests */}
         {incomingRequests.length > 0 && (
