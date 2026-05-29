@@ -75,7 +75,7 @@ Always use `getByPrefixPaginated` for watched movies, liked movies, notification
 
 | Key Pattern                               | Value                           | Purpose                 |
 | ----------------------------------------- | ------------------------------- | ----------------------- |
-| `partner_request:{toUserId}:{fromUserId}` | `{ fromUserId, toUserId, ... }` | Pending partner request |
+| `partner_request:{toUserId}:{fromUserId}` | `{ fromUserId, toUserId, source, inviterName?, createdAt }` | Pending partner request. `source` is `"invite_link"` or absent (email flow). `inviterName` present only for invite-link records. |
 
 ### IMDb / OMDb Keys
 
@@ -218,8 +218,9 @@ frontend uses a base URL that strips this — document them without the prefix b
 
 | Type                   | Trigger                              |
 | ---------------------- | ------------------------------------ |
-| `partnership_request`  | Someone sends a partner request      |
-| `partnership_accepted` | Your request was accepted            |
+| `partnership_request`  | Someone sends a partner request (email-based flow only) |
+| `partnership_accepted` | Your email-based request was accepted |
+| `invite_accepted`      | Someone accepted your invite link (invite-link flow) |
 | `movie_match`          | Partner liked a movie you also liked |
 | `match_milestone`      | Hit 5 / 10 / 25 matches              |
 | `import_complete`      | Letterboxd import finished           |

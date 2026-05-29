@@ -23,6 +23,7 @@ async function createNotification(
   type:
     | "partnership_request"
     | "partnership_accepted"
+    | "invite_accepted"
     | "movie_match"
     | "match_milestone"
     | "import_complete"
@@ -600,6 +601,49 @@ app.get(
   },
 );
 
+// Get pending invite-link invitations for the current user (invited person's view)
+app.get(
+  "/make-server-5623fde1/partner/pending",
+  async (c) => {
+    try {
+      const accessToken = c.req.header("Authorization")?.split(" ")[1];
+      if (!accessToken) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser(accessToken);
+      if (authError || !user?.id) {
+        return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const records = await getByPrefixPaginatedWithKeys(
+        `partner_request:${user.id}:`,
+      );
+
+      const pending = records
+        .filter((r) => r.value?.source === "invite_link")
+        .map((r) => {
+          const inviterId = r.key.split(":")[2];
+          return {
+            inviterId,
+            inviterName: r.value?.inviterName || "Someone",
+          };
+        });
+
+      return c.json({ pending });
+    } catch (error) {
+      console.error("Error fetching pending invites:", error);
+      return c.json(
+        { error: `Failed to fetch pending invites: ${error}` },
+        500,
+      );
+    }
+  },
+);
+
 // Get outgoing partner requests (pending)
 app.get(
   "/make-server-5623fde1/partner/requests/outgoing",
@@ -683,10 +727,13 @@ app.post("/make-server-5623fde1/partner/accept", async (c) => {
     // Delete the request
     await kv.del(`partner_request:${user.id}:${fromUserId}`);
 
-    // Create notification for the requester
+    // Notify the other user — use invite_accepted for invite-link flow, partnership_accepted for email flow
+    const notifType = request.source === "invite_link"
+      ? "invite_accepted"
+      : "partnership_accepted";
     await createNotification(
       fromUserId,
-      "partnership_accepted",
+      notifType,
       {
         fromUserId: user.id,
         fromName: userProfile.name || user.email || "Someone",
@@ -922,26 +969,17 @@ app.post(
         });
       }
 
-      // 5. Create partner REQUEST (not instant connection)
+      // 5. Create pending invite record — invited person confirms in the app
       await kv.set(`partner_request:${user.id}:${inviterId}`, {
         fromUserId: user.id,
         toUserId: inviterId,
         source: "invite_link",
+        inviterName: invite.name,
         createdAt: new Date().toISOString(),
       });
 
-      // 6. Notify the inviter — they decide whether to accept
-      await createNotification(
-        inviterId,
-        "partnership_request",
-        {
-          fromUserId: user.id,
-          fromName: myProfile.name || user.email || "Someone",
-        },
-      );
-
       console.log(
-        `Partner request sent from ${user.id} to ${inviterId} via invite link`,
+        `Pending invite registered: invited=${user.id} inviter=${inviterId} via invite link`,
       );
 
       return c.json({
