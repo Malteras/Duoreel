@@ -733,6 +733,24 @@ app.post("/make-server-5623fde1/partner/accept", async (c) => {
     // Delete the request
     await kv.del(`partner_request:${user.id}:${fromUserId}`);
 
+    // Recompute matches from the intersection of both users' liked lists
+    const [userLikedKeys, partnerLikedKeys] = await Promise.all([
+      getKeysByPrefixPaginated(`liked:${user.id}:`),
+      getKeysByPrefixPaginated(`liked:${fromUserId}:`),
+    ]);
+    const userMovieIds = new Set(
+      userLikedKeys.map((k) => k.split(":")[2]),
+    );
+    const sharedMovieIds = partnerLikedKeys
+      .map((k) => k.split(":")[2])
+      .filter((id) => userMovieIds.has(id));
+    await Promise.all(
+      sharedMovieIds.flatMap((movieId) => [
+        kv.set(`match:${user.id}:${movieId}`, { movieId }),
+        kv.set(`match:${fromUserId}:${movieId}`, { movieId }),
+      ]),
+    );
+
     // Notify the other user — use invite_accepted for invite-link flow, partnership_accepted for email flow
     const notifType = request.source === "invite_link"
       ? "invite_accepted"
@@ -828,6 +846,16 @@ app.post("/make-server-5623fde1/partner/remove", async (c) => {
 
     await kv.set(`user:${user.id}`, userProfile);
     await kv.set(`user:${partnerId}`, partnerProfile);
+
+    // Clear all match records for both users so stale matches don't leak into a new partnership
+    const [userMatchKeys, partnerMatchKeys] = await Promise.all([
+      getKeysByPrefixPaginated(`match:${user.id}:`),
+      getKeysByPrefixPaginated(`match:${partnerId}:`),
+    ]);
+    await Promise.all([
+      ...userMatchKeys.map((k) => kv.del(k)),
+      ...partnerMatchKeys.map((k) => kv.del(k)),
+    ]);
 
     return c.json({
       success: true,
