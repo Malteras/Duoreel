@@ -57,6 +57,8 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
   const [pendingInvites, setPendingInvites] = useState<{ inviterId: string; inviterName: string }[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [acceptingInviteId, setAcceptingInviteId] = useState<string | null>(null);
+  const [acceptingRequestId, setAcceptingRequestId] = useState<string | null>(null);
   const [partnerEmail, setPartnerEmail] = useState('');
 
   // ── Filter / sort state ────────────────────────────────────────────────────
@@ -314,6 +316,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   const handleAcceptRequest = async (fromUserId: string) => {
     if (!accessToken) return;
+    setAcceptingRequestId(fromUserId);
     try {
       const res = await fetch(`${baseUrl}/partner/accept`, {
         method: 'POST',
@@ -321,9 +324,9 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         body: JSON.stringify({ fromUserId }),
       });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.error || 'Failed to accept request'); }
+      if (!res.ok) { toast.error(data.error || 'Failed to accept request'); setAcceptingRequestId(null); }
       else { toast.success('Partner request accepted!'); fetchData(); }
-    } catch { toast.error('Failed to accept request'); }
+    } catch { toast.error('Failed to accept request'); setAcceptingRequestId(null); }
   };
 
   const handleRejectRequest = async (fromUserId: string) => {
@@ -342,6 +345,7 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
 
   const handleAcceptInvite = async (inviterId: string) => {
     if (!accessToken) return;
+    setAcceptingInviteId(inviterId);
     try {
       const res = await fetch(`${baseUrl}/partner/accept`, {
         method: 'POST',
@@ -349,13 +353,13 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
         body: JSON.stringify({ fromUserId: inviterId }),
       });
       const data = await res.json();
-      if (!res.ok) { toast.error(data.error || 'Failed to accept invite'); }
+      if (!res.ok) { toast.error(data.error || 'Failed to accept invite'); setAcceptingInviteId(null); }
       else {
         toast.success('🎬 Connected! Start finding movies to watch together.');
         setPendingInvites(prev => prev.filter(i => i.inviterId !== inviterId));
         fetchData(false);
       }
-    } catch { toast.error('Failed to accept invite'); }
+    } catch { toast.error('Failed to accept invite'); setAcceptingInviteId(null); }
   };
 
   const handleDeclineInvite = async (inviterId: string) => {
@@ -502,9 +506,12 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
               <Button
                 size="sm"
                 onClick={() => handleAcceptInvite(invite.inviterId)}
+                disabled={acceptingInviteId === invite.inviterId}
                 className="bg-pink-600 hover:bg-pink-700 cursor-pointer"
               >
-                <Check className="size-4 mr-1" />Accept
+                {acceptingInviteId === invite.inviterId
+                  ? <><Loader2 className="size-4 mr-1 animate-spin" />Accepting...</>
+                  : <><Check className="size-4 mr-1" />Accept</>}
               </Button>
               <Button
                 size="sm"
@@ -537,8 +544,15 @@ export function MatchesTab({ accessToken, projectId, publicAnonKey, navigateToDi
                     <p className="text-slate-400 text-sm">{request.fromEmail}</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => handleAcceptRequest(request.fromUserId)} className="bg-green-600 hover:bg-green-700" size="sm">
-                      <Check className="size-4 mr-1" />Accept
+                    <Button
+                      onClick={() => handleAcceptRequest(request.fromUserId)}
+                      disabled={acceptingRequestId === request.fromUserId}
+                      className="bg-green-600 hover:bg-green-700"
+                      size="sm"
+                    >
+                      {acceptingRequestId === request.fromUserId
+                        ? <><Loader2 className="size-4 mr-1 animate-spin" />Accepting...</>
+                        : <><Check className="size-4 mr-1" />Accept</>}
                     </Button>
                     <Button onClick={() => handleRejectRequest(request.fromUserId)} variant="outline" className="bg-slate-800 border-slate-600 text-red-400 hover:bg-red-950 hover:text-red-300" size="sm">
                       <X className="size-4 mr-1" />Reject
