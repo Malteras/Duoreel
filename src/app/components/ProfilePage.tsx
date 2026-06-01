@@ -20,7 +20,7 @@ import {
 } from './ui/alert-dialog';
 import {
   Mail, Upload, Link as LinkIcon, Loader2,
-  RefreshCw, LogOut, Copy, RotateCcw, Unlink,
+  RefreshCw, LogOut, Copy, RotateCcw, Unlink, Check,
   CheckCircle2, Bookmark, Film, Heart, Eye, EyeOff, X,
   ChevronUp, ChevronDown, ChevronsUpDown, BookmarkX
 } from 'lucide-react';
@@ -288,6 +288,7 @@ export function ProfilePage() {
 
   // ─── Partner disconnect ─────────────────────────────────────────
   const [disconnecting, setDisconnecting] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleDisconnectPartner = async () => {
     if (!accessToken) return;
@@ -489,7 +490,8 @@ export function ProfilePage() {
   const handleCopyInviteLink = () => {
     const link = `${window.location.origin}/invite/${inviteCode}`;
     navigator.clipboard.writeText(link);
-    toast.success('📋 Invite link copied! Send it to your partner.');
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
   };
 
   // ─── Regenerate invite code ─────────────────────────────────────
@@ -869,10 +871,11 @@ export function ProfilePage() {
                           />
                           <Button
                             onClick={handleCopyInviteLink}
-                            className="bg-blue-600 hover:bg-blue-700 flex-shrink-0"
+                            className={`flex-shrink-0 transition-colors ${linkCopied ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'}`}
                           >
-                            <Copy className="size-4 mr-2" />
-                            Copy
+                            {linkCopied
+                              ? <><Check className="size-4 mr-2" />Copied</>
+                              : <><Copy className="size-4 mr-2" />Copy</>}
                           </Button>
                         </div>
                         <div className="flex items-center justify-between">
