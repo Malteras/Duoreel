@@ -733,10 +733,18 @@ app.post("/make-server-5623fde1/partner/accept", async (c) => {
     // Delete the request
     await kv.del(`partner_request:${user.id}:${fromUserId}`);
 
-    // Recompute matches from the intersection of both users' liked lists
-    const [userLikedKeys, partnerLikedKeys] = await Promise.all([
-      getKeysByPrefixPaginated(`liked:${user.id}:`),
-      getKeysByPrefixPaginated(`liked:${fromUserId}:`),
+    // Clear any stale matches from a previous partnership, then recompute
+    // from the intersection of both users' liked lists
+    const [userMatchKeys, partnerMatchKeys, userLikedKeys, partnerLikedKeys] =
+      await Promise.all([
+        getKeysByPrefixPaginated(`match:${user.id}:`),
+        getKeysByPrefixPaginated(`match:${fromUserId}:`),
+        getKeysByPrefixPaginated(`liked:${user.id}:`),
+        getKeysByPrefixPaginated(`liked:${fromUserId}:`),
+      ]);
+    await Promise.all([
+      ...userMatchKeys.map((k) => kv.del(k)),
+      ...partnerMatchKeys.map((k) => kv.del(k)),
     ]);
     const userMovieIds = new Set(
       userLikedKeys.map((k) => k.split(":")[2]),
