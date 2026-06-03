@@ -16,7 +16,7 @@ interface NotificationBellProps {
 
 interface Notification {
   id: string;
-  type: 'partnership_request' | 'partnership_accepted' | 'movie_match' | 'match_milestone' | 'import_complete' | 'letterboxd_sync';
+  type: 'partnership_request' | 'partnership_accepted' | 'invite_accepted' | 'movie_match' | 'match_milestone' | 'import_complete' | 'letterboxd_sync';
   read: boolean;
   createdAt: number;
   data: {
@@ -259,6 +259,7 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
     } else if (
       notification.type === 'partnership_request' ||
       notification.type === 'partnership_accepted' ||
+      notification.type === 'invite_accepted' ||
       notification.type === 'match_milestone'
     ) {
       setIsOpen(false);
@@ -323,6 +324,19 @@ export function NotificationBell({ accessToken }: NotificationBellProps) {
           <>
             <strong className="text-white">{data.fromName}</strong> accepted your partner
             request!
+          </>
+        );
+        break;
+
+      case 'invite_accepted':
+        icon = (
+          <div className="size-10 rounded-full bg-pink-500/20 flex items-center justify-center flex-shrink-0">
+            <Heart className="size-5 text-pink-400" />
+          </div>
+        );
+        message = (
+          <>
+            <strong className="text-white">{data.fromName}</strong> accepted your invite!
           </>
         );
         break;
