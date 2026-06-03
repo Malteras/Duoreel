@@ -55,13 +55,11 @@ export function InvitePage() {
         const data = await res.json();
 
         if (res.ok) {
-          if (data.alreadySent) {
-            toast.info(`You've already sent a request to ${data.inviterName}`);
-          } else {
-            toast.success(`🎬 Request sent to ${data.inviterName}!`);
-          }
-
-          // Redirect to Matches immediately — the banner there lets them act
+          // No toast here. Under the confirm-on-Matches flow the invited person
+          // hasn't "sent" anything yet — they land on Matches where the pending-
+          // invite banner (Accept / Decline) is the call to action. A "request
+          // sent" toast was a leftover from the old inviter-accepts flow and
+          // contradicted the banner, confusing users.
           navigate('/matches', { replace: true });
         } else if (data.error === 'self_invite') {
           setStatus('self_invite');
