@@ -391,6 +391,43 @@ export function AppLayout() {
         return () => clearInterval(warmInterval);
     }, []);
 
+    // ─── First-login onboarding: send partner-less new users to Matches (#85) ─
+    // The first time a user reaches the app with no partner connected, land them
+    // on Matches — where the "invite your partner" prompt lives — instead of
+    // Discover. One-shot per device: once we've routed them (or a partner already
+    // exists), we set a flag and never auto-redirect again, so returning users who
+    // just want to browse are never trapped on Matches. Only fires from the default
+    // /discover landing, so an intentional deep-link to another tab is respected.
+    const hasCheckedOnboarding = useRef(false);
+    useEffect(() => {
+        if (!accessToken || hasCheckedOnboarding.current) return;
+        hasCheckedOnboarding.current = true;
+
+        try {
+            if (localStorage.getItem("duoreel_onboarding_routed")) return;
+        } catch {}
+
+        if (window.location.pathname !== "/discover") {
+            try { localStorage.setItem("duoreel_onboarding_routed", "1"); } catch {}
+            return;
+        }
+
+        fetch(`${API_BASE_URL}/partner`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+        })
+            .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+            .then((data) => {
+                try { localStorage.setItem("duoreel_onboarding_routed", "1"); } catch {}
+                if (!data.partner) {
+                    navigate("/matches", { replace: true });
+                }
+            })
+            .catch(() => {
+                // Network/error — leave the user on Discover and don't set the
+                // flag, so the nudge is retried on a future load.
+            });
+    }, [accessToken, navigate]);
+
     // ─── Auto-sync Letterboxd on app load ────────────────────────────────────
     const hasAutoSyncedLetterboxd = useRef(false);
     useEffect(() => {
