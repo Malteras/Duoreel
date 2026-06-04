@@ -27,6 +27,7 @@ import {
 import { toast } from 'sonner';
 import { useAppLayoutContext } from './AppLayout';
 import { useImportContext } from './ImportContext';
+import { useUserInteractions } from './UserInteractionsContext';
 import { ImportDialog } from './ImportDialog';
 import { MovieDetailModal } from './MovieDetailModal';
 import { useMovieModal } from '../hooks/useMovieModal';
@@ -35,6 +36,7 @@ import { STREAMING_SERVICES } from '../../constants/streaming';
 export function ProfilePage() {
   const { accessToken, userEmail, projectId, onSignOut } = useAppLayoutContext();
   const { watchlist, watched } = useImportContext();
+  const { refreshInteractions } = useUserInteractions();
   const { selectedMovie, modalOpen, openMovie, closeMovie } = useMovieModal(accessToken);
 
   // Profile state
@@ -608,6 +610,9 @@ export function ProfilePage() {
 
       if (res.ok) {
         setLetterboxdLastSynced(new Date());
+        // Refresh interactions so newly-watched movies reflect app-wide
+        // (cards + modal) without a reload — see issue #80.
+        if (data.synced > 0) refreshInteractions();
         if (!silent || data.synced > 0) {
           if (data.synced > 0) {
             toast.success(`✅ Synced ${data.synced} new movie${data.synced === 1 ? '' : 's'} from Letterboxd`);

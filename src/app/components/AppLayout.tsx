@@ -434,14 +434,22 @@ export function AppLayout() {
         if (!accessToken || hasAutoSyncedLetterboxd.current) return;
         hasAutoSyncedLetterboxd.current = true;
 
-        // Fire-and-forget: silently sync Letterboxd if user has it connected
+        // Fire-and-forget: silently sync Letterboxd if user has it connected.
+        // If the sync marked any movies as watched, refresh interactions so the
+        // new watched state is reflected app-wide (cards + modal) without a reload
+        // — e.g. when the user taps the letterboxd_sync notification (issue #80).
         fetch(`${API_BASE_URL}/letterboxd/sync`, {
             method: "POST",
             headers: { Authorization: `Bearer ${accessToken}` },
-        }).catch(() => {
-            // Silently ignore sync errors on app load
-        });
-    }, [accessToken]);
+        })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+                if (data?.synced > 0) refreshInteractions();
+            })
+            .catch(() => {
+                // Silently ignore sync errors on app load
+            });
+    }, [accessToken, refreshInteractions]);
 
     const handleSignOut = async () => {
         try {
