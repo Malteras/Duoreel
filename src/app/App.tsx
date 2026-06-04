@@ -2,6 +2,7 @@ import { RouterProvider } from "react-router";
 import { HelmetProvider } from "react-helmet-async";
 import { useEffect } from "react";
 import { router } from "./routes";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 
 export default function App() {
     useEffect(() => {
@@ -23,9 +24,11 @@ export default function App() {
     }, []);
 
     return (
-        <HelmetProvider>
-            <RouterProvider router={router} />
-        </HelmetProvider>
+        <AppErrorBoundary>
+            <HelmetProvider>
+                <RouterProvider router={router} />
+            </HelmetProvider>
+        </AppErrorBoundary>
     );
 }
 
