@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { Root } from './components/Root';
+import { RouteErrorBoundary } from './components/RouteErrorBoundary';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AppLayout } from './components/AppLayout';
 import { AuthPage } from './components/AuthPage';
@@ -15,6 +16,7 @@ export const router = createBrowserRouter([
   {
     path: '/',
     Component: Root,
+    ErrorBoundary: RouteErrorBoundary,
     children: [
       // Public routes
       { index: true, Component: LandingPage },
