@@ -115,6 +115,66 @@ async function pMap<T, R>(
   return results;
 }
 
+// ── Static TMDB genre map — IDs never change; resolved instantly, zero API calls ──
+// Map genre_ids to genre objects server-side so cards always show genre tags
+// immediately, even if a per-movie detail fetch fails.
+const TMDB_GENRE_MAP: Record<number, string> = {
+  28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy",
+  80: "Crime", 99: "Documentary", 18: "Drama", 10751: "Family",
+  14: "Fantasy", 36: "History", 27: "Horror", 10402: "Music",
+  9648: "Mystery", 10749: "Romance", 878: "Science Fiction",
+  10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western",
+};
+
+// ── Server-side parallel enrichment for credits, director/cast, genres, providers ──
+// Fetches full movie details for each result in parallel and merges them in, so the
+// client receives fully-enriched cards with no follow-up round-trips. Genres are
+// resolved from the static map first so cards always show genre tags even if the
+// per-movie detail fetch fails. Shared by /movies/discover-filtered and /movies/search.
+async function enrichMoviesWithDetails(
+  movies: any[],
+  apiKey: string,
+): Promise<any[]> {
+  return await Promise.all(
+    movies.map(async (movie: any) => {
+      // Resolve genres from static map immediately — zero API calls needed
+      const resolvedGenres = (movie.genre_ids || [])
+        .map((id: number) => ({ id, name: TMDB_GENRE_MAP[id] || "" }))
+        .filter((g: any) => g.name);
+
+      try {
+        const detailUrl =
+          `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=credits,external_ids,watch/providers,keywords,videos`;
+        const detailRes = await fetch(detailUrl);
+        if (!detailRes.ok) return { ...movie, genres: resolvedGenres };
+        const d = await detailRes.json();
+        const director = d.credits?.crew?.find((c: any) => c.job === "Director")?.name;
+        const actors = d.credits?.cast?.slice(0, 5).map((a: any) => a.name);
+        return {
+          ...movie,
+          runtime: d.runtime || movie.runtime,
+          director: director || movie.director,
+          actors: actors || movie.actors,
+          genres: d.genres?.length ? d.genres : resolvedGenres,
+          external_ids: d.external_ids || movie.external_ids,
+          homepage: d.homepage || movie.homepage,
+          "watch/providers": d["watch/providers"] || movie["watch/providers"],
+          keywords: d.keywords?.keywords || movie.keywords,
+          tagline: d.tagline ?? movie.tagline,
+          budget: d.budget ?? movie.budget,
+          revenue: d.revenue ?? movie.revenue,
+          original_language: d.original_language || movie.original_language,
+          status: d.status ?? movie.status,
+          vote_count: d.vote_count || movie.vote_count,
+          videos: d.videos || movie.videos,
+        };
+      } catch {
+        return { ...movie, genres: resolvedGenres };
+      }
+    }),
+  );
+}
+
 // Enable logger
 app.use("*", logger(console.log));
 
@@ -2889,6 +2949,13 @@ app.get("/make-server-5623fde1/movies/search", async (c) => {
       }
     }
 
+    // Enrich results server-side (genres, director/cast, runtime, providers) so
+    // search cards render fully-populated immediately instead of waiting on a
+    // slow client-side enrichment waterfall. Pagination fields are left intact.
+    if (Array.isArray(data.results)) {
+      data.results = await enrichMoviesWithDetails(data.results, apiKey);
+    }
+
     return c.json(data);
   } catch (error) {
     console.error("Error searching movies:", error);
@@ -4207,57 +4274,10 @@ app.get(
         `Returning ${finalMovies.length} filtered movies after ${attempts} API calls`,
       );
 
-      // ── Static genre map — resolved instantly, zero API calls ─────────────
-      // TMDB genre IDs never change. Map genre_ids to genre objects server-side
-      // so cards always show genre tags immediately, even if the detail fetch fails.
-      const TMDB_GENRE_MAP: Record<number, string> = {
-        28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy",
-        80: "Crime", 99: "Documentary", 18: "Drama", 10751: "Family",
-        14: "Fantasy", 36: "History", 27: "Horror", 10402: "Music",
-        9648: "Mystery", 10749: "Romance", 878: "Science Fiction",
-        10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western",
-      };
-
-      // ── Server-side parallel enrichment for credits, external_ids, providers ──
-      // Fetch full movie details for all results in parallel on the server.
-      const enrichedMovies = await Promise.all(
-        finalMovies.map(async (movie: any) => {
-          // Resolve genres from static map immediately — zero API calls needed
-          const resolvedGenres = (movie.genre_ids || [])
-            .map((id: number) => ({ id, name: TMDB_GENRE_MAP[id] || "" }))
-            .filter((g: any) => g.name);
-
-          try {
-            const detailUrl =
-              `https://api.themoviedb.org/3/movie/${movie.id}?api_key=${apiKey}&append_to_response=credits,external_ids,watch/providers,keywords,videos`;
-            const detailRes = await fetch(detailUrl);
-            if (!detailRes.ok) return { ...movie, genres: resolvedGenres };
-            const d = await detailRes.json();
-            const director = d.credits?.crew?.find((c: any) => c.job === "Director")?.name;
-            const actors = d.credits?.cast?.slice(0, 5).map((a: any) => a.name);
-            return {
-              ...movie,
-              runtime: d.runtime || movie.runtime,
-              director: director || movie.director,
-              actors: actors || movie.actors,
-              genres: d.genres?.length ? d.genres : resolvedGenres,
-              external_ids: d.external_ids || movie.external_ids,
-              homepage: d.homepage || movie.homepage,
-              "watch/providers": d["watch/providers"] || movie["watch/providers"],
-              keywords: d.keywords?.keywords || movie.keywords,
-              tagline: d.tagline ?? movie.tagline,
-              budget: d.budget ?? movie.budget,
-              revenue: d.revenue ?? movie.revenue,
-              original_language: d.original_language || movie.original_language,
-              status: d.status ?? movie.status,
-              vote_count: d.vote_count || movie.vote_count,
-              videos: d.videos || movie.videos,
-            };
-          } catch {
-            return { ...movie, genres: resolvedGenres };
-          }
-        }),
-      );
+      // ── Server-side parallel enrichment for credits, genres, providers ──
+      // Fetch full movie details for all results in parallel on the server so
+      // the client receives fully-enriched cards with no follow-up round-trips.
+      const enrichedMovies = await enrichMoviesWithDetails(finalMovies, apiKey);
 
       return c.json({
         results: enrichedMovies,
